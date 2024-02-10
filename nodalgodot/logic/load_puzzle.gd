@@ -3,6 +3,7 @@ extends Node2D
 
 # Preload the custom node 
 var CustomNode2D = preload("res://logic/objects/node.gd")
+var custom_nodes: GameNode
 
 func _ready():
 	pass
@@ -19,3 +20,5 @@ func _load_puzzle():
 	add_child(node_1)
 	add_child(node_2)
 	add_child(node_3)
+	
+	return [node_0, node_1, node_2, node_3]
