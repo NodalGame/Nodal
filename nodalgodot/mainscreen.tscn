@@ -1,7 +1,7 @@
 [gd_scene load_steps=3 format=3 uid="uid://8rkhp6av0f86"]
 
-[ext_resource type="Texture2D" uid="uid://b42sbil1kkn6b" path="res://button_imgs/MainScreenButton.png" id="1_8il37"]
-[ext_resource type="Script" path="res://TextureButton.gd" id="1_ha7mb"]
+[ext_resource type="Texture2D" uid="uid://b42sbil1kkn6b" path="res://button_imgs/StartGameBtn.png" id="1_8il37"]
+[ext_resource type="Script" path="res://logic/objects/StartGameBtn.gd" id="1_ha7mb"]
 
 [node name="Node2D" type="Node2D"]
 

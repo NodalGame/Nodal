@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://b42sbil1kkn6b"
-path="res://.godot/imported/MainScreenButton.png-4690cc1e5d902bed84d2926a780039e1.ctex"
+uid="uid://ithomwunxciv"
+path="res://.godot/imported/CheckAnswerBtn.png-e9819d35cbfd16867f3527aeacb5b599.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://button_imgs/MainScreenButton.png"
-dest_files=["res://.godot/imported/MainScreenButton.png-4690cc1e5d902bed84d2926a780039e1.ctex"]
+source_file="res://button_imgs/CheckAnswerBtn.png"
+dest_files=["res://.godot/imported/CheckAnswerBtn.png-e9819d35cbfd16867f3527aeacb5b599.ctex"]
 
 [params]
 
