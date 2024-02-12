@@ -1,0 +1,17 @@
+{
+	"width": 2,
+	"height": 1,
+	"nodes": [
+		{
+			"x": 0,
+			"y": 0,
+			"type": "empty"
+		},
+		{
+			"x": 1,
+			"y": 0,
+			"type": "empty"
+		}
+	],
+	"groups": []
+}
