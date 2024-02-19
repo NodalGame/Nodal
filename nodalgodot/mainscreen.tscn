@@ -1,12 +1,9 @@
 [gd_scene load_steps=3 format=3 uid="uid://8rkhp6av0f86"]
 
 [ext_resource type="Texture2D" uid="uid://b42sbil1kkn6b" path="res://button_imgs/StartGameBtn.png" id="1_8il37"]
-[ext_resource type="Script" path="res://logic/objects/StartGameBtn.gd" id="1_ha7mb"]
+[ext_resource type="Script" path="res://logic/objects/buttons/StartGameBtn.gd" id="1_ha7mb"]
 
 [node name="Node2D" type="Node2D"]
-
-[node name="Sprite2D" type="Sprite2D" parent="."]
-position = Vector2(3199, 1822)
 
 [node name="TextureButton" type="TextureButton" parent="."]
 offset_left = 436.0

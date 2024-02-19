@@ -6,6 +6,8 @@ var x: float
 var y: float
 var sprite: Sprite2D
 var sprite_position: Vector2
+var connections: Array[GameNode]
+
 
 # Constructor
 func _init(init_x: float, init_y: float):
@@ -45,3 +47,17 @@ func _process(delta):
 # Boolean returning if mouse intercepts the texture of the node 
 func intercepts(mouse_position):
 	return mouse_position.distance_to(sprite_position) <= 50.0
+	
+	
+func add_connection(node: GameNode):
+	connections.append(node)
+	
+	
+func remove_connection(node: GameNode):
+	var idx = connections.find(node)
+	if idx != -1:
+		connections.remove_at(idx)
+
+
+func get_connections() -> Array[GameNode]:
+	return connections

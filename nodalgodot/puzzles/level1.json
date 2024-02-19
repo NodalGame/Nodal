@@ -5,12 +5,14 @@
 		{
 			"x": 0,
 			"y": 0,
-			"type": "empty"
+			"color": "black",
+			"modifier": "none"
 		},
 		{
 			"x": 1,
 			"y": 0,
-			"type": "empty"
+			"color": "black",
+			"modifier": "none"
 		}
 	],
 	"groups": []
