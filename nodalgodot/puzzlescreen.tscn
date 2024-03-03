@@ -8,7 +8,9 @@
 script = ExtResource("1_r48sl")
 
 [node name="CheckAnswerBtn" type="TextureButton" parent="."]
-offset_right = 40.0
-offset_bottom = 40.0
+offset_left = 575.0
+offset_top = 532.0
+offset_right = 1145.0
+offset_bottom = 642.0
 texture_normal = ExtResource("2_r2hiv")
 script = ExtResource("3_5wcln")
