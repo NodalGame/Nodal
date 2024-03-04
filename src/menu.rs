@@ -1,8 +1,10 @@
 pub mod menu {
+    use std::path::{Path, PathBuf};
+
     use bevy::{app::AppExit, prelude::*};
     use uuid::Uuid;
 
-    use crate::{despawn_screen, AppState, SelectedPuzzle, HOVERED_BUTTON, NORMAL_BUTTON, PRESSED_BUTTON, TEXT_COLOR};
+    use crate::{despawn_screen, puzzle_manager::puzzle_manager::PuzzleManager, AppState, SelectedPuzzle, HOVERED_BUTTON, NORMAL_BUTTON, PRESSED_BUTTON, TEXT_COLOR};
 
     // This plugin manages the menu, with 5 different screens:
     // - a main menu with "New Game", "Settings", "Quit"
@@ -28,7 +30,9 @@ pub mod menu {
             .add_systems(
                 Update,
                 (menu_action, button_system).run_if(in_state(AppState::Menu)),
-            );
+            )
+            
+            .insert_resource(PuzzleManager::new());
     }
 
     // State used for the current menu screen
@@ -80,29 +84,29 @@ pub mod menu {
 
     // Common button settings, TODO commonize? 
     fn button_style() -> Style {
-        return Style {
+        Style {
             width: Val::Px(250.0),
             height: Val::Px(65.0),
             margin: UiRect::all(Val::Px(20.0)),
             justify_content: JustifyContent::Center,
             align_items: AlignItems::Center,
             ..default()
-        };
+        }
     }
 
     fn button_icon_style() -> Style {
-        return Style {
+        Style {
             width: Val::Px(30.0),
             // This takes the icons out of the flexbox flow, to be positioned exactly
             position_type: PositionType::Absolute,
             // The icon will be close to the left border of the button
             left: Val::Px(10.0),
             ..default()
-        };
+        }
     }
 
     fn button_text_style() -> TextStyle {
-        return TextStyle {
+        TextStyle {
             font_size: 40.0,
             color: TEXT_COLOR,
             ..default()
@@ -202,7 +206,12 @@ pub mod menu {
             });
     }
 
-    fn puzzle_select_setup(mut commands: Commands) {
+    fn puzzle_select_setup(
+        mut commands: Commands,
+        mut puzzle_manager: ResMut<PuzzleManager> 
+    ) {
+        // TODO preload in other menu? if this starts to slow down...
+        let _ = puzzle_manager.populate(&PathBuf::from("assets/campaign/puzzles/"));
         commands
             .spawn((
                 NodeBundle {
@@ -229,7 +238,7 @@ pub mod menu {
                         ..default()
                     })
                     .with_children(|parent| {
-                        for puzzle_id in [Uuid::new_v4(), Uuid::new_v4()] {
+                        for puzzle_id in puzzle_manager.get_puzzle_uuids() {
                             // Display the levels to select TODO scrollable and populate programmatically
                             parent
                                 .spawn((

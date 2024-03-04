@@ -5,6 +5,8 @@
 use bevy::prelude::*;
 
 mod puzzle;
+mod game_node;
+pub mod puzzle_manager;
 use puzzle::puzzle::*;
 
 mod splash;
@@ -28,7 +30,7 @@ enum AppState {
     Puzzle,
 }
 
-// Tag component used to mark which puzzle is currently selected
+// Tag component used to mark which puzzle is currently selected, shared resource in the app
 #[derive(Default, Resource, Debug, Component, PartialEq, Eq, Clone, Copy)]
 struct SelectedPuzzle {
     uuid: Uuid,

@@ -1,13 +1,27 @@
 pub mod puzzle {
-    use bevy::prelude::*;
+    use std::{fs::File, io::Read};
 
-    use crate::{despawn_screen, AppState, SelectedPuzzle, TEXT_COLOR};
+    use bevy::prelude::*;
+    use serde::{Deserialize};
+    use uuid::Uuid;
+    use game_node::GameNode;
+    use serde_json;
+
+    use crate::{despawn_screen, game_node::game_node, AppState, SelectedPuzzle, TEXT_COLOR};
 
     // This plugin will contain a playable puzzle. 
     pub fn puzzle_plugin(app: &mut App) {
         app
             .add_systems(OnEnter(AppState::Puzzle), puzzle_setup)
             .add_systems(OnExit(AppState::Puzzle), despawn_screen::<OnPuzzleScreen>);
+    }
+
+    #[derive(Deserialize, Debug)]
+    pub struct Puzzle {
+        pub uuid: Uuid,
+        width: u8,
+        height: u8,
+        nodes: Vec<GameNode>
     }
 
     // Tag component used to tag entities added on the puzzle screen
@@ -18,8 +32,11 @@ pub mod puzzle {
         mut commands: Commands,
         puzzle_id: Res<SelectedPuzzle>,
     ) {
+        let puzzle = load_puzzle_from_uuid(puzzle_id.uuid);
 
+        println!("{:?}", puzzle);
 
+        // TODO generate nodes in grid 
         commands
             .spawn((
                 NodeBundle {
@@ -63,5 +80,30 @@ pub mod puzzle {
                         ));
                     });
             });
+    }
+
+    fn load_json_from_file(file_path: &str) -> serde_json::Result<Puzzle> {
+        // Open the file
+        let mut file = File::open(file_path)
+            .expect("Failed to open the file");
+    
+        // Read the file contents into a string
+        let mut contents = String::new();
+        file.read_to_string(&mut contents)
+            .expect("Failed to read the file");
+    
+        // Parse the string as JSON
+        serde_json::from_str(&contents)
+    }
+
+    fn load_puzzle_from_uuid(uuid: Uuid) -> Puzzle {
+        // TODO query some database of uuids to get puzzle json object
+        let file_path = "assets/campaign/puzzles/puzzle1.json";
+
+        let puzzle = match load_json_from_file(file_path) {
+            Ok(data) => data,
+            Err(e) => panic!("Failed to load puzzle: {:?}", e),
+        };
+        puzzle
     }
 }
