@@ -55,7 +55,7 @@ pub mod menu {
     // All actions that can be triggered from a button click
     #[derive(Component)]
     enum MenuButtonAction {
-        Play,
+        PuzzleSelect,
         PlayPuzzle,
         Quit,
     }
@@ -67,6 +67,7 @@ pub mod menu {
     }
 
     // This system handles changing all buttons color based on mouse interaction
+    // TODO move to common location for other screens
     fn button_system(
         mut interaction_query: Query<
             (&Interaction, &mut BackgroundColor),
@@ -170,7 +171,7 @@ pub mod menu {
                                     background_color: NORMAL_BUTTON.into(),
                                     ..default()
                                 },
-                                MenuButtonAction::Play,
+                                MenuButtonAction::PuzzleSelect,
                             ))
                             .with_children(|parent| {
                                 let icon = asset_server.load("textures/Game Icons/right.png");
@@ -277,7 +278,7 @@ pub mod menu {
                     MenuButtonAction::Quit => {
                         app_exit_events.send(AppExit);
                     }
-                    MenuButtonAction::Play => {
+                    MenuButtonAction::PuzzleSelect => {
                         menu_state.set(MenuState::PuzzleSelect);
                     }
                     MenuButtonAction::PlayPuzzle => {

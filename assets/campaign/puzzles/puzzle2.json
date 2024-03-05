@@ -1,0 +1,31 @@
+{
+    "uuid": "6f54db35-6c7e-455d-9254-e72431da0f6a",
+    "width": 3,
+    "height": 2,
+    "nodes": [
+        {
+            "id": 0,
+            "class": "Default"
+        },
+        {
+			"id": 1,
+			"class": "Default"
+		},
+        {
+			"id": 2,
+			"class": "Default"
+		},
+        {
+			"id": 3,
+			"class": "Default"
+		},
+        {
+			"id": 4,
+			"class": "Default"
+		},
+        {
+			"id": 5,
+			"class": "Default"
+		}
+    ]
+}

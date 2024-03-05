@@ -1,15 +1,14 @@
 pub mod game_node {
     use serde::{Deserialize, Serialize};
 
-    #[derive(Serialize, Deserialize, Debug)]
+    #[derive(Serialize, Deserialize, Clone, Debug)]
     pub struct GameNode {
-        x: u8,
-        y: u8,
-        class: NodeClass,
+        pub id: u16,
+        pub class: NodeClass,
     }
 
-    #[derive(Serialize, Deserialize, Debug)]
-    enum NodeClass {
+    #[derive(Serialize, Deserialize, Clone, Debug)]
+    pub enum NodeClass {
         Default,
     }
 }

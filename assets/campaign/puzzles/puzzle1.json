@@ -4,13 +4,11 @@
 	"height": 1,
 	"nodes": [
 		{
-			"x": 0,
-			"y": 0,
+			"id": 0,
 			"class": "Default"
 		},
 		{
-			"x": 1,
-			"y": 0,
+			"id": 1,
 			"class": "Default"
 		}
 	]

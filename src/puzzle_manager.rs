@@ -22,8 +22,6 @@ pub mod puzzle_manager {
         }
 
         pub fn populate(&mut self, directory_path: &Path) -> serde_json::Result<()> {
-            println!("Got path {}", directory_path.to_string_lossy());
-
             for entry in WalkDir::new(directory_path)
                 .into_iter()
                 .filter_map(|e| e.ok())
@@ -52,6 +50,7 @@ pub mod puzzle_manager {
         }
 
         fn add_puzzle(&mut self, uuid: Uuid, path: String) {
+            println!("inserting puzzle into manager {} : {}", uuid, path);
             self.puzzles.insert(uuid, path);
         }
 
