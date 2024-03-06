@@ -1,19 +1,20 @@
 pub mod puzzle {
-    use std::{fs::File, io::Read, process::exit};
+    use std::process::exit;
 
     use bevy::prelude::*;
     use serde::Deserialize;
     use uuid::Uuid;
     use game_node::GameNode;
-    use serde_json;
 
-    use crate::{despawn_screen, game_node::game_node, puzzle_manager::{self, puzzle_manager::PuzzleManager}, AppState, SelectedPuzzle, TEXT_COLOR};
+    use crate::{despawn_screen, game_node::game_node, puzzle_manager::puzzle_manager::PuzzleManager, AppState, SelectedPuzzle, TEXT_COLOR};
 
     // This plugin will contain a playable puzzle. 
     pub fn puzzle_plugin(app: &mut App) {
         app
             .add_systems(OnEnter(AppState::Puzzle), puzzle_setup)
-            .add_systems(OnExit(AppState::Puzzle), despawn_screen::<OnPuzzleScreen>);
+            .add_systems(OnExit(AppState::Puzzle), despawn_screen::<OnPuzzleScreen>)
+            .add_systems(Update, mouse_button_input_system.run_if(in_state(AppState::Puzzle)))
+            .insert_resource(ActiveNodes::default());
     }
 
     #[derive(Deserialize, Debug)]
@@ -22,6 +23,18 @@ pub mod puzzle {
         width: u8,
         height: u8,
         nodes: Vec<GameNode>
+    }
+
+    // Tracks all nodes in the puzzle, including sprite and position
+    #[derive(Default, Resource, Debug, Component, Clone)]
+    struct ActiveNodes {
+        active_nodes: Vec<ActiveNode>
+    }
+
+    #[derive(Debug, Component, Clone)]
+    struct ActiveNode {
+        node: GameNode,
+        entity: Entity,
     }
 
     // Tag component used to tag entities added on the puzzle screen
@@ -33,6 +46,7 @@ pub mod puzzle {
         assert_server: Res<AssetServer>,
         puzzle_id: Res<SelectedPuzzle>,
         puzzle_manager: Res<PuzzleManager>,
+        mut active_nodes: ResMut<ActiveNodes>,
     ) {
         let puzzle = puzzle_manager.load_puzzle(&puzzle_id.uuid).unwrap_or_else(|| {
             println!("Failed to load puzzle with id {}", puzzle_id.uuid);
@@ -107,10 +121,11 @@ pub mod puzzle {
                                 })
                                 .with_children(|parent| {
                                     for col in 0 .. puzzle.width {
-                                        let node = ordered_nodes.get((row * puzzle.height + col) as usize);
+                                        let node = ordered_nodes.get((row * puzzle.height + col) as usize).unwrap();
                                         // TODO change style based on node class
                                         println!("new node at {} {}", row, col);
-                                        parent.spawn(ImageBundle {
+                                        // TODO define how these look elsewhere and copy them in as needed
+                                        let node_sprite = ButtonBundle {
                                             style: Style {
                                                 width: Val::Px(100.0),
                                                 height: Val::Px(100.0),
@@ -118,7 +133,8 @@ pub mod puzzle {
                                             },
                                             image: UiImage::new(texture_node.clone()),
                                             ..default()
-                                        });
+                                        };
+                                        active_nodes.active_nodes.push(ActiveNode { node: node.clone(), entity: parent.spawn(node_sprite).id() });
                                     }
                                 });
                             });
@@ -126,5 +142,24 @@ pub mod puzzle {
                     });
                 // TODO Create another bundle with a button to return to menu
             });
+    }
+
+    fn mouse_button_input_system(
+        active_nodes: ResMut<ActiveNodes>,
+        button_query: Query<&Interaction, With<Button>>,
+    ) {
+        for node in active_nodes.active_nodes.iter() {
+            if let Ok(interaction) = button_query.get(node.entity) {
+                match interaction {
+                    Interaction::Pressed => {
+                        println!("clicked node {}", node.node.id);
+                    }
+                    Interaction::Hovered => {
+                        println!("hovered node {}", node.node.id);
+                    }
+                    Interaction::None => {}
+                }
+            }
+        }
     }
 }
