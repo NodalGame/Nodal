@@ -4,8 +4,8 @@
 
 use bevy::prelude::*;
 
-mod puzzle;
 mod game_node;
+mod puzzle;
 pub mod puzzle_manager;
 use puzzle::puzzle::*;
 
@@ -40,7 +40,7 @@ struct SelectedPuzzle {
 #[derive(Resource, Default)]
 struct CameraControl {
     focus_point: Vec2,
-    // Add zoom level? 
+    // Add zoom level?
 }
 
 fn main() {

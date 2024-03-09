@@ -1,7 +1,11 @@
 pub mod puzzle_manager {
     use bevy::prelude::*;
 
-    use std::{fs::{self, File}, io::Read, path::Path};
+    use std::{
+        fs::{self, File},
+        io::Read,
+        path::Path,
+    };
 
     use bevy::utils::HashMap;
     use uuid::Uuid;
@@ -13,7 +17,7 @@ pub mod puzzle_manager {
     pub struct PuzzleManager {
         puzzles: HashMap<Uuid, String>,
     }
-    
+
     impl PuzzleManager {
         pub fn new() -> Self {
             PuzzleManager {
@@ -28,12 +32,11 @@ pub mod puzzle_manager {
                 .filter(|e| e.path().extension().map_or(false, |ext| ext == "json"))
             {
                 let path = entry.path();
-                
+
                 println!("{}", path.to_string_lossy());
-                
+
                 // Open the file
-                let mut file = File::open(path)
-                .expect("Failed to open the file");
+                let mut file = File::open(path).expect("Failed to open the file");
 
                 // Read the file contents into a string
                 let mut contents = String::new();
@@ -63,6 +66,6 @@ pub mod puzzle_manager {
 
         pub fn get_puzzle_uuids(&self) -> Vec<Uuid> {
             self.puzzles.keys().cloned().collect()
-        } 
+        }
     }
 }

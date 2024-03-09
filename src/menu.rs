@@ -4,7 +4,10 @@ pub mod menu {
     use bevy::{app::AppExit, prelude::*};
     use uuid::Uuid;
 
-    use crate::{despawn_screen, puzzle_manager::puzzle_manager::PuzzleManager, AppState, SelectedPuzzle, HOVERED_BUTTON, NORMAL_BUTTON, PRESSED_BUTTON, TEXT_COLOR};
+    use crate::{
+        despawn_screen, puzzle_manager::puzzle_manager::PuzzleManager, AppState, SelectedPuzzle,
+        HOVERED_BUTTON, NORMAL_BUTTON, PRESSED_BUTTON, TEXT_COLOR,
+    };
 
     // This plugin manages the menu, with 5 different screens:
     // - a main menu with "New Game", "Settings", "Quit"
@@ -17,21 +20,20 @@ pub mod menu {
             // Current screen in the menu is handled by an independent state from `GameState`
             .init_state::<MenuState>()
             .add_systems(OnEnter(AppState::Menu), menu_setup)
-            
             // Systems to handle the main menu screen
             .add_systems(OnEnter(MenuState::Main), main_menu_setup)
             .add_systems(OnExit(MenuState::Main), despawn_screen::<OnMainMenuScreen>)
-            
             // Systems to handle the puzzle select screen
             .add_systems(OnEnter(MenuState::PuzzleSelect), puzzle_select_setup)
-            .add_systems(OnExit(MenuState::PuzzleSelect), despawn_screen::<OnPuzzleSelectScreen>)
-
+            .add_systems(
+                OnExit(MenuState::PuzzleSelect),
+                despawn_screen::<OnPuzzleSelectScreen>,
+            )
             // Common systems to all menu screens that handles buttons behavior
             .add_systems(
                 Update,
                 (menu_action, button_system).run_if(in_state(AppState::Menu)),
             )
-            
             .insert_resource(PuzzleManager::new());
     }
 
@@ -83,7 +85,7 @@ pub mod menu {
         }
     }
 
-    // Common button settings, TODO commonize? 
+    // Common button settings, TODO commonize?
     fn button_style() -> Style {
         Style {
             width: Val::Px(250.0),
@@ -207,10 +209,7 @@ pub mod menu {
             });
     }
 
-    fn puzzle_select_setup(
-        mut commands: Commands,
-        mut puzzle_manager: ResMut<PuzzleManager> 
-    ) {
+    fn puzzle_select_setup(mut commands: Commands, mut puzzle_manager: ResMut<PuzzleManager>) {
         // TODO preload in other menu? if this starts to slow down...
         let _ = puzzle_manager.populate(&PathBuf::from("assets/campaign/puzzles/"));
         commands

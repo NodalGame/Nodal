@@ -23,7 +23,7 @@ pub mod splash {
     #[derive(Resource, Deref, DerefMut)]
     struct SplashTimer(Timer);
 
-    // TODO splash screen  with actual icons 
+    // TODO splash screen  with actual icons
     fn splash_setup(mut commands: Commands, asset_server: Res<AssetServer>) {
         let icon = asset_server.load("branding/icon.png");
         // Display the logo

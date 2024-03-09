@@ -1,23 +1,30 @@
 pub mod puzzle {
     use std::process::exit;
 
-    use bevy::{input::{mouse::MouseButtonInput, InputSystem}, prelude::*, scene::ron::de, sprite::{Material2d, MaterialMesh2dBundle, Mesh2dHandle}};
+    use bevy::{
+        input::{mouse::MouseButtonInput, InputSystem},
+        prelude::*,
+        scene::ron::de,
+        sprite::{Material2d, MaterialMesh2dBundle, Mesh2dHandle},
+    };
     use bevy_prototype_lyon::prelude::*;
+    use game_node::GameNode;
     use serde::Deserialize;
     use uuid::Uuid;
-    use game_node::GameNode;
 
-    use crate::{despawn_screen, game_node::game_node, puzzle_manager::puzzle_manager::PuzzleManager, AppState, SelectedPuzzle, TEXT_COLOR};
+    use crate::{
+        despawn_screen, game_node::game_node, puzzle_manager::puzzle_manager::PuzzleManager,
+        AppState, SelectedPuzzle, TEXT_COLOR,
+    };
 
-    // This plugin will contain a playable puzzle. 
+    // This plugin will contain a playable puzzle.
     pub fn puzzle_plugin(app: &mut App) {
-        app
-            .add_systems(OnEnter(AppState::Puzzle),  puzzle_setup)
+        app.add_systems(OnEnter(AppState::Puzzle), puzzle_setup)
             .add_systems(OnExit(AppState::Puzzle), despawn_screen::<OnPuzzleScreen>)
             // .add_systems(Update, line_system.run_if(in_state(AppState::Puzzle)))
             .insert_resource(ActiveNodes::default())
             .insert_resource(Lines::default());
-            // .insert_resource(CurrentLine::new());
+        // .insert_resource(CurrentLine::new());
     }
 
     #[derive(Deserialize, Debug)]
@@ -25,13 +32,13 @@ pub mod puzzle {
         pub uuid: Uuid,
         width: u8,
         height: u8,
-        nodes: Vec<GameNode>
+        nodes: Vec<GameNode>,
     }
 
     // Tracks all nodes in the puzzle, including sprite and position
     #[derive(Default, Resource, Component, Clone)]
     struct ActiveNodes {
-        active_nodes: Vec<ActiveNode>
+        active_nodes: Vec<ActiveNode>,
     }
 
     #[derive(Component, Clone)]
@@ -43,7 +50,7 @@ pub mod puzzle {
     // Tracks all lines connecting nodes in puzzle
     #[derive(Default, Resource)]
     struct Lines {
-        lines: Vec<NodeLine>
+        lines: Vec<NodeLine>,
     }
 
     struct NodeLine {
@@ -52,7 +59,7 @@ pub mod puzzle {
         line: shapes::Line,
     }
 
-    // Line currently being drawn by user on the screen 
+    // Line currently being drawn by user on the screen
     #[derive(Resource)]
     struct CurrentLine {
         start_node: ActiveNode,
@@ -67,132 +74,59 @@ pub mod puzzle {
     fn puzzle_setup(
         mut commands: Commands,
         assert_server: Res<AssetServer>,
-        mut materials: ResMut<Assets<ColorMaterial>>,
         puzzle_id: Res<SelectedPuzzle>,
         puzzle_manager: Res<PuzzleManager>,
         mut active_nodes: ResMut<ActiveNodes>,
     ) {
-        // Set up the camera
+        // TODO focus the camera on the center node
         // commands.spawn(Camera2dBundle::default());
 
         // Get the puzzle by loading it
-        let puzzle = puzzle_manager.load_puzzle(&puzzle_id.uuid).unwrap_or_else(|| {
-            println!("Failed to load puzzle with id {}", puzzle_id.uuid);
-            exit(1); // TODO cause game to not crash, and do this check in menu BEFORE switching scenes 
-        });
+        let puzzle = puzzle_manager
+            .load_puzzle(&puzzle_id.uuid)
+            .unwrap_or_else(|| {
+                println!("Failed to load puzzle with id {}", puzzle_id.uuid);
+                exit(1); // TODO cause game to not crash, and do this check in menu BEFORE switching scenes
+            });
 
         // Sort nodes by id (top to bottom, left to right)
         let mut ordered_nodes = puzzle.nodes.clone();
         ordered_nodes.sort_by(|a, b| a.id.cmp(&b.id));
 
         // Load the node texture and make a new material
-        let texture_node = assert_server.load("textures/EmptyNode.png");
-        // let material = materials.add(ColorMaterial::from(texture_node));
-        
+        let texture_node = assert_server.load("textures/sprites/EmptyNode.png");
+
         // Create a width x height grid of nodes as sprite bundles
-        let spacing = 100.0;
+        let spacing = 200.0;
+        let sprite_size = 100.0;
         for x in 0..puzzle.width {
             for y in 0..puzzle.height {
-                let node = ordered_nodes.get((x * puzzle.height + y) as usize).unwrap_or_else(|| {
-                    println!("Error when adding nodes to screen, index out of range?");
-                    exit(1);
-                });
+                let node = ordered_nodes
+                    .get((x * puzzle.height + y) as usize)
+                    .unwrap_or_else(|| {
+                        println!("Error when adding nodes to screen, index out of range?");
+                        exit(1);
+                    });
 
                 let x_pos = x as f32 * spacing;
                 let y_pos = y as f32 * spacing;
 
-                let mesh = SpriteBundle {
+                let sprite_bundle = SpriteBundle {
                     texture: texture_node.clone(),
+                    sprite: Sprite {
+                        custom_size: Some(Vec2::new(sprite_size, sprite_size)),
+                        ..Default::default()
+                    },
                     transform: Transform::from_xyz(x_pos, y_pos, 0.0),
                     ..default()
                 };
-                commands.spawn(mesh.clone());
+                commands.spawn(sprite_bundle.clone());
                 active_nodes.active_nodes.push(ActiveNode {
                     node: node.clone(),
-                    sprite: mesh.clone(),
+                    sprite: sprite_bundle.clone(),
                 });
             }
         }
-
-        // // Create a bundle to hold assets on screen 
-        // commands
-        //     .spawn((
-        //         NodeBundle {
-        //             style: Style {
-        //                 width: Val::Percent(100.0),
-        //                 height: Val::Percent(100.0),
-        //                 // center children
-        //                 align_items: AlignItems::Center,
-        //                 justify_content: JustifyContent::Center,
-        //                 ..default()
-        //             },
-        //             ..default()
-        //         },
-        //         OnPuzzleScreen,
-        //     ))
-        //     .with_children(|parent| {
-        //         // First create a `NodeBundle` for centering what we want to display
-        //         parent
-        //             .spawn(NodeBundle {
-        //                 style: Style {
-        //                     // This will display its children in a column, from top to bottom
-        //                     flex_direction: FlexDirection::Column,
-        //                     // `align_items` will align children on the cross axis. Here the main axis is
-        //                     // vertical (column), so the cross axis is horizontal. This will center the
-        //                     // children
-        //                     align_items: AlignItems::Center,
-        //                     ..default()
-        //                 },
-        //                 background_color: Color::BLACK.into(),
-        //                 ..default()
-        //             })
-        //             .with_children(|parent| {
-        //                 // Sort nodes by id
-
-
-        //                 for row in 0 .. puzzle.height {
-        //                     parent
-        //                         .spawn(NodeBundle {
-        //                         style: Style {
-        //                             flex_direction: FlexDirection::Column,
-        //                             align_items: AlignItems::Center,
-        //                             ..default()
-        //                         },
-        //                         ..default()
-        //                     }).with_children(|parent| {
-        //                         parent.spawn(NodeBundle {
-        //                             style: Style {
-        //                                 flex_direction: FlexDirection::Row,
-        //                                 justify_content: JustifyContent::SpaceBetween,
-        //                                 ..default()
-        //                             },
-        //                             ..default()
-        //                         })
-        //                         .with_children(|parent| {
-        //                             for col in 0 .. puzzle.width {
-
-        //                                 // TODO change style based on node class
-        //                                 println!("new node at {} {}", row, col);
-        //                                 let mesh2d = MaterialMesh2dBundle {
-        //                                     material: material.clone(),
-        //                                     ..default()
-        //                                 };
-        //                                 // Add mesh to the puzzle screen
-        //                                 parent.spawn(mesh2d.clone());
-        //                                 // Save as active node in puzzle
-        //                                 active_nodes.active_nodes.push(
-        //                                     ActiveNode { 
-        //                                         node: node.clone(), 
-        //                                         mesh: mesh2d.clone(),
-        //                                     }
-        //                                 );
-        //                             }
-        //                         });
-        //                     });
-        //                 }
-        //             });
-                // TODO Create another bundle with a button to return to menu
-            // });
     }
 
     fn line_system(
