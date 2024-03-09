@@ -15,7 +15,7 @@ pub mod puzzle_manager {
 
     #[derive(Resource, Debug)]
     pub struct PuzzleManager {
-        puzzles: HashMap<Uuid, String>,
+        puzzles: HashMap<Uuid, String>, // TODO campaign puzzles need relationship with "parent" puzzle needing solve prior to loading
     }
 
     impl PuzzleManager {
@@ -65,7 +65,17 @@ pub mod puzzle_manager {
         }
 
         pub fn get_puzzle_uuids(&self) -> Vec<Uuid> {
-            self.puzzles.keys().cloned().collect()
+            let mut uuids = self
+                .puzzles
+                .iter()
+                .map(|(&uuid, _)| uuid)
+                .collect::<Vec<Uuid>>();
+            uuids.sort_by(|a, b| {
+                let path_a = self.puzzles.get(a).unwrap();
+                let path_b = self.puzzles.get(b).unwrap();
+                path_a.cmp(path_b)
+            });
+            uuids
         }
     }
 }

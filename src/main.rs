@@ -36,19 +36,16 @@ struct SelectedPuzzle {
     uuid: Uuid,
 }
 
-// Camera control, shared resource in the app
-#[derive(Resource, Default)]
-struct CameraControl {
-    focus_point: Vec2,
-    // Add zoom level?
-}
+// Main camera, shared resource in the app
+#[derive(Resource, Component, Default)]
+struct MainCamera;
 
 fn main() {
     App::new()
         // Share the SelectedPuzzle resource between menu and puzzle plugin
         .init_resource::<SelectedPuzzle>()
         // Share the CameraControl resource
-        .init_resource::<CameraControl>()
+        .init_resource::<MainCamera>()
         .add_plugins(DefaultPlugins)
         // Declare the game state, whose starting value is determined by the `Default` trait
         .init_state::<AppState>()
@@ -59,7 +56,7 @@ fn main() {
 }
 
 fn setup(mut commands: Commands) {
-    commands.spawn(Camera2dBundle::default());
+    commands.spawn((Camera2dBundle::default(), MainCamera));
 }
 
 // Generic system that takes a component as a parameter, and will despawn all entities with that component

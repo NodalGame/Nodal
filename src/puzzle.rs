@@ -1,30 +1,25 @@
 pub mod puzzle {
     use std::process::exit;
 
-    use bevy::{
-        input::{mouse::MouseButtonInput, InputSystem},
-        prelude::*,
-        scene::ron::de,
-        sprite::{Material2d, MaterialMesh2dBundle, Mesh2dHandle},
-    };
+    use crate::{game_node::game_node::GameNode, MainCamera};
+    use bevy::prelude::*;
+    use bevy::window::PrimaryWindow;
     use bevy_prototype_lyon::prelude::*;
-    use game_node::GameNode;
     use serde::Deserialize;
     use uuid::Uuid;
 
     use crate::{
-        despawn_screen, game_node::game_node, puzzle_manager::puzzle_manager::PuzzleManager,
-        AppState, SelectedPuzzle, TEXT_COLOR,
+        despawn_screen, puzzle_manager::puzzle_manager::PuzzleManager, AppState, SelectedPuzzle,
     };
 
     // This plugin will contain a playable puzzle.
     pub fn puzzle_plugin(app: &mut App) {
         app.add_systems(OnEnter(AppState::Puzzle), puzzle_setup)
             .add_systems(OnExit(AppState::Puzzle), despawn_screen::<OnPuzzleScreen>)
-            // .add_systems(Update, line_system.run_if(in_state(AppState::Puzzle)))
+            .add_systems(Update, line_system.run_if(in_state(AppState::Puzzle)))
             .insert_resource(ActiveNodes::default())
-            .insert_resource(Lines::default());
-        // .insert_resource(CurrentLine::new());
+            .insert_resource(Lines::default())
+            .insert_resource(CurrentLine::default());
     }
 
     #[derive(Deserialize, Debug)]
@@ -60,11 +55,10 @@ pub mod puzzle {
     }
 
     // Line currently being drawn by user on the screen
-    #[derive(Resource)]
+    #[derive(Default, Resource)]
     struct CurrentLine {
-        start_node: ActiveNode,
-        line: shapes::Line,
-        dragging: bool,
+        start_node: Option<ActiveNode>,
+        line: Option<shapes::Line>,
     }
 
     // Tag component used to tag entities added on the puzzle screen
@@ -120,7 +114,7 @@ pub mod puzzle {
                     transform: Transform::from_xyz(x_pos, y_pos, 0.0),
                     ..default()
                 };
-                commands.spawn(sprite_bundle.clone());
+                commands.spawn(sprite_bundle.clone()).insert(OnPuzzleScreen);
                 active_nodes.active_nodes.push(ActiveNode {
                     node: node.clone(),
                     sprite: sprite_bundle.clone(),
@@ -132,34 +126,103 @@ pub mod puzzle {
     fn line_system(
         mut commands: Commands,
         active_nodes: ResMut<ActiveNodes>,
-        // mut current_line: ResMut<CurrentLine>,
+        mut current_line: ResMut<CurrentLine>,
         mut lines: ResMut<Lines>,
-        // button_query: Query<&Interaction, With<Button>>,
-        mouse_button: Res<ButtonInput<MouseButton>>,
+        // Track mouse inputs
+        mouse_button_input: Res<ButtonInput<MouseButton>>,
+        // Query to get the window, so we can read current cursor position
+        q_window: Query<&Window, With<PrimaryWindow>>,
+        // Query to get camera transform
+        q_camera: Query<(&Camera, &GlobalTransform), With<MainCamera>>,
     ) {
-        // for node in active_nodes.active_nodes.iter() {
-        //     if let Ok(interaction) = button_query.get(node.entity) {
-        //         match interaction {
-        //             Interaction::Pressed => {
-        //                 println!("clicked node {}", node.node.id);
-        //                 // current_line.start_node = node.clone();
-        //                 // current_line.dragging = true;
-        //                 // current_line.line = shapes::Line(node.entity)
-        //             }
-        //             Interaction::Hovered => {
-        //                 // TODO change to lit up version of node?
-        //                 if mouse_button.just_released(MouseButton::Left) {
-        //                     println!("released node {}", node.node.id);
-        //                     // lines.lines.push(NodeLine { start_node: current_line.start_node.clone(), end_node: node.clone() });
-        //                     // current_line.dragging = false;
-        //                 }
-        //                 println!("hovered node {}", node.node.id);
-        //             }
-        //             Interaction::None => {
+        // Get camera info and transform, assuming exacly 1 camera entity
+        let (camera, camera_transform) = q_camera.single();
 
-        //             }
-        //         }
-        //     }
-        // }
+        // Only one primary window, so get it from query
+        let window = q_window.single();
+
+        // Check if cursor inside window and get its position, convert to world coords, discard Z
+        let world_position = window
+            .cursor_position()
+            .and_then(|cursor| camera.viewport_to_world(camera_transform, cursor))
+            .map(|ray| ray.origin.truncate())
+            .unwrap_or_else(|| {
+                // TODO fix this it causes game to crash when you hover out of it
+                println!("Failed to get cursor position");
+                exit(1);
+            });
+
+        // On left click, start new line on a clicked node, if exists
+        if mouse_button_input.just_pressed(MouseButton::Left) {
+            for active_node in active_nodes.active_nodes.iter() {
+                if clicked_on_sprite(&active_node.sprite, world_position) {
+                    println!("Left mouse button pressed on node {}", active_node.node.id);
+                    current_line.start_node = Some(active_node.clone());
+                    current_line.line = Some(shapes::Line(
+                        active_node.sprite.transform.translation.truncate(),
+                        world_position,
+                    ));
+                    println!(
+                        "Current line start is {:?}",
+                        current_line.line.clone().unwrap().0
+                    );
+                }
+            }
+        // If left click release, end the line on the released node, if exists
+        } else if mouse_button_input.just_released(MouseButton::Left) {
+            for active_node in active_nodes.active_nodes.iter() {
+                if clicked_on_sprite(&active_node.sprite, world_position)
+                    && current_line.start_node.is_some()
+                    && active_node.node.id != current_line.start_node.clone().unwrap().node.id
+                {
+                    println!("Left mouse button released on node {}", active_node.node.id);
+                    // Update list of lines
+                    println!(
+                        "Current line end is {:?}",
+                        active_node.sprite.transform.translation.truncate()
+                    );
+                    let finished_line = shapes::Line(
+                        current_line.line.clone().unwrap().0,
+                        active_node.sprite.transform.translation.truncate(),
+                    );
+                    println!("Finished line is {:?}", finished_line);
+                    lines.lines.push(NodeLine {
+                        start_node: current_line.start_node.clone().unwrap(),
+                        end_node: active_node.clone(),
+                        line: finished_line,
+                    });
+                    // Add line to the screen
+                    commands.spawn(ShapeBundle {
+                        path: GeometryBuilder::build_as(&finished_line),
+                        spatial: SpatialBundle::default(),
+                        ..default()
+                    });
+                }
+            }
+            // Regardless if we ended on a node or not, clear the current line
+            current_line.line = None;
+            current_line.start_node = None;
+        }
+    }
+
+    fn clicked_on_sprite(sprite: &SpriteBundle, cursor: Vec2) -> bool {
+        let node_pos = sprite.transform.translation.truncate();
+        let distance = cursor.distance(node_pos);
+        // Assuming the sprite size is a good proxy for click detection radius
+        if distance
+            < sprite
+                .sprite
+                .custom_size
+                .unwrap_or_else(|| {
+                    // TODO fix this
+                    println!("Failed to get sprite size");
+                    exit(1);
+                })
+                .x
+                / 2.0
+        {
+            return true;
+        }
+        false
     }
 }
