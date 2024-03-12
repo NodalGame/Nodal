@@ -196,7 +196,7 @@ pub mod puzzle {
                         path: GeometryBuilder::build_as(&finished_line),
                         spatial: SpatialBundle::default(),
                         ..default()
-                    });
+                    }).insert(OnPuzzleScreen);
                 }
             }
             // Regardless if we ended on a node or not, clear the current line
