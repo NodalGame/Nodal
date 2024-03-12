@@ -1,7 +1,7 @@
 pub mod puzzle {
     use std::process::exit;
 
-    use crate::{game_node::game_node::GameNode, MainCamera};
+    use crate::{game_node::game_node::GameNode, texture::texture::Texture, MainCamera};
     use bevy::prelude::*;
     use bevy::window::PrimaryWindow;
     use bevy_prototype_lyon::prelude::*;
@@ -88,7 +88,7 @@ pub mod puzzle {
         ordered_nodes.sort_by(|a, b| a.id.cmp(&b.id));
 
         // Load the node texture and make a new material
-        let texture_node = assert_server.load("textures/sprites/EmptyNode.png");
+        let texture_node = assert_server.load(Texture::NodeEmpty.path());
 
         // Create a width x height grid of nodes as sprite bundles
         let spacing = 200.0;

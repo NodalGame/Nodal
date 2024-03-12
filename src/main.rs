@@ -7,6 +7,7 @@ use bevy::prelude::*;
 mod game_node;
 mod puzzle;
 pub mod puzzle_manager;
+pub mod texture;
 use puzzle::puzzle::*;
 
 mod splash;
