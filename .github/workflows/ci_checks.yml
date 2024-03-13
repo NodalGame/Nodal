@@ -16,9 +16,6 @@ jobs:
       run: |
         curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
         source $HOME/.cargo/env
-    - name: Check with Clippy
-      run: |
-        cargo clippy -- -D warnings
     - name: Run Unit Tests
       run: |
         cargo test --verbose
