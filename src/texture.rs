@@ -1,6 +1,12 @@
 pub mod texture {
+
+    #[derive(Eq, PartialEq, Clone, Copy)]
     pub enum Texture {
         NodeEmpty,
+        LineHorizontal,
+        LineVertical,
+        LineDiagonalBottomLeftTopRight,
+        LineDiagonalTopLeftBottomRight,
         BgTileNode,
         BgTileSideLeft,
         BgTileSideRight,
@@ -13,6 +19,7 @@ pub mod texture {
         BgTileBetweenHorizontal,
         BgTileBetweenVertical,
         BgTileBetweenCross,
+        Missing,
     }
 
     impl Default for Texture {
@@ -25,6 +32,14 @@ pub mod texture {
         pub fn path(&self) -> &str {
             match self {
                 Texture::NodeEmpty => "textures/sprites/NODE_EMPTY.png",
+                Texture::LineHorizontal => "textures/sprites/LINE_HORIZONTAL.png",
+                Texture::LineVertical => "textures/sprites/LINE_VERTICAL.png",
+                Texture::LineDiagonalBottomLeftTopRight => {
+                    "textures/sprites/LINE_DIAGONAL_BL_TR.png"
+                }
+                Texture::LineDiagonalTopLeftBottomRight => {
+                    "textures/sprites/LINE_DIAGONAL_TL_BR.png"
+                }
                 Texture::BgTileNode => "textures/background/BG_TILE_NODE.png",
                 Texture::BgTileSideLeft => "textures/background/BG_TILE_SIDE_LEFT.png",
                 Texture::BgTileSideRight => "textures/background/BG_TILE_SIDE_RIGHT.png",
@@ -41,6 +56,7 @@ pub mod texture {
                     "textures/background/BG_TILE_BETWEEN_VERTICAL.png"
                 }
                 Texture::BgTileBetweenCross => "textures/background/BG_TILE_BETWEEN_CROSS.png",
+                Texture::Missing => "",
             }
         }
     }

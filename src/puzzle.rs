@@ -9,6 +9,7 @@ use bevy::{
 use crate::texture::texture::Texture;
 
 pub mod puzzle {
+    use std::f32::consts::PI;
     use std::process::exit;
 
     use crate::{game_node::game_node::GameNode, texture::texture::Texture, MainCamera};
@@ -28,7 +29,7 @@ pub mod puzzle {
             .add_systems(OnExit(AppState::Puzzle), despawn_screen::<OnPuzzleScreen>)
             .add_systems(Update, line_system.run_if(in_state(AppState::Puzzle)))
             .insert_resource(ActiveNodes::default())
-            .insert_resource(Lines::default())
+            .insert_resource(ActiveLines::default())
             .insert_resource(CurrentLine::default());
     }
 
@@ -54,26 +55,28 @@ pub mod puzzle {
 
     // Tracks all lines connecting nodes in puzzle
     #[derive(Default, Resource)]
-    struct Lines {
-        lines: Vec<NodeLine>,
+    struct ActiveLines {
+        lines: Vec<ActiveLine>,
     }
 
-    struct NodeLine {
+    struct ActiveLine {
         start_node: ActiveNode,
         end_node: ActiveNode,
-        line: shapes::Line,
+        sprite: SpriteBundle,
     }
 
     // Line currently being drawn by user on the screen
     #[derive(Default, Resource)]
     struct CurrentLine {
         start_node: Option<ActiveNode>,
-        line: Option<shapes::Line>,
     }
 
     // Tag component used to tag entities added on the puzzle screen
     #[derive(Component)]
     struct OnPuzzleScreen;
+
+    const SPRITE_SIZE: f32 = 100.0;
+    const SPRITE_SPACING: f32 = 100.0;
 
     fn puzzle_setup(
         mut commands: Commands,
@@ -82,7 +85,7 @@ pub mod puzzle {
         puzzle_manager: Res<PuzzleManager>,
         mut active_nodes: ResMut<ActiveNodes>,
         // Query to get camera transform
-        q_camera: Query<(&Camera, &GlobalTransform), With<MainCamera>>,
+        mut q_camera: Query<&mut Transform, With<MainCamera>>,
     ) {
         // Get the puzzle by loading it
         let puzzle = puzzle_manager
@@ -100,8 +103,6 @@ pub mod puzzle {
         let tex_node = asset_server.load(Texture::NodeEmpty.path());
 
         // Create a width x height grid of nodes as sprite bundles, accounting for background tiles
-        let spacing = 100.0;
-        let sprite_size = 100.0;
         for x in 0..puzzle.width * 2 + 1 {
             for y in 0..puzzle.height * 2 + 1 {
                 // If background tile, spawn it and continue
@@ -111,8 +112,6 @@ pub mod puzzle {
                         y,
                         puzzle.width,
                         puzzle.height,
-                        sprite_size,
-                        spacing,
                         asset_server.clone(),
                     ));
                     continue;
@@ -125,13 +124,13 @@ pub mod puzzle {
                         exit(1);
                     });
 
-                let x_pos = x as f32 * spacing;
-                let y_pos = y as f32 * spacing;
+                let x_pos = x as f32 * SPRITE_SPACING;
+                let y_pos = y as f32 * SPRITE_SPACING;
 
                 let sprite_bundle: SpriteBundle = SpriteBundle {
                     texture: tex_node.clone(),
                     sprite: Sprite {
-                        custom_size: Some(Vec2::new(sprite_size, sprite_size)),
+                        custom_size: Some(Vec2::new(SPRITE_SIZE, SPRITE_SIZE)),
                         ..Default::default()
                     },
                     transform: Transform::from_xyz(x_pos, y_pos, 0.0),
@@ -145,29 +144,41 @@ pub mod puzzle {
             }
         }
 
-        // Get camera info and transform, assuming exacly 1 camera entity
-        let (camera, camera_transform) = q_camera.single();
-
-        println!("Camera transform is {:?}", camera_transform);
-
-        // Move it to center of puzzle
-        camera_transform.translation().x = (puzzle.width as f32 * spacing) / 2.0;
-        camera_transform.translation().y = (puzzle.height as f32 * spacing) / 2.0;
-
-        println!("Camera transform is now {:?}", camera_transform);
+        // Get camera transform
+        for mut transform in q_camera.iter_mut() {
+            // Move it to center of puzzle
+            *transform = Transform {
+                translation: Vec3::new(
+                    puzzle.width as f32 * SPRITE_SPACING,
+                    puzzle.height as f32 * SPRITE_SPACING,
+                    0.0,
+                ),
+                ..default()
+            };
+        }
     }
 
+    /// A system for handling lines added to the puzzle.
+    ///
+    /// # Parameters
+    ///
+    /// - `commands`: Bevy's command system, used to spawn new entities.
+    /// - `active_nodes`: Resource containing all active nodes in the puzzle.
+    /// - `current_line`: Resource containing the current line being drawn by the user.
+    /// - `lines`: Resource containing all lines in the puzzle.
+    /// - `mouse_button_input`: Bevy's mouse button input system, used to check if the left mouse button is pressed.
+    /// - `q_window`: Bevy's query system, used to get the window, so we can read current cursor position.
+    /// - `q_camera`: Bevy's query system, used to get the camera transform to also read current cursor position.
+    /// - `asset_server`: Bevy's asset server, used to load textures.
     fn line_system(
         mut commands: Commands,
         active_nodes: ResMut<ActiveNodes>,
         mut current_line: ResMut<CurrentLine>,
-        mut lines: ResMut<Lines>,
-        // Track mouse inputs
+        mut lines: ResMut<ActiveLines>,
         mouse_button_input: Res<ButtonInput<MouseButton>>,
-        // Query to get the window, so we can read current cursor position
         q_window: Query<&Window, With<PrimaryWindow>>,
-        // Query to get camera transform
         q_camera: Query<(&Camera, &GlobalTransform), With<MainCamera>>,
+        asset_server: Res<AssetServer>,
     ) {
         // Get camera info and transform, assuming exacly 1 camera entity
         let (camera, camera_transform) = q_camera.single();
@@ -192,14 +203,6 @@ pub mod puzzle {
                 if clicked_on_sprite(&active_node.sprite, world_position) {
                     println!("Left mouse button pressed on node {}", active_node.node.id);
                     current_line.start_node = Some(active_node.clone());
-                    current_line.line = Some(shapes::Line(
-                        active_node.sprite.transform.translation.truncate(),
-                        world_position,
-                    ));
-                    println!(
-                        "Current line start is {:?}",
-                        current_line.line.clone().unwrap().0
-                    );
                 }
             }
         // If left click release, end the line on the released node, if exists
@@ -210,33 +213,59 @@ pub mod puzzle {
                     && active_node.node.id != current_line.start_node.clone().unwrap().node.id
                 {
                     println!("Left mouse button released on node {}", active_node.node.id);
+                    let start_pos = current_line
+                        .start_node.clone()
+                        .unwrap()
+                        .sprite
+                        .transform
+                        .translation
+                        .truncate();
+                    let end_pos = active_node.sprite.transform.translation.truncate();
+
+                    // Get the appropriate line texture, if exists (otherwise invalid node pair)
+                    let line_texture = get_line_texture(
+                        current_line.start_node.clone().unwrap(),
+                        active_node.clone(),
+                    )
+                    .unwrap_or(Texture::Missing);
+
+                    if line_texture == Texture::Missing {
+                        break;
+                    }
+
+                    let line_sprite = SpriteBundle {
+                        texture: asset_server.load(line_texture.path()),
+                        sprite: Sprite {
+                            custom_size: Some(Vec2::new(SPRITE_SIZE, SPRITE_SIZE)),
+                            ..Default::default()
+                        },
+                        transform: Transform::from_xyz(
+                            (end_pos.x + start_pos.x) / 2.0,
+                            (end_pos.y + start_pos.y) / 2.0,
+                            0.0,
+                        ),
+                        ..default()
+                    };
+
                     // Update list of lines
                     println!(
                         "Current line end is {:?}",
                         active_node.sprite.transform.translation.truncate()
                     );
-                    let finished_line = shapes::Line(
-                        current_line.line.clone().unwrap().0,
-                        active_node.sprite.transform.translation.truncate(),
-                    );
-                    println!("Finished line is {:?}", finished_line);
-                    lines.lines.push(NodeLine {
+
+                    lines.lines.push(ActiveLine {
                         start_node: current_line.start_node.clone().unwrap(),
                         end_node: active_node.clone(),
-                        line: finished_line,
+                        sprite: line_sprite.clone(),
                     });
                     // Add line to the screen
-                    commands
-                        .spawn(ShapeBundle {
-                            path: GeometryBuilder::build_as(&finished_line),
-                            spatial: SpatialBundle::default(),
-                            ..default()
-                        })
-                        .insert(OnPuzzleScreen);
+                    commands.spawn(line_sprite).insert(OnPuzzleScreen);
+
+                    // Break since only one node could've been released on
+                    break;
                 }
             }
             // Regardless if we ended on a node or not, clear the current line
-            current_line.line = None;
             current_line.start_node = None;
         }
     }
@@ -276,53 +305,42 @@ pub mod puzzle {
     /// # Returns
     ///
     /// A sprite bundle representing the background tile at the given position.
-    fn get_bg_tile(
-        x: u8,
-        y: u8,
-        width: u8,
-        height: u8,
-        sprite_size: f32,
-        spacing: f32,
-        asset_server: AssetServer,
-    ) -> SpriteBundle {
+    fn get_bg_tile(x: u8, y: u8, width: u8, height: u8, asset_server: AssetServer) -> SpriteBundle {
         // Load background textures
         let bg_side_left: Handle<Image> = asset_server.load(Texture::BgTileSideLeft.path());
         let bg_side_right: Handle<Image> = asset_server.load(Texture::BgTileSideRight.path());
         let bg_side_bottom: Handle<Image> = asset_server.load(Texture::BgTileSideBottom.path());
         let bg_side_top: Handle<Image> = asset_server.load(Texture::BgTileSideTop.path());
-        let bg_side_bottom_left: Handle<Image> = asset_server.load(Texture::BgTileSideLeft.path());
-        let bg_side_bottom_right: Handle<Image> =
-            asset_server.load(Texture::BgTileSideRight.path());
-        let bg_side_top_left: Handle<Image> = asset_server.load(Texture::BgTileTopLeft.path());
-        let bg_side_top_right: Handle<Image> = asset_server.load(Texture::BgTileTopRight.path());
+        let bg_bottom_left: Handle<Image> = asset_server.load(Texture::BgTileBottomLeft.path());
+        let bg_bottom_right: Handle<Image> = asset_server.load(Texture::BgTileBottomRight.path());
+        let bg_top_left: Handle<Image> = asset_server.load(Texture::BgTileTopLeft.path());
+        let bg_top_right: Handle<Image> = asset_server.load(Texture::BgTileTopRight.path());
         let bg_between_horizontal: Handle<Image> =
             asset_server.load(Texture::BgTileBetweenHorizontal.path());
         let bg_between_vertical: Handle<Image> =
             asset_server.load(Texture::BgTileBetweenVertical.path());
         let bg_between_cross: Handle<Image> = asset_server.load(Texture::BgTileBetweenCross.path());
 
-        let transform = Transform::from_xyz(x as f32 * spacing, y as f32 * spacing, 0.0);
+        let transform =
+            Transform::from_xyz(x as f32 * SPRITE_SPACING, y as f32 * SPRITE_SPACING, 0.0);
         let sprite = Sprite {
-            custom_size: Some(Vec2::new(sprite_size, sprite_size)),
+            custom_size: Some(Vec2::new(SPRITE_SIZE, SPRITE_SIZE)),
             ..Default::default()
         };
 
         // Bottom left corner
         if x == 0 && y == 0 {
             SpriteBundle {
-                texture: bg_side_bottom_left,
-                sprite: Sprite {
-                    custom_size: Some(Vec2::new(sprite_size, sprite_size)),
-                    ..Default::default()
-                },
-                transform: Transform::from_xyz(0.0, 0.0, 0.0),
+                texture: bg_bottom_left,
+                sprite,
+                transform,
                 ..default()
             }
         } else if x == 0 {
             // Top left corner
             if y == height * 2 {
                 SpriteBundle {
-                    texture: bg_side_top_left,
+                    texture: bg_top_left,
                     sprite,
                     transform,
                     ..default()
@@ -340,7 +358,7 @@ pub mod puzzle {
             // Bottom right corner
             if x == width * 2 {
                 SpriteBundle {
-                    texture: bg_side_bottom_right,
+                    texture: bg_bottom_right,
                     sprite,
                     transform,
                     ..default()
@@ -358,7 +376,7 @@ pub mod puzzle {
             // Top right corner
             if x == width * 2 && y == height * 2 {
                 SpriteBundle {
-                    texture: bg_side_top_right,
+                    texture: bg_top_right,
                     sprite,
                     transform,
                     ..default()
@@ -388,7 +406,7 @@ pub mod puzzle {
                         transform,
                         ..default()
                     }
-                } else if x & 2 == 0 {
+                } else if x % 2 == 0 {
                     // Between horizontal
                     SpriteBundle {
                         texture: bg_between_horizontal,
@@ -406,6 +424,31 @@ pub mod puzzle {
                     }
                 }
             }
+        }
+    }
+
+    fn get_line_texture(start_node: ActiveNode, end_node: ActiveNode) -> Option<Texture> {
+        let start_pos = start_node.sprite.transform.translation.truncate();
+        let end_pos = end_node.sprite.transform.translation.truncate();
+        let direction = end_pos - start_pos;
+        let distance = direction.length();
+        let angle = direction.y.atan2(direction.x);
+
+        // Determine if line is valid connection between adjacent nodes
+        if distance > SPRITE_SPACING + SPRITE_SIZE && (angle == 0.0 || angle == PI / 2.0) {
+            return None;
+        } else if distance > (2.0 * (SPRITE_SPACING + SPRITE_SIZE)).sqrt() {
+            return None;
+        }
+
+        if angle == 0.0 {
+            Some(Texture::LineHorizontal)
+        } else if angle == PI / 2.0 {
+            Some(Texture::LineVertical)
+        } else if PI / 2.0 - angle < PI / 4.0 {
+            Some(Texture::LineDiagonalBottomLeftTopRight)
+        } else {
+            Some(Texture::LineDiagonalTopLeftBottomRight)
         }
     }
 }
