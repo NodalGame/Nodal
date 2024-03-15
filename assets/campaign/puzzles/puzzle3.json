@@ -1,0 +1,55 @@
+{
+    "uuid": "018e4003-00be-7a4f-9558-74b98b43add1",
+    "width": 4,
+    "height": 3,
+    "nodes": [
+        {
+            "id": 0,
+            "class": "Default"
+        },
+        {
+			"id": 1,
+			"class": "Default"
+		},
+        {
+			"id": 2,
+			"class": "Default"
+		},
+        {
+			"id": 3,
+			"class": "Default"
+		},
+        {
+			"id": 4,
+			"class": "Default"
+		},
+        {
+			"id": 5,
+			"class": "Default"
+		},
+        {
+			"id": 6,
+			"class": "Default"
+		},
+        {
+			"id": 7,
+			"class": "Default"
+		},
+        {
+			"id": 8,
+			"class": "Default"
+		},
+        {
+			"id": 9,
+			"class": "Default"
+		},
+        {
+			"id": 10,
+			"class": "Default"
+		},
+        {
+			"id": 11,
+			"class": "Default"
+		}
+    ]
+}

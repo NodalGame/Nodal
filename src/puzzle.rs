@@ -227,9 +227,9 @@ pub mod puzzle {
                         current_line.start_node.clone().unwrap(),
                         active_node.clone(),
                     )
-                    .unwrap_or(Texture::Missing);
+                    .unwrap_or(&Texture::Missing);
 
-                    if line_texture == Texture::Missing {
+                    if *line_texture == Texture::Missing {
                         break;
                     }
 
@@ -427,7 +427,7 @@ pub mod puzzle {
         }
     }
 
-    fn get_line_texture(start_node: ActiveNode, end_node: ActiveNode) -> Option<Texture> {
+    fn get_line_texture(start_node: ActiveNode, end_node: ActiveNode) -> Option<&'static Texture> {
         let start_pos = start_node.sprite.transform.translation.truncate();
         let end_pos = end_node.sprite.transform.translation.truncate();
         let direction = end_pos - start_pos;
@@ -437,18 +437,20 @@ pub mod puzzle {
         // Determine if line is valid connection between adjacent nodes
         if distance > SPRITE_SPACING + SPRITE_SIZE && (angle == 0.0 || angle == PI / 2.0) {
             return None;
-        } else if distance > (2.0 * (SPRITE_SPACING + SPRITE_SIZE)).sqrt() {
+        } else if distance > (2.0 * (SPRITE_SPACING + SPRITE_SIZE).powi(2)).sqrt() {
             return None;
         }
 
-        if angle == 0.0 {
-            Some(Texture::LineHorizontal)
-        } else if angle == PI / 2.0 {
-            Some(Texture::LineVertical)
-        } else if PI / 2.0 - angle < PI / 4.0 {
-            Some(Texture::LineDiagonalBottomLeftTopRight)
+        println!("angle {}", angle);
+
+        if angle.abs() == 0.0 || angle.abs() == PI {
+            Some(&Texture::LineHorizontal)
+        } else if angle.abs() == PI / 2.0 {
+            Some(&Texture::LineVertical)
+        } else if angle == PI / 4.0 || angle == -3.0 * PI / 4.0 {
+            Some(&Texture::LineDiagonalBottomLeftTopRight)
         } else {
-            Some(Texture::LineDiagonalTopLeftBottomRight)
+            Some(&Texture::LineDiagonalTopLeftBottomRight)
         }
     }
 }
