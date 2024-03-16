@@ -12,10 +12,15 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
+
     - name: Install Rust
       run: |
         curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
         source $HOME/.cargo/env
+
+    - name: Install ALSA library
+      run: sudo apt-get update && sudo apt-get install -y libasound2-dev
+
     - name: Run Unit Tests
       run: |
         cargo test --verbose
