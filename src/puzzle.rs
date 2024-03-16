@@ -12,6 +12,7 @@ pub mod puzzle {
     use std::f32::consts::PI;
     use std::process::exit;
 
+    use crate::game_node::game_node::NodeClass;
     use crate::{game_node::game_node::GameNode, texture::texture::Texture, MainCamera};
     use bevy::window::PrimaryWindow;
     use bevy::{prelude::*, render::camera::Viewport};
@@ -99,8 +100,10 @@ pub mod puzzle {
         let mut ordered_nodes = puzzle.nodes.clone();
         ordered_nodes.sort_by(|a, b| a.id.cmp(&b.id));
 
-        // Load node texture
-        let tex_node = asset_server.load(Texture::NodeEmpty.path());
+        // Load node textures
+        let tex_node_red = asset_server.load(Texture::ClassRed.path());
+        let tex_node_blue = asset_server.load(Texture::ClassBlue.path());
+        let tex_node_yellow = asset_server.load(Texture::ClassYellow.path());
 
         // Create a width x height grid of nodes as sprite bundles, accounting for background tiles
         for x in 0..puzzle.width * 2 + 1 {
@@ -127,8 +130,18 @@ pub mod puzzle {
                 let x_pos = x as f32 * SPRITE_SPACING;
                 let y_pos = y as f32 * SPRITE_SPACING;
 
+                let texture = match node.class {
+                    NodeClass::Red => tex_node_red.clone(),
+                    NodeClass::Blue => tex_node_blue.clone(),
+                    NodeClass::Yellow => tex_node_yellow.clone(),
+                    _ => {
+                        println!("Error when adding nodes to screen, invalid class?");
+                        exit(1);
+                    }
+                };
+
                 let sprite_bundle: SpriteBundle = SpriteBundle {
-                    texture: tex_node.clone(),
+                    texture,
                     sprite: Sprite {
                         custom_size: Some(Vec2::new(SPRITE_SIZE, SPRITE_SIZE)),
                         ..Default::default()

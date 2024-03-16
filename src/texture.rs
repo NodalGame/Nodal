@@ -2,11 +2,18 @@ pub mod texture {
 
     #[derive(Eq, PartialEq, Clone, Copy)]
     pub enum Texture {
-        NodeEmpty,
+        ClassRed,
+        ClassBlue,
+        ClassYellow,
+
+        CdtnInverter,
+        CdtnBranchEqual,
+
         LineHorizontal,
         LineVertical,
         LineDiagonalBottomLeftTopRight,
         LineDiagonalTopLeftBottomRight,
+        
         BgTileNode,
         BgTileSideLeft,
         BgTileSideRight,
@@ -19,6 +26,7 @@ pub mod texture {
         BgTileBetweenHorizontal,
         BgTileBetweenVertical,
         BgTileBetweenCross,
+        
         Missing,
     }
 
@@ -31,7 +39,13 @@ pub mod texture {
     impl Texture {
         pub fn path(&self) -> &str {
             match self {
-                Texture::NodeEmpty => "textures/sprites/NODE_EMPTY.png",
+                Texture::ClassRed => "textures/sprites/NODE_RED.png",
+                Texture::ClassBlue => "textures/sprites/NODE_BLUE.png",
+                Texture::ClassYellow => "textures/sprites/NODE_YELLOW.png",
+
+                Texture::CdtnInverter => "textures/sprites/CDTN_INVERTER.png",
+                Texture::CdtnBranchEqual => "textures/sprites/CDTN_BRANCH_EQUAL.png",
+
                 Texture::LineHorizontal => "textures/sprites/LINE_HORIZONTAL.png",
                 Texture::LineVertical => "textures/sprites/LINE_VERTICAL.png",
                 Texture::LineDiagonalBottomLeftTopRight => {
@@ -40,6 +54,7 @@ pub mod texture {
                 Texture::LineDiagonalTopLeftBottomRight => {
                     "textures/sprites/LINE_DIAGONAL_TL_BR.png"
                 }
+
                 Texture::BgTileNode => "textures/background/BG_TILE_NODE.png",
                 Texture::BgTileSideLeft => "textures/background/BG_TILE_SIDE_LEFT.png",
                 Texture::BgTileSideRight => "textures/background/BG_TILE_SIDE_RIGHT.png",
@@ -56,6 +71,7 @@ pub mod texture {
                     "textures/background/BG_TILE_BETWEEN_VERTICAL.png"
                 }
                 Texture::BgTileBetweenCross => "textures/background/BG_TILE_BETWEEN_CROSS.png",
+
                 Texture::Missing => "",
             }
         }

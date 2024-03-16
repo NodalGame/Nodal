@@ -1,15 +1,22 @@
 {
 	"uuid": "e820699a-6e12-48db-b7b4-e8663cfba7b4",
-	"width": 2,
+	"width": 3,
 	"height": 1,
 	"nodes": [
 		{
 			"id": 0,
-			"class": "Default"
+			"class": "Blue",
+			"conditions": ["Inverter"]
 		},
 		{
 			"id": 1,
-			"class": "Default"
+			"class": "Red",
+			"conditions": ["Inverter", "BranchEqual"]
+		},
+		{
+			"id": 2,
+			"class": "Yellow",
+			"conditions": []
 		}
 	]
 }
