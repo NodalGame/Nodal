@@ -1,22 +1,12 @@
-use bevy::{
-    a11y::accesskit::Vec2,
-    asset::{AssetServer, Handle},
-    render::texture::Image,
-    sprite::{Sprite, SpriteBundle},
-    utils::default,
-};
-
-use crate::texture::texture::Texture;
-
 pub mod puzzle {
     use std::f32::consts::PI;
     use std::process::exit;
 
-    use crate::game_node::game_node::NodeClass;
-    use crate::{game_node::game_node::GameNode, texture::texture::Texture, MainCamera};
+    use crate::game_node::game_node::{GameNode, NodeClass, NodeCondition};
+    use crate::game_set::game_set::GameSet;
+    use crate::{texture::texture::Texture, MainCamera};
+    use bevy::prelude::*;
     use bevy::window::PrimaryWindow;
-    use bevy::{prelude::*, render::camera::Viewport};
-    use bevy_prototype_lyon::prelude::*;
     use serde::Deserialize;
     use uuid::Uuid;
 
@@ -40,6 +30,7 @@ pub mod puzzle {
         width: u8,
         height: u8,
         nodes: Vec<GameNode>,
+        sets: Vec<GameSet>,
     }
 
     // Tracks all nodes in the puzzle, including sprite and position
@@ -76,7 +67,11 @@ pub mod puzzle {
     #[derive(Component)]
     struct OnPuzzleScreen;
 
-    const SPRITE_SIZE: f32 = 100.0;
+    const TILE_NODE_SPRITE_SIZE: f32 = 100.0;
+    const CDTN_RULE_SPRITE_SIZE: f32 = 45.0;
+    const INTERNAL_SPACING_X: f32 = 25.0;
+    const INTERNAL_SPACING_Y: f32 = 25.0;
+    const STACK_CDTN_RULE_SPACING: f32 = 10.0;
     const SPRITE_SPACING: f32 = 100.0;
 
     fn puzzle_setup(
@@ -100,10 +95,17 @@ pub mod puzzle {
         let mut ordered_nodes = puzzle.nodes.clone();
         ordered_nodes.sort_by(|a, b| a.id.cmp(&b.id));
 
+        // TODO load only when needed, then cache in map to re-access in the screen spawning loop
         // Load node textures
         let tex_node_red = asset_server.load(Texture::ClassRed.path());
         let tex_node_blue = asset_server.load(Texture::ClassBlue.path());
         let tex_node_yellow = asset_server.load(Texture::ClassYellow.path());
+
+        // Load condition textures
+        let tex_cdtn_branch_equal = asset_server.load(Texture::CdtnBranchEqual.path());
+        let tex_cdtn_leaf = asset_server.load(Texture::CdtnLeaf.path());
+        let tex_cdtn_linked = asset_server.load(Texture::CdtnLinked.path());
+        let tex_cdtn_universal = asset_server.load(Texture::CdtnUniversal.path());
 
         // Create a width x height grid of nodes as sprite bundles, accounting for background tiles
         for x in 0..puzzle.width * 2 + 1 {
@@ -127,10 +129,11 @@ pub mod puzzle {
                         exit(1);
                     });
 
-                let x_pos = x as f32 * SPRITE_SPACING;
-                let y_pos = y as f32 * SPRITE_SPACING;
+                // Spawn the node on screen
+                let node_x = x as f32 * SPRITE_SPACING;
+                let node_y = y as f32 * SPRITE_SPACING;
 
-                let texture = match node.class {
+                let node_texture = match node.class {
                     NodeClass::Red => tex_node_red.clone(),
                     NodeClass::Blue => tex_node_blue.clone(),
                     NodeClass::Yellow => tex_node_yellow.clone(),
@@ -140,19 +143,57 @@ pub mod puzzle {
                     }
                 };
 
-                let sprite_bundle: SpriteBundle = SpriteBundle {
-                    texture,
+                let node_sprite = SpriteBundle {
+                    texture: node_texture,
                     sprite: Sprite {
-                        custom_size: Some(Vec2::new(SPRITE_SIZE, SPRITE_SIZE)),
+                        custom_size: Some(Vec2::new(TILE_NODE_SPRITE_SIZE, TILE_NODE_SPRITE_SIZE)),
                         ..Default::default()
                     },
-                    transform: Transform::from_xyz(x_pos, y_pos, 0.0),
+                    transform: Transform::from_xyz(node_x, node_y, 0.0),
                     ..default()
                 };
-                commands.spawn(sprite_bundle.clone()).insert(OnPuzzleScreen);
+                commands.spawn(node_sprite.clone()).insert(OnPuzzleScreen);
+
+                // Spawn its conditions on the screen
+                for (cdtn_idx, condition) in node.conditions.iter().enumerate() {
+                    let condition_texture = match condition {
+                        NodeCondition::BranchEqual => tex_cdtn_branch_equal.clone(),
+                        NodeCondition::Leaf => tex_cdtn_leaf.clone(),
+                        NodeCondition::Linked => tex_cdtn_linked.clone(),
+                        NodeCondition::Universal => tex_cdtn_universal.clone(),
+                        _ => {
+                            println!("Error when adding nodes to screen, invalid condition?");
+                            exit(1);
+                        }
+                    };
+
+                    let condition_sprite = SpriteBundle {
+                        texture: condition_texture,
+                        sprite: Sprite {
+                            custom_size: Some(Vec2::new(
+                                CDTN_RULE_SPRITE_SIZE,
+                                CDTN_RULE_SPRITE_SIZE,
+                            )),
+                            ..Default::default()
+                        },
+                        transform: Transform::from_xyz(
+                            node_x + TILE_NODE_SPRITE_SIZE - INTERNAL_SPACING_X,
+                            node_y + TILE_NODE_SPRITE_SIZE
+                                - INTERNAL_SPACING_Y
+                                - cdtn_idx as f32
+                                    * (CDTN_RULE_SPRITE_SIZE + STACK_CDTN_RULE_SPACING),
+                            0.0,
+                        ),
+                        ..default()
+                    };
+                    commands
+                        .spawn(condition_sprite.clone())
+                        .insert(OnPuzzleScreen);
+                }
+
                 active_nodes.active_nodes.push(ActiveNode {
                     node: node.clone(),
-                    sprite: sprite_bundle.clone(),
+                    sprite: node_sprite.clone(),
                 });
             }
         }
@@ -227,7 +268,8 @@ pub mod puzzle {
                 {
                     println!("Left mouse button released on node {}", active_node.node.id);
                     let start_pos = current_line
-                        .start_node.clone()
+                        .start_node
+                        .clone()
                         .unwrap()
                         .sprite
                         .transform
@@ -249,7 +291,10 @@ pub mod puzzle {
                     let line_sprite = SpriteBundle {
                         texture: asset_server.load(line_texture.path()),
                         sprite: Sprite {
-                            custom_size: Some(Vec2::new(SPRITE_SIZE, SPRITE_SIZE)),
+                            custom_size: Some(Vec2::new(
+                                TILE_NODE_SPRITE_SIZE,
+                                TILE_NODE_SPRITE_SIZE,
+                            )),
                             ..Default::default()
                         },
                         transform: Transform::from_xyz(
@@ -337,7 +382,7 @@ pub mod puzzle {
         let transform =
             Transform::from_xyz(x as f32 * SPRITE_SPACING, y as f32 * SPRITE_SPACING, 0.0);
         let sprite = Sprite {
-            custom_size: Some(Vec2::new(SPRITE_SIZE, SPRITE_SIZE)),
+            custom_size: Some(Vec2::new(TILE_NODE_SPRITE_SIZE, TILE_NODE_SPRITE_SIZE)),
             ..Default::default()
         };
 
@@ -448,9 +493,10 @@ pub mod puzzle {
         let angle = direction.y.atan2(direction.x);
 
         // Determine if line is valid connection between adjacent nodes
-        if distance > SPRITE_SPACING + SPRITE_SIZE && (angle == 0.0 || angle == PI / 2.0) {
+        if distance > SPRITE_SPACING + TILE_NODE_SPRITE_SIZE && (angle == 0.0 || angle == PI / 2.0)
+        {
             return None;
-        } else if distance > (2.0 * (SPRITE_SPACING + SPRITE_SIZE).powi(2)).sqrt() {
+        } else if distance > (2.0 * (SPRITE_SPACING + TILE_NODE_SPRITE_SIZE).powi(2)).sqrt() {
             return None;
         }
 

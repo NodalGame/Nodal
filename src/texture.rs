@@ -6,14 +6,16 @@ pub mod texture {
         ClassBlue,
         ClassYellow,
 
-        CdtnInverter,
+        CdtnUniversal,
         CdtnBranchEqual,
+        CdtnLeaf,
+        CdtnLinked,
 
         LineHorizontal,
         LineVertical,
         LineDiagonalBottomLeftTopRight,
         LineDiagonalTopLeftBottomRight,
-        
+
         BgTileNode,
         BgTileSideLeft,
         BgTileSideRight,
@@ -26,7 +28,7 @@ pub mod texture {
         BgTileBetweenHorizontal,
         BgTileBetweenVertical,
         BgTileBetweenCross,
-        
+
         Missing,
     }
 
@@ -43,8 +45,10 @@ pub mod texture {
                 Texture::ClassBlue => "textures/sprites/NODE_BLUE.png",
                 Texture::ClassYellow => "textures/sprites/NODE_YELLOW.png",
 
-                Texture::CdtnInverter => "textures/sprites/CDTN_INVERTER.png",
+                Texture::CdtnUniversal => "textures/sprites/CDTN_UNIVERSAL.png",
                 Texture::CdtnBranchEqual => "textures/sprites/CDTN_BRANCH_EQUAL.png",
+                Texture::CdtnLeaf => "textures/sprites/CDTN_LEAF.png",
+                Texture::CdtnLinked => "textures/sprites/CDTN_LINKED.png",
 
                 Texture::LineHorizontal => "textures/sprites/LINE_HORIZONTAL.png",
                 Texture::LineVertical => "textures/sprites/LINE_VERTICAL.png",

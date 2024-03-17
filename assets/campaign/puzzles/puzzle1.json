@@ -6,17 +6,18 @@
 		{
 			"id": 0,
 			"class": "Blue",
-			"conditions": ["Inverter"]
+			"conditions": ["Universal"]
 		},
 		{
 			"id": 1,
 			"class": "Red",
-			"conditions": ["Inverter", "BranchEqual"]
+			"conditions": ["Linked", "BranchEqual"]
 		},
 		{
 			"id": 2,
 			"class": "Yellow",
 			"conditions": []
 		}
-	]
+	],
+	"sets": []
 }
