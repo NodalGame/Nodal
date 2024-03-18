@@ -4,11 +4,13 @@
 
 use bevy::prelude::*;
 
+pub mod buttons;
 mod game_node;
 pub mod game_set;
 mod puzzle;
 pub mod puzzle_manager;
 pub mod texture;
+use buttons::buttons::button_system;
 use puzzle::puzzle::*;
 
 mod splash;
@@ -17,11 +19,6 @@ use splash::splash::*;
 mod menu;
 use menu::menu::*;
 use uuid::Uuid;
-
-const TEXT_COLOR: Color = Color::rgb(0.9, 0.9, 0.9);
-const NORMAL_BUTTON: Color = Color::rgb(0.15, 0.15, 0.15);
-const HOVERED_BUTTON: Color = Color::rgb(0.25, 0.25, 0.25);
-const PRESSED_BUTTON: Color = Color::rgb(0.35, 0.75, 0.35);
 
 // Enum that will be used as a global state for the game
 #[derive(Clone, Copy, Default, Eq, PartialEq, Debug, Hash, States)]
@@ -52,6 +49,7 @@ fn main() {
         // Declare the game state, whose starting value is determined by the `Default` trait
         .init_state::<AppState>()
         .add_systems(Startup, setup)
+        .add_systems(Update, button_system)
         // Adds the plugins for each state
         .add_plugins((splash_plugin, menu_plugin, puzzle_plugin))
         .run();

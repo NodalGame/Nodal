@@ -1,12 +1,16 @@
 pub mod menu {
-    use std::path::{Path, PathBuf};
+    use std::path::PathBuf;
 
     use bevy::{app::AppExit, prelude::*};
     use uuid::Uuid;
 
     use crate::{
-        despawn_screen, puzzle_manager::puzzle_manager::PuzzleManager, AppState, SelectedPuzzle,
-        HOVERED_BUTTON, NORMAL_BUTTON, PRESSED_BUTTON, TEXT_COLOR,
+        buttons::buttons::{
+            button_icon_style, button_text_style, text_button_style, NORMAL_BUTTON, TEXT_COLOR,
+        },
+        despawn_screen,
+        puzzle_manager::puzzle_manager::PuzzleManager,
+        AppState, SelectedPuzzle,
     };
 
     // This plugin manages the menu, with 5 different screens:
@@ -30,10 +34,7 @@ pub mod menu {
                 despawn_screen::<OnPuzzleSelectScreen>,
             )
             // Common systems to all menu screens that handles buttons behavior
-            .add_systems(
-                Update,
-                (menu_action, button_system).run_if(in_state(AppState::Menu)),
-            )
+            .add_systems(Update, menu_action.run_if(in_state(AppState::Menu)))
             .insert_resource(PuzzleManager::new());
     }
 
@@ -66,54 +67,6 @@ pub mod menu {
     #[derive(Default, Resource, Debug, Component, PartialEq, Eq, Clone, Copy)]
     struct ButtonPuzzleId {
         uuid: Uuid,
-    }
-
-    // This system handles changing all buttons color based on mouse interaction
-    // TODO move to common location for other screens
-    fn button_system(
-        mut interaction_query: Query<
-            (&Interaction, &mut BackgroundColor),
-            (Changed<Interaction>, With<Button>),
-        >,
-    ) {
-        for (interaction, mut color) in &mut interaction_query {
-            *color = match *interaction {
-                Interaction::Pressed => PRESSED_BUTTON.into(),
-                Interaction::Hovered => HOVERED_BUTTON.into(),
-                Interaction::None => NORMAL_BUTTON.into(),
-            };
-        }
-    }
-
-    // Common button settings, TODO commonize?
-    fn button_style() -> Style {
-        Style {
-            width: Val::Px(250.0),
-            height: Val::Px(65.0),
-            margin: UiRect::all(Val::Px(20.0)),
-            justify_content: JustifyContent::Center,
-            align_items: AlignItems::Center,
-            ..default()
-        }
-    }
-
-    fn button_icon_style() -> Style {
-        Style {
-            width: Val::Px(30.0),
-            // This takes the icons out of the flexbox flow, to be positioned exactly
-            position_type: PositionType::Absolute,
-            // The icon will be close to the left border of the button
-            left: Val::Px(10.0),
-            ..default()
-        }
-    }
-
-    fn button_text_style() -> TextStyle {
-        TextStyle {
-            font_size: 40.0,
-            color: TEXT_COLOR,
-            ..default()
-        }
     }
 
     fn menu_setup(mut menu_state: ResMut<NextState<MenuState>>) {
@@ -169,7 +122,7 @@ pub mod menu {
                         parent
                             .spawn((
                                 ButtonBundle {
-                                    style: button_style(),
+                                    style: text_button_style(),
                                     background_color: NORMAL_BUTTON.into(),
                                     ..default()
                                 },
@@ -190,7 +143,7 @@ pub mod menu {
                         parent
                             .spawn((
                                 ButtonBundle {
-                                    style: button_style(),
+                                    style: text_button_style(),
                                     background_color: NORMAL_BUTTON.into(),
                                     ..default()
                                 },
@@ -243,7 +196,7 @@ pub mod menu {
                             parent
                                 .spawn((
                                     ButtonBundle {
-                                        style: button_style(),
+                                        style: text_button_style(),
                                         background_color: NORMAL_BUTTON.into(),
                                         ..default()
                                     },

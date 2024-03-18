@@ -2,6 +2,7 @@ pub mod puzzle {
     use std::f32::consts::PI;
     use std::process::exit;
 
+    use crate::buttons::buttons::icon_button_style;
     use crate::game_node::game_node::{GameNode, NodeClass, NodeCondition};
     use crate::game_set::game_set::GameSet;
     use crate::{texture::texture::Texture, MainCamera};
@@ -17,7 +18,7 @@ pub mod puzzle {
     // This plugin will contain a playable puzzle.
     pub fn puzzle_plugin(app: &mut App) {
         app.add_systems(OnEnter(AppState::Puzzle), puzzle_setup)
-            .add_systems(OnExit(AppState::Puzzle), despawn_screen::<OnPuzzleScreen>)
+            .add_systems(OnExit(AppState::Puzzle), despawn_screen::<OnPuzzleScene>)
             .add_systems(Update, line_system.run_if(in_state(AppState::Puzzle)))
             .insert_resource(ActiveNodes::default())
             .insert_resource(ActiveLines::default())
@@ -63,9 +64,21 @@ pub mod puzzle {
         start_node: Option<ActiveNode>,
     }
 
-    // Tag component used to tag entities added on the puzzle screen
+    // Tag component used to tag entities added on the puzzle scene
     #[derive(Component)]
-    struct OnPuzzleScreen;
+    struct OnPuzzleScene;
+
+    // Tag component used to tag entities added on the UI of the puzzle screen
+    #[derive(Component)]
+    struct OnPuzzleUI;
+
+    // All actions that can be triggered from a button click
+    #[derive(Component)]
+    enum PuzzleButtonAction {
+        CheckAnswer,
+        Reset,
+        ReturnToMenu,
+    }
 
     const TILE_NODE_SPRITE_SIZE: f32 = 100.0;
     const CDTN_RULE_SPRITE_SIZE: f32 = 45.0;
@@ -152,7 +165,7 @@ pub mod puzzle {
                     transform: Transform::from_xyz(node_x, node_y, 0.0),
                     ..default()
                 };
-                commands.spawn(node_sprite.clone()).insert(OnPuzzleScreen);
+                commands.spawn(node_sprite.clone()).insert(OnPuzzleScene);
 
                 // Spawn its conditions on the screen
                 for (cdtn_idx, condition) in node.conditions.iter().enumerate() {
@@ -188,7 +201,7 @@ pub mod puzzle {
                     };
                     commands
                         .spawn(condition_sprite.clone())
-                        .insert(OnPuzzleScreen);
+                        .insert(OnPuzzleScene);
                 }
 
                 active_nodes.active_nodes.push(ActiveNode {
@@ -210,6 +223,39 @@ pub mod puzzle {
                 ..default()
             };
         }
+
+        // Add a back button, check answer button, and restart button
+        commands
+            .spawn((
+                NodeBundle {
+                    style: Style {
+                        width: Val::Percent(100.0),
+                        height: Val::Percent(100.0),
+                        align_items: AlignItems::End,
+                        justify_content: JustifyContent::End,
+                        ..default()
+                    },
+                    ..default()
+                },
+                OnPuzzleUI,
+            ))
+            .with_children(|parent| {
+                parent.spawn(ButtonBundle {
+                    style: icon_button_style(),
+                    image: UiImage::new(asset_server.load(Texture::BtnCheckAnswer.path())),
+                    ..Default::default()
+                });
+                parent.spawn(ButtonBundle {
+                    style: icon_button_style(),
+                    image: UiImage::new(asset_server.load(Texture::BtnClearLines.path())),
+                    ..Default::default()
+                });
+                parent.spawn(ButtonBundle {
+                    style: icon_button_style(),
+                    image: UiImage::new(asset_server.load(Texture::BtnGoBack.path())),
+                    ..Default::default()
+                });
+            });
     }
 
     /// A system for handling lines added to the puzzle.
@@ -317,7 +363,7 @@ pub mod puzzle {
                         sprite: line_sprite.clone(),
                     });
                     // Add line to the screen
-                    commands.spawn(line_sprite).insert(OnPuzzleScreen);
+                    commands.spawn(line_sprite).insert(OnPuzzleScene);
 
                     // Break since only one node could've been released on
                     break;

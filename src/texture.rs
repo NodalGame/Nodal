@@ -29,6 +29,10 @@ pub mod texture {
         BgTileBetweenVertical,
         BgTileBetweenCross,
 
+        BtnCheckAnswer,
+        BtnClearLines,
+        BtnGoBack,
+
         Missing,
     }
 
@@ -75,6 +79,10 @@ pub mod texture {
                     "textures/background/BG_TILE_BETWEEN_VERTICAL.png"
                 }
                 Texture::BgTileBetweenCross => "textures/background/BG_TILE_BETWEEN_CROSS.png",
+
+                Texture::BtnCheckAnswer => "textures/buttons/BTN_CHECK_ANSWER.png",
+                Texture::BtnClearLines => "textures/buttons/BTN_CLEAR_LINES.png",
+                Texture::BtnGoBack => "textures/buttons/BTN_GO_BACK.png",
 
                 Texture::Missing => "",
             }
