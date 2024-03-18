@@ -20,6 +20,7 @@ pub mod puzzle {
         app.add_systems(OnEnter(AppState::Puzzle), puzzle_setup)
             .add_systems(OnExit(AppState::Puzzle), despawn_screen::<OnPuzzleScene>)
             .add_systems(Update, line_system.run_if(in_state(AppState::Puzzle)))
+            .add_systems(Update, ui_action.run_if(in_state(AppState::Puzzle)))
             .insert_resource(ActiveNodes::default())
             .insert_resource(ActiveLines::default())
             .insert_resource(CurrentLine::default());
@@ -240,21 +241,30 @@ pub mod puzzle {
                 OnPuzzleUI,
             ))
             .with_children(|parent| {
-                parent.spawn(ButtonBundle {
-                    style: icon_button_style(),
-                    image: UiImage::new(asset_server.load(Texture::BtnCheckAnswer.path())),
-                    ..Default::default()
-                });
-                parent.spawn(ButtonBundle {
-                    style: icon_button_style(),
-                    image: UiImage::new(asset_server.load(Texture::BtnClearLines.path())),
-                    ..Default::default()
-                });
-                parent.spawn(ButtonBundle {
-                    style: icon_button_style(),
-                    image: UiImage::new(asset_server.load(Texture::BtnGoBack.path())),
-                    ..Default::default()
-                });
+                parent.spawn((
+                    ButtonBundle {
+                        style: icon_button_style(),
+                        image: UiImage::new(asset_server.load(Texture::BtnCheckAnswer.path())),
+                        ..Default::default()
+                    },
+                    PuzzleButtonAction::CheckAnswer
+                ));
+                parent.spawn((
+                    ButtonBundle {
+                        style: icon_button_style(),
+                        image: UiImage::new(asset_server.load(Texture::BtnClearLines.path())),
+                        ..Default::default()
+                    },
+                    PuzzleButtonAction::Reset
+                ));
+                parent.spawn((
+                    ButtonBundle {
+                        style: icon_button_style(),
+                        image: UiImage::new(asset_server.load(Texture::BtnGoBack.path())),
+                        ..Default::default()
+                    },
+                    PuzzleButtonAction::ReturnToMenu
+                ));
             });
     }
 
@@ -393,6 +403,29 @@ pub mod puzzle {
             return true;
         }
         false
+    }
+
+    fn ui_action(
+        interaction_query: Query<
+            (&Interaction, &PuzzleButtonAction),
+            (Changed<Interaction>, With<Button>),
+        >,
+    ) {
+        for (interaction, ui_button_action) in &interaction_query {
+            if *interaction == Interaction::Pressed {
+                match ui_button_action {
+                    PuzzleButtonAction::CheckAnswer => {
+                        println!("Check answer button pressed");
+                    }
+                    PuzzleButtonAction::Reset => {
+                        println!("Clear lines button pressed");
+                    }
+                    PuzzleButtonAction::ReturnToMenu => {
+                        println!("Go back button pressed");
+                    }
+                }
+            }
+        }
     }
 
     /// Returns a background tile as a sprite bundle.
