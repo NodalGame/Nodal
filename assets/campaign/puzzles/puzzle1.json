@@ -1,7 +1,7 @@
 {
 	"uuid": "e820699a-6e12-48db-b7b4-e8663cfba7b4",
-	"width": 3,
-	"height": 1,
+	"width": 2,
+	"height": 2,
 	"nodes": [
 		{
 			"id": 0,
@@ -16,6 +16,11 @@
 		{
 			"id": 2,
 			"class": "Yellow",
+			"conditions": []
+		},
+		{
+			"id": 3,
+			"class": "Red",
 			"conditions": []
 		}
 	],

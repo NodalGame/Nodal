@@ -53,7 +53,6 @@ pub mod puzzle_manager {
         }
 
         fn add_puzzle(&mut self, uuid: Uuid, path: String) {
-            println!("inserting puzzle into manager {} : {}", uuid, path);
             self.puzzles.insert(uuid, path);
         }
 

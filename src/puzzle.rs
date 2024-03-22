@@ -1,4 +1,5 @@
 pub mod puzzle {
+    use std::borrow::Borrow;
     use std::f32::consts::PI;
     use std::process::exit;
 
@@ -9,6 +10,8 @@ pub mod puzzle {
     use bevy::prelude::*;
     use bevy::window::PrimaryWindow;
     use serde::Deserialize;
+    use std::collections::{HashMap, HashSet, VecDeque};
+    use std::hash::{Hash, Hasher};
     use uuid::Uuid;
 
     use crate::{
@@ -44,7 +47,25 @@ pub mod puzzle {
     #[derive(Component, Clone)]
     struct ActiveNode {
         node: GameNode,
+        connections: Vec<ActiveNode>,
         sprite: SpriteBundle,
+    }
+
+    impl PartialEq for ActiveNode {
+        fn eq(&self, other: &Self) -> bool {
+            self.node == other.node && self.connections == other.connections
+            // Note: SpriteBundle is not compared
+        }
+    }
+
+    impl Eq for ActiveNode {}
+
+    impl Hash for ActiveNode {
+        fn hash<H: Hasher>(&self, state: &mut H) {
+            self.node.hash(state);
+            self.connections.hash(state);
+            // Note: SpriteBundle is not hashed
+        }
     }
 
     // Tracks all lines connecting nodes in puzzle
@@ -207,6 +228,7 @@ pub mod puzzle {
 
                 active_nodes.active_nodes.push(ActiveNode {
                     node: node.clone(),
+                    connections: Vec::new(),
                     sprite: node_sprite.clone(),
                 });
             }
@@ -247,7 +269,7 @@ pub mod puzzle {
                         image: UiImage::new(asset_server.load(Texture::BtnCheckAnswer.path())),
                         ..Default::default()
                     },
-                    PuzzleButtonAction::CheckAnswer
+                    PuzzleButtonAction::CheckAnswer,
                 ));
                 parent.spawn((
                     ButtonBundle {
@@ -255,7 +277,7 @@ pub mod puzzle {
                         image: UiImage::new(asset_server.load(Texture::BtnClearLines.path())),
                         ..Default::default()
                     },
-                    PuzzleButtonAction::Reset
+                    PuzzleButtonAction::Reset,
                 ));
                 parent.spawn((
                     ButtonBundle {
@@ -263,7 +285,7 @@ pub mod puzzle {
                         image: UiImage::new(asset_server.load(Texture::BtnGoBack.path())),
                         ..Default::default()
                     },
-                    PuzzleButtonAction::ReturnToMenu
+                    PuzzleButtonAction::ReturnToMenu,
                 ));
             });
     }
@@ -282,7 +304,7 @@ pub mod puzzle {
     /// - `asset_server`: Bevy's asset server, used to load textures.
     fn line_system(
         mut commands: Commands,
-        active_nodes: ResMut<ActiveNodes>,
+        mut active_nodes: ResMut<ActiveNodes>,
         mut current_line: ResMut<CurrentLine>,
         mut lines: ResMut<ActiveLines>,
         mouse_button_input: Res<ButtonInput<MouseButton>>,
@@ -311,18 +333,16 @@ pub mod puzzle {
         if mouse_button_input.just_pressed(MouseButton::Left) {
             for active_node in active_nodes.active_nodes.iter() {
                 if clicked_on_sprite(&active_node.sprite, world_position) {
-                    println!("Left mouse button pressed on node {}", active_node.node.id);
                     current_line.start_node = Some(active_node.clone());
                 }
             }
         // If left click release, end the line on the released node, if exists
         } else if mouse_button_input.just_released(MouseButton::Left) {
-            for active_node in active_nodes.active_nodes.iter() {
+            for active_node in active_nodes.active_nodes.iter_mut() {
                 if clicked_on_sprite(&active_node.sprite, world_position)
                     && current_line.start_node.is_some()
                     && active_node.node.id != current_line.start_node.clone().unwrap().node.id
                 {
-                    println!("Left mouse button released on node {}", active_node.node.id);
                     let start_pos = current_line
                         .start_node
                         .clone()
@@ -362,16 +382,24 @@ pub mod puzzle {
                     };
 
                     // Update list of lines
-                    println!(
-                        "Current line end is {:?}",
-                        active_node.sprite.transform.translation.truncate()
-                    );
-
                     lines.lines.push(ActiveLine {
                         start_node: current_line.start_node.clone().unwrap(),
                         end_node: active_node.clone(),
                         sprite: line_sprite.clone(),
                     });
+
+                    // Update connections of both start and end node
+                    // TODO major error: this does not update connections and makes connections unidirectional
+                    current_line
+                        .start_node
+                        .as_mut()
+                        .unwrap()
+                        .connections
+                        .push(active_node.clone());
+                    active_node
+                        .connections
+                        .push(current_line.start_node.clone().unwrap());
+
                     // Add line to the screen
                     commands.spawn(line_sprite).insert(OnPuzzleScene);
 
@@ -410,12 +438,14 @@ pub mod puzzle {
             (&Interaction, &PuzzleButtonAction),
             (Changed<Interaction>, With<Button>),
         >,
+        active_nodes: Res<ActiveNodes>,
     ) {
         for (interaction, ui_button_action) in &interaction_query {
             if *interaction == Interaction::Pressed {
                 match ui_button_action {
                     PuzzleButtonAction::CheckAnswer => {
-                        println!("Check answer button pressed");
+                        let solved = check_answer(&active_nodes);
+                        println!("Puzzle solved: {}", solved);
                     }
                     PuzzleButtonAction::Reset => {
                         println!("Clear lines button pressed");
@@ -579,8 +609,6 @@ pub mod puzzle {
             return None;
         }
 
-        println!("angle {}", angle);
-
         if angle.abs() == 0.0 || angle.abs() == PI {
             Some(&Texture::LineHorizontal)
         } else if angle.abs() == PI / 2.0 {
@@ -590,5 +618,70 @@ pub mod puzzle {
         } else {
             Some(&Texture::LineDiagonalTopLeftBottomRight)
         }
+    }
+
+    /// Checks if the puzzle is solved.
+    fn check_answer(nodes: &Res<ActiveNodes>) -> bool {
+        for node in nodes.active_nodes.iter() {
+            println!("node {:?}", node.node.id);
+            for connection in node.connections.iter() {
+                println!("connection {:?}", connection.node.id);
+            }
+        }
+
+        // First verify that every node of the same class is connected to each other
+        let mut nodes_by_class: HashMap<NodeClass, Vec<ActiveNode>> = HashMap::new();
+        for node in nodes.active_nodes.iter() {
+            nodes_by_class
+                .entry(node.node.class.clone())
+                .or_default()
+                .push(node.clone());
+        }
+
+        // Check connectivity of each node class
+        for (class, nodes) in nodes_by_class {
+            println!("checking class {:?}", class);
+
+            let mut visited: HashSet<&ActiveNode> = HashSet::new();
+            let mut queue: VecDeque<&ActiveNode> = VecDeque::new();
+
+            if nodes.is_empty() {
+                println!("No nodes in class");
+                continue;
+            }
+
+            queue.push_back(&nodes.get(0).unwrap());
+            visited.insert(&nodes.get(0).unwrap());
+
+            while queue.len() > 0 {
+                let node = queue.pop_front().unwrap_or_else(|| {
+                    println!("Failed to pop from queue");
+                    // TODO handle this better
+                    exit(1);
+                });
+                println!("checking connections of node {:?}", node.node.id);
+                for connection in node.connections.iter() {
+                    println!("connection {:?}", connection.node.id);
+                    if !visited.contains(&connection) {
+                        visited.insert(connection);
+                        println!("added {:?} to visited and pushed to queue", connection.node.id);
+                        queue.push_back(connection);
+                    }
+                }
+            }
+
+            for node in &nodes {
+                if !visited.contains(&node) {
+                    println!(
+                        "Node {} is not connected to all other nodes of class {:?}",
+                        node.node.id, class
+                    );
+                    return false;
+                }
+            }
+        }
+
+        // TODO more checks for conditions, set rules, etc
+        return true;
     }
 }
