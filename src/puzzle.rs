@@ -1,5 +1,5 @@
 pub mod puzzle {
-    use std::borrow::Borrow;
+    use std::borrow::{Borrow, BorrowMut};
     use std::f32::consts::PI;
     use std::process::exit;
 
@@ -47,7 +47,7 @@ pub mod puzzle {
     #[derive(Component, Clone)]
     struct ActiveNode {
         node: GameNode,
-        connections: Vec<ActiveNode>,
+        connections: Vec<u16>,
         sprite: SpriteBundle,
     }
 
@@ -75,15 +75,16 @@ pub mod puzzle {
     }
 
     struct ActiveLine {
+        // TODO remove start_node end_node since they are very likely not needed, only need ref to the sprites
         start_node: ActiveNode,
         end_node: ActiveNode,
         sprite: SpriteBundle,
     }
 
-    // Line currently being drawn by user on the screen
+    // Start node of the line currently being drawn by user on the screen
     #[derive(Default, Resource)]
     struct CurrentLine {
-        start_node: Option<ActiveNode>,
+        start_node_id: Option<u16>,
     }
 
     // Tag component used to tag entities added on the puzzle scene
@@ -333,82 +334,76 @@ pub mod puzzle {
         if mouse_button_input.just_pressed(MouseButton::Left) {
             for active_node in active_nodes.active_nodes.iter() {
                 if clicked_on_sprite(&active_node.sprite, world_position) {
-                    current_line.start_node = Some(active_node.clone());
+                    current_line.start_node_id = Some(active_node.clone().node.id);
                 }
             }
         // If left click release, end the line on the released node, if exists
         } else if mouse_button_input.just_released(MouseButton::Left) {
+            // If start node is not set, return
+            if !current_line.start_node_id.is_some() {
+                return;
+            }
+
+            // Grab the start node and end node objects from the active_nodes as an iter_mut
+            let mut opt_start_node: Option<&mut ActiveNode> = None;
+            let mut opt_end_node: Option<&mut ActiveNode> = None;
+
             for active_node in active_nodes.active_nodes.iter_mut() {
-                if clicked_on_sprite(&active_node.sprite, world_position)
-                    && current_line.start_node.is_some()
-                    && active_node.node.id != current_line.start_node.clone().unwrap().node.id
-                {
-                    let start_pos = current_line
-                        .start_node
-                        .clone()
-                        .unwrap()
-                        .sprite
-                        .transform
-                        .translation
-                        .truncate();
-                    let end_pos = active_node.sprite.transform.translation.truncate();
-
-                    // Get the appropriate line texture, if exists (otherwise invalid node pair)
-                    let line_texture = get_line_texture(
-                        current_line.start_node.clone().unwrap(),
-                        active_node.clone(),
-                    )
-                    .unwrap_or(&Texture::Missing);
-
-                    if *line_texture == Texture::Missing {
-                        break;
-                    }
-
-                    let line_sprite = SpriteBundle {
-                        texture: asset_server.load(line_texture.path()),
-                        sprite: Sprite {
-                            custom_size: Some(Vec2::new(
-                                TILE_NODE_SPRITE_SIZE,
-                                TILE_NODE_SPRITE_SIZE,
-                            )),
-                            ..Default::default()
-                        },
-                        transform: Transform::from_xyz(
-                            (end_pos.x + start_pos.x) / 2.0,
-                            (end_pos.y + start_pos.y) / 2.0,
-                            0.0,
-                        ),
-                        ..default()
-                    };
-
-                    // Update list of lines
-                    lines.lines.push(ActiveLine {
-                        start_node: current_line.start_node.clone().unwrap(),
-                        end_node: active_node.clone(),
-                        sprite: line_sprite.clone(),
-                    });
-
-                    // Update connections of both start and end node
-                    // TODO major error: this does not update connections and makes connections unidirectional
-                    current_line
-                        .start_node
-                        .as_mut()
-                        .unwrap()
-                        .connections
-                        .push(active_node.clone());
-                    active_node
-                        .connections
-                        .push(current_line.start_node.clone().unwrap());
-
-                    // Add line to the screen
-                    commands.spawn(line_sprite).insert(OnPuzzleScene);
-
-                    // Break since only one node could've been released on
-                    break;
+                if active_node.node.id == current_line.start_node_id.unwrap() {
+                    opt_start_node = Some(active_node);
+                } else if clicked_on_sprite(&active_node.sprite, world_position) {
+                    opt_end_node = Some(active_node);
                 }
             }
+
+            if opt_start_node.is_none() || opt_end_node.is_none() {
+                return;
+            }
+
+            let start_node = opt_start_node.unwrap();
+            let end_node = opt_end_node.unwrap();
+
+            let start_pos = start_node.clone().sprite.transform.translation.truncate();
+            let end_pos = end_node.sprite.transform.translation.truncate();
+
+            // Get the appropriate line texture, if exists (otherwise invalid node pair)
+            let line_texture =
+                get_line_texture(start_node.clone(), end_node.clone()).unwrap_or(&Texture::Missing);
+
+            if *line_texture == Texture::Missing {
+                return;
+            }
+
+            let line_sprite = SpriteBundle {
+                texture: asset_server.load(line_texture.path()),
+                sprite: Sprite {
+                    custom_size: Some(Vec2::new(TILE_NODE_SPRITE_SIZE, TILE_NODE_SPRITE_SIZE)),
+                    ..Default::default()
+                },
+                transform: Transform::from_xyz(
+                    (end_pos.x + start_pos.x) / 2.0,
+                    (end_pos.y + start_pos.y) / 2.0,
+                    0.0,
+                ),
+                ..default()
+            };
+
+            // Update list of lines
+            lines.lines.push(ActiveLine {
+                start_node: start_node.clone(),
+                end_node: end_node.clone(),
+                sprite: line_sprite.clone(),
+            });
+
+            // Update connections of both start and end node
+            start_node.connections.push(end_node.node.id);
+            end_node.connections.push(start_node.node.id);
+
+            // Add line to the screen
+            commands.spawn(line_sprite).insert(OnPuzzleScene);
+
             // Regardless if we ended on a node or not, clear the current line
-            current_line.start_node = None;
+            current_line.start_node_id = None;
         }
     }
 
@@ -621,17 +616,10 @@ pub mod puzzle {
     }
 
     /// Checks if the puzzle is solved.
-    fn check_answer(nodes: &Res<ActiveNodes>) -> bool {
-        for node in nodes.active_nodes.iter() {
-            println!("node {:?}", node.node.id);
-            for connection in node.connections.iter() {
-                println!("connection {:?}", connection.node.id);
-            }
-        }
-
+    fn check_answer(active_nodes: &Res<ActiveNodes>) -> bool {
         // First verify that every node of the same class is connected to each other
         let mut nodes_by_class: HashMap<NodeClass, Vec<ActiveNode>> = HashMap::new();
-        for node in nodes.active_nodes.iter() {
+        for node in active_nodes.active_nodes.iter() {
             nodes_by_class
                 .entry(node.node.class.clone())
                 .or_default()
@@ -639,43 +627,33 @@ pub mod puzzle {
         }
 
         // Check connectivity of each node class
-        for (class, nodes) in nodes_by_class {
-            println!("checking class {:?}", class);
+        for (class, nodes_in_class) in nodes_by_class {
+            let mut visited: HashSet<u16> = HashSet::new();
+            let mut queue: VecDeque<u16> = VecDeque::new();
 
-            let mut visited: HashSet<&ActiveNode> = HashSet::new();
-            let mut queue: VecDeque<&ActiveNode> = VecDeque::new();
-
-            if nodes.is_empty() {
-                println!("No nodes in class");
+            if nodes_in_class.is_empty() {
                 continue;
             }
 
-            queue.push_back(&nodes.get(0).unwrap());
-            visited.insert(&nodes.get(0).unwrap());
+            queue.push_back(nodes_in_class.get(0).unwrap().node.id);
+            visited.insert(nodes_in_class.get(0).unwrap().node.id);
 
             while queue.len() > 0 {
-                let node = queue.pop_front().unwrap_or_else(|| {
-                    println!("Failed to pop from queue");
+                let curr_node_id = queue.pop_front().unwrap_or_else(|| {
                     // TODO handle this better
                     exit(1);
                 });
-                println!("checking connections of node {:?}", node.node.id);
-                for connection in node.connections.iter() {
-                    println!("connection {:?}", connection.node.id);
-                    if !visited.contains(&connection) {
-                        visited.insert(connection);
-                        println!("added {:?} to visited and pushed to queue", connection.node.id);
-                        queue.push_back(connection);
+                let curr_node = active_nodes.active_nodes.iter().find(|node| node.node.id == curr_node_id).unwrap();
+                for connection in curr_node.connections.iter() {
+                    if !visited.contains(connection) {
+                        visited.insert(*connection);
+                        queue.push_back(*connection);
                     }
                 }
             }
 
-            for node in &nodes {
-                if !visited.contains(&node) {
-                    println!(
-                        "Node {} is not connected to all other nodes of class {:?}",
-                        node.node.id, class
-                    );
+            for node in &nodes_in_class {
+                if !visited.iter().any(|visited_node| *visited_node == node.node.id) {
                     return false;
                 }
             }
