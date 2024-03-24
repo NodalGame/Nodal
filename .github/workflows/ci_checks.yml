@@ -19,7 +19,7 @@ jobs:
         source $HOME/.cargo/env
 
     - name: Install ALSA library
-      run: sudo apt-get update && sudo apt-get install -y libasound2-dev
+      run: sudo apt-get update && sudo apt-get install -y libasound2-dev && sudo apt-get install -y libudev-dev
 
     - name: Run Unit Tests
       run: |
