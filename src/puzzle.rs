@@ -4,8 +4,9 @@ pub mod puzzle {
     use std::process::exit;
 
     use crate::buttons::buttons::icon_button_style;
-    use crate::game_node::game_node::{GameNode, NodeClass, NodeCondition};
+    use crate::game_node::game_node::{GameNode, NodeClass};
     use crate::game_set::game_set::GameSet;
+    use crate::node_condition::node_condition::NodeCondition;
     use crate::{texture::texture::Texture, MainCamera};
     use bevy::prelude::*;
     use bevy::window::PrimaryWindow;
@@ -44,11 +45,51 @@ pub mod puzzle {
         active_nodes: Vec<ActiveNode>,
     }
 
+    // TODO ActiveNode should get its own file/module
     #[derive(Component, Clone)]
-    struct ActiveNode {
-        node: GameNode,
-        connections: Vec<u16>,
+    pub struct ActiveNode {
+        pub node: GameNode,
+        pub connections: Vec<u16>,
         sprite: SpriteBundle,
+    }
+
+    impl ActiveNode {
+        pub fn class_connection_pass(&self, active_nodes: Vec<&ActiveNode>) -> bool {
+            if self.node.conditions.contains(&NodeCondition::Universal) {
+                println!("Node is universal, passes check.");
+                return true;
+            }
+
+            for connection in &self.connections {
+                let connected_node = active_nodes.iter().find(|node| node.node.id == *connection);
+                if connected_node.is_none() {
+                    println!("Could not find connected node with id {}", connection);
+                    return false;
+                }
+                if connected_node.unwrap().node.class != self.node.class
+                    && !connected_node
+                        .unwrap()
+                        .node
+                        .conditions
+                        .contains(&NodeCondition::Universal)
+                {
+                    println!("Connected node is not of same class and isn't universal, fails check.");
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        // TODO this will need to be updated to take set rules as well
+        pub fn get_failed_conditions(&self, active_nodes: Vec<&ActiveNode>) -> Vec<NodeCondition> {
+            self.node
+                .conditions
+                .iter()
+                .filter(|c| !c.is_satisfied(self, &active_nodes))
+                .cloned()
+                .collect()
+        }
     }
 
     impl PartialEq for ActiveNode {
@@ -192,6 +233,7 @@ pub mod puzzle {
 
                 // Spawn its conditions on the screen
                 for (cdtn_idx, condition) in node.conditions.iter().enumerate() {
+                    // TODO get textures via either node_condition.rs or texture.rs
                     let condition_texture = match condition {
                         NodeCondition::BranchEqual => tex_cdtn_branch_equal.clone(),
                         NodeCondition::Leaf => tex_cdtn_leaf.clone(),
@@ -643,7 +685,11 @@ pub mod puzzle {
                     // TODO handle this better
                     exit(1);
                 });
-                let curr_node = active_nodes.active_nodes.iter().find(|node| node.node.id == curr_node_id).unwrap();
+                let curr_node = active_nodes
+                    .active_nodes
+                    .iter()
+                    .find(|node| node.node.id == curr_node_id)
+                    .unwrap();
                 for connection in curr_node.connections.iter() {
                     if !visited.contains(connection) {
                         visited.insert(*connection);
@@ -652,14 +698,32 @@ pub mod puzzle {
                 }
             }
 
+            // Check that all nodes in the class are connected to each other
             for node in &nodes_in_class {
-                if !visited.iter().any(|visited_node| *visited_node == node.node.id) {
+                if !visited
+                    .iter()
+                    .any(|visited_node| *visited_node == node.node.id)
+                {
                     return false;
                 }
             }
         }
 
-        // TODO more checks for conditions, set rules, etc
+        let active_node_refs: Vec<&ActiveNode> = active_nodes.active_nodes.iter().collect();
+        for node in &active_node_refs {
+            // Check that the node is immediately connected to only nodes of same class (unless it is universal)
+            if !node.class_connection_pass(active_node_refs.clone()) {
+                println!("Node connected to nodes which aren't of same class");
+                return false;
+            }
+
+            // Check failed node conditions
+            let failed_conditions = node.get_failed_conditions(active_node_refs.clone());
+            if !failed_conditions.is_empty() {
+                println!("Node failed conditions: {:?}", failed_conditions);
+                return false;
+            }
+        }
         return true;
     }
 }

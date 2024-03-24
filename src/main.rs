@@ -7,6 +7,7 @@ use bevy::prelude::*;
 pub mod buttons;
 mod game_node;
 pub mod game_set;
+mod node_condition;
 mod puzzle;
 pub mod puzzle_manager;
 pub mod texture;
