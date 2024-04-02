@@ -24,5 +24,10 @@
 			"conditions": []
 		}
 	],
-	"sets": []
+	"sets": [
+		{
+			"nodes": [0, 1, 2],
+			"rules": []
+		}
+	]
 }

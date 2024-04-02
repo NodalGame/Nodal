@@ -11,6 +11,8 @@ mod node_condition;
 mod puzzle;
 pub mod puzzle_manager;
 pub mod texture;
+pub mod util;
+pub mod constants;
 use buttons::buttons::button_system;
 use puzzle::puzzle::*;
 
