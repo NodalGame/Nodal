@@ -2,7 +2,7 @@ use std::f32::consts::PI;
 
 use bevy::{prelude::*, asset::Handle, render::texture::Image, sprite::SpriteBundle};
 
-use crate::{constants::{SPRITE_SPACING, TILE_NODE_SPRITE_SIZE}, texture::texture::Texture, ActiveNode};
+use crate::{constants::{SPRITE_SPACING, TILE_NODE_SPRITE_SIZE}, texture::texture::Texture, ActiveNode, Puzzle};
 
 /// Returns a background tile as a sprite bundle.
 ///
@@ -164,4 +164,122 @@ pub fn get_line_texture(start_node: ActiveNode, end_node: ActiveNode) -> Option<
     } else {
         Some(&Texture::LineDiagonalTopLeftBottomRight)
     }
+}
+
+pub fn is_left_edge(node: &u16, puzzle: &Puzzle) -> bool {
+    *node >= puzzle.height as u16
+}
+
+pub fn is_top_edge(node: &u16, puzzle: &Puzzle) -> bool {
+    *node + 1 % puzzle.height as u16 == 0
+}
+
+pub fn is_right_edge(node: &u16, puzzle: &Puzzle) -> bool {
+    *node + puzzle.height as u16 >= puzzle.width as u16 * puzzle.height as u16
+}
+
+pub fn is_bottom_edge(node: &u16, puzzle: &Puzzle) -> bool {
+    *node % puzzle.height as u16 == 0
+}
+
+pub fn get_node_left(node: &u16, puzzle: &Puzzle) -> Option<u16> {
+    if !is_left_edge(node, puzzle) {
+        Some(*node - puzzle.height as u16)
+    } else {
+        None
+    }
+}
+
+pub fn get_node_up_left(node: &u16, puzzle: &Puzzle) -> Option<u16> {
+    if !is_left_edge(node, puzzle) && !is_top_edge(node, puzzle) {
+        Some(*node - puzzle.height as u16 + 1)
+    } else {
+        None
+    }
+}
+
+pub fn get_node_up(node: &u16, puzzle: &Puzzle) -> Option<u16> {
+    if !is_top_edge(node, puzzle) {
+        Some(*node + 1)
+    } else {
+        None
+    }
+}
+
+pub fn get_node_up_right(node: &u16, puzzle: &Puzzle) -> Option<u16> {
+    if !is_top_edge(node, puzzle) && !is_right_edge(node, puzzle) {
+        Some(*node + puzzle.height as u16 + 1)
+    } else {
+        None
+    }
+}
+
+pub fn get_node_right(node: &u16, puzzle: &Puzzle) -> Option<u16> {
+    if !is_right_edge(node, puzzle) {
+        Some(*node + puzzle.height as u16)
+    } else {
+        None
+    }
+}
+
+pub fn get_node_down_right(node: &u16, puzzle: &Puzzle) -> Option<u16> {
+    if !is_right_edge(node, puzzle) && !is_bottom_edge(node, puzzle) {
+        Some(*node + puzzle.height as u16 - 1)
+    } else {
+        None
+    }
+}
+
+pub fn get_node_down(node: &u16, puzzle: &Puzzle) -> Option<u16> {
+    if !is_bottom_edge(node, puzzle) {
+        Some(*node - 1)
+    } else {
+        None
+    }
+}
+
+pub fn get_node_down_left(node: &u16, puzzle: &Puzzle) -> Option<u16> {
+    if !is_bottom_edge(node, puzzle) && !is_left_edge(node, puzzle) {
+        Some(*node - puzzle.height as u16 - 1)
+    } else {
+        None
+    }
+}
+
+pub fn get_adjacent_nodes(node: &u16, puzzle: &Puzzle) -> Vec<u16> {
+    let mut adjacent = Vec::new();
+    let height = puzzle.height as u16;
+    let node = *node;
+    
+    let is_left_edge = node >= height;
+    let is_top_edge = node + 1 % height == 0;
+    let is_right_edge = node + height >= puzzle.width as u16 * height;
+    let is_bottom_edge = node % height == 0;
+
+    if !is_left_edge {
+        adjacent.push(node - height);
+    }
+    if !is_left_edge && !is_top_edge {
+        adjacent.push(node - height + 1);
+    }
+    if !is_top_edge {
+        adjacent.push(node + 1);
+    }
+    if !is_top_edge && !is_right_edge {
+        adjacent.push(node + height + 1);
+    }
+    if !is_right_edge {
+        adjacent.push(node + height);
+    }
+    if !is_right_edge && !is_bottom_edge {
+        adjacent.push(node + height - 1);
+    }
+    if !is_bottom_edge {
+        adjacent.push(node - 1);
+    }
+    if !is_bottom_edge && !is_left_edge {
+        adjacent.push(node - height - 1);
+    }
+
+    adjacent
 }

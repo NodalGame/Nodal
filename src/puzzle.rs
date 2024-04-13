@@ -6,7 +6,7 @@ pub mod puzzle {
     use crate::game_node::game_node::{GameNode, NodeClass};
     use crate::game_set::game_set::GameSet;
     use crate::node_condition::node_condition::NodeCondition;
-    use crate::util::{get_bg_tile, get_line_texture};
+    use crate::util::{get_adjacent_nodes, get_bg_tile, get_line_texture, get_node_left, is_left_edge};
     use crate::{texture::texture::Texture, MainCamera};
     use bevy::prelude::*;
     use bevy::window::PrimaryWindow;
@@ -33,10 +33,10 @@ pub mod puzzle {
     #[derive(Deserialize, Debug)]
     pub struct Puzzle {
         pub uuid: Uuid,
-        width: u8,
-        height: u8,
-        nodes: Vec<GameNode>,
-        sets: Vec<GameSet>,
+        pub width: u8,
+        pub height: u8,
+        pub nodes: Vec<GameNode>,
+        pub sets: Vec<GameSet>,
     }
 
     // Tracks all nodes in the puzzle, including sprite and position
@@ -177,20 +177,34 @@ pub mod puzzle {
         let tex_cdtn_linked = asset_server.load(Texture::CdtnLinked.path());
         let tex_cdtn_universal = asset_server.load(Texture::CdtnUniversal.path());
 
+        // Map tile spaces to sets to generate 
+        let mut tile_mappings: HashMap<(u8, u8), Vec<SpriteBundle>> = HashMap::new();
+        for set_idx in 0..puzzle.sets.len() {
+            let set = &puzzle.sets[set_idx];
+            for node in set.nodes.iter() {
+                // If on left edge or node left isn't in set, generate vertical tile
+                let node_left = get_node_left(node, &puzzle);
+                if node_left.is_some() && (is_left_edge(node, &puzzle) || set.nodes.contains(node_left)) {
+                    // TODO get (x,y) and build the SpriteBundle 
+                }
+            }
+        }
+
         // Create a width x height grid of nodes as sprite bundles, accounting for background tiles
         for x in 0..puzzle.width * 2 + 1 {
             for y in 0..puzzle.height * 2 + 1 {
                 // If background tile, spawn it and continue
-                if x % 2 == 0 || y % 2 == 0 {
-                    commands.spawn(get_bg_tile(
-                        x,
-                        y,
-                        puzzle.width,
-                        puzzle.height,
-                        asset_server.clone(),
-                    ));
-                    continue;
-                }
+                // TODO re-add bg tiles once they don't conflict with set tiles visually
+                // if x % 2 == 0 || y % 2 == 0 {
+                //     commands.spawn(get_bg_tile(
+                //         x,
+                //         y,
+                //         puzzle.width,
+                //         puzzle.height,
+                //         asset_server.clone(),
+                //     ));
+                //     continue;
+                // }
 
                 let node = ordered_nodes
                     .get((x / 2 * puzzle.height + y / 2) as usize)
