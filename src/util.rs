@@ -167,7 +167,7 @@ pub fn get_line_texture(start_node: ActiveNode, end_node: ActiveNode) -> Option<
 }
 
 pub fn is_left_edge(node: &u16, puzzle: &Puzzle) -> bool {
-    *node >= puzzle.height as u16
+    *node < puzzle.height as u16
 }
 
 pub fn is_top_edge(node: &u16, puzzle: &Puzzle) -> bool {
@@ -282,4 +282,11 @@ pub fn get_adjacent_nodes(node: &u16, puzzle: &Puzzle) -> Vec<u16> {
     }
 
     adjacent
+}
+
+pub fn node_to_position(node: &u16, puzzle: &Puzzle) -> (f32, f32) {
+    let x = (node / puzzle.height as u16) as f32 * SPRITE_SPACING * 2. + SPRITE_SPACING;
+    let y = (node % puzzle.height as u16) as f32 * SPRITE_SPACING * 2. + SPRITE_SPACING;
+
+    (x, y)
 }

@@ -16,6 +16,13 @@ pub mod texture {
         LineDiagonalBottomLeftTopRight,
         LineDiagonalTopLeftBottomRight,
 
+        SetTileVertical,
+        SetTileHorizontal,
+        SetTileBottomLeft,
+        SetTileBottomRight,
+        SetTileTopLeft,
+        SetTileTopRight,
+
         BgTileNode,
         BgTileSideLeft,
         BgTileSideRight,
@@ -62,6 +69,13 @@ pub mod texture {
                 Texture::LineDiagonalTopLeftBottomRight => {
                     "textures/sprites/LINE_DIAGONAL_TL_BR.png"
                 }
+
+                Texture::SetTileVertical => "textures/background/SET_TILE_VERTICAL.png",
+                Texture::SetTileHorizontal => "textures/background/SET_TILE_HORIZONTAL.png",
+                Texture::SetTileBottomLeft => "textures/background/SET_TILE_BOTTOM_LEFT.png",
+                Texture::SetTileBottomRight => "textures/background/SET_TILE_BOTTOM_RIGHT.png",
+                Texture::SetTileTopLeft => "textures/background/SET_TILE_TOP_LEFT.png",
+                Texture::SetTileTopRight => "textures/background/SET_TILE_TOP_RIGHT.png",
 
                 Texture::BgTileNode => "textures/background/BG_TILE_NODE.png",
                 Texture::BgTileSideLeft => "textures/background/BG_TILE_SIDE_LEFT.png",

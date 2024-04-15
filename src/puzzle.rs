@@ -6,7 +6,7 @@ pub mod puzzle {
     use crate::game_node::game_node::{GameNode, NodeClass};
     use crate::game_set::game_set::GameSet;
     use crate::node_condition::node_condition::NodeCondition;
-    use crate::util::{get_adjacent_nodes, get_bg_tile, get_line_texture, get_node_left, is_left_edge};
+    use crate::util::{get_adjacent_nodes, get_bg_tile, get_line_texture, get_node_left, is_left_edge, node_to_position};
     use crate::{texture::texture::Texture, MainCamera};
     use bevy::prelude::*;
     use bevy::window::PrimaryWindow;
@@ -161,7 +161,7 @@ pub mod puzzle {
                 exit(1); // TODO cause game to not crash, and do this check in menu BEFORE switching scenes
             });
 
-        // Sort nodes by id (top to bottom, left to right)
+        // Sort nodes by id (bottom to top, left to right)
         let mut ordered_nodes = puzzle.nodes.clone();
         ordered_nodes.sort_by(|a, b| a.id.cmp(&b.id));
 
@@ -177,16 +177,34 @@ pub mod puzzle {
         let tex_cdtn_linked = asset_server.load(Texture::CdtnLinked.path());
         let tex_cdtn_universal = asset_server.load(Texture::CdtnUniversal.path());
 
+        // Load set textures
+        let tex_set_tile_vertical = asset_server.load(Texture::SetTileVertical.path());
+
+
         // Map tile spaces to sets to generate 
-        let mut tile_mappings: HashMap<(u8, u8), Vec<SpriteBundle>> = HashMap::new();
+        let mut set_tiles: Vec<SpriteBundle> = Vec::new();
         for set_idx in 0..puzzle.sets.len() {
             let set = &puzzle.sets[set_idx];
-            for node in set.nodes.iter() {
+            for set_node in set.nodes.iter() {
+                let (node_x, node_y) = node_to_position(set_node, &puzzle);
+                println!("got node x and y {} and {}", node_x, node_y);
                 // If on left edge or node left isn't in set, generate vertical tile
-                let node_left = get_node_left(node, &puzzle);
-                if node_left.is_some() && (is_left_edge(node, &puzzle) || set.nodes.contains(node_left)) {
-                    // TODO get (x,y) and build the SpriteBundle 
+                let node_left = get_node_left(set_node, &puzzle);
+                if node_left.is_none() || is_left_edge(set_node, &puzzle) || !set.nodes.contains(&node_left.unwrap()) {
+                    set_tiles.push(
+                        SpriteBundle {
+                            texture: tex_set_tile_vertical.clone(),
+                            sprite: Sprite {
+                                custom_size: Some(Vec2::new(TILE_NODE_SPRITE_SIZE, TILE_NODE_SPRITE_SIZE)),
+                                color: Color::GREEN,
+                                ..Default::default()
+                            },
+                            transform: Transform::from_xyz(node_x - SPRITE_SPACING, node_y, 0.0),
+                            ..default()
+                        }
+                    );
                 }
+                // TODO more checks
             }
         }
 
@@ -194,17 +212,21 @@ pub mod puzzle {
         for x in 0..puzzle.width * 2 + 1 {
             for y in 0..puzzle.height * 2 + 1 {
                 // If background tile, spawn it and continue
-                // TODO re-add bg tiles once they don't conflict with set tiles visually
-                // if x % 2 == 0 || y % 2 == 0 {
-                //     commands.spawn(get_bg_tile(
-                //         x,
-                //         y,
-                //         puzzle.width,
-                //         puzzle.height,
-                //         asset_server.clone(),
-                //     ));
-                //     continue;
-                // }
+                if x % 2 == 0 || y % 2 == 0 {
+                    commands.spawn(get_bg_tile(
+                        x,
+                        y,
+                        puzzle.width,
+                        puzzle.height,
+                        asset_server.clone(),
+                    ));
+                    continue;
+                }
+
+                // Spawn set nodes
+                for set_tile in set_tiles.iter() {
+                    commands.spawn(set_tile.clone());
+                }
 
                 let node = ordered_nodes
                     .get((x / 2 * puzzle.height + y / 2) as usize)
