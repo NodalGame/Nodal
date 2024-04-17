@@ -24,7 +24,7 @@ pub mod node_condition {
         ///
         /// - `node`: The current node upon which the condition is placed.
         /// - `active_nodes`: The active nodes in the puzzle, including their connections.
-        /// TODO node condition satisified check needs to include set rules 
+        /// TODO node condition satisified check needs to include set rules
         ///
         /// # Returns
         ///

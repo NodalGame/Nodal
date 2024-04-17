@@ -5,6 +5,7 @@
 use bevy::prelude::*;
 
 pub mod buttons;
+pub mod constants;
 mod game_node;
 pub mod game_set;
 mod node_condition;
@@ -12,7 +13,6 @@ mod puzzle;
 pub mod puzzle_manager;
 pub mod texture;
 pub mod util;
-pub mod constants;
 use buttons::buttons::button_system;
 use puzzle::puzzle::*;
 

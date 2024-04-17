@@ -1,8 +1,10 @@
 use std::f32::consts::PI;
 
-use bevy::{prelude::*, asset::Handle, render::texture::Image, sprite::SpriteBundle};
+use bevy::{asset::Handle, prelude::*, render::texture::Image, sprite::{self, SpriteBundle}};
 
-use crate::{constants::{SPRITE_SPACING, TILE_NODE_SPRITE_SIZE}, texture::texture::Texture, ActiveNode, Puzzle};
+use crate::{
+    constants::{SPRITE_SPACING, TILE_NODE_SPRITE_SIZE}, game_set::game_set::GameSet, texture::texture::Texture, ActiveNode, Puzzle
+};
 
 /// Returns a background tile as a sprite bundle.
 ///
@@ -34,8 +36,7 @@ pub fn get_bg_tile(x: u8, y: u8, width: u8, height: u8, asset_server: AssetServe
         asset_server.load(Texture::BgTileBetweenVertical.path());
     let bg_between_cross: Handle<Image> = asset_server.load(Texture::BgTileBetweenCross.path());
 
-    let transform =
-        Transform::from_xyz(x as f32 * SPRITE_SPACING, y as f32 * SPRITE_SPACING, 0.0);
+    let transform = Transform::from_xyz(x as f32 * SPRITE_SPACING, y as f32 * SPRITE_SPACING, 0.0);
     let sprite = Sprite {
         custom_size: Some(Vec2::new(TILE_NODE_SPRITE_SIZE, TILE_NODE_SPRITE_SIZE)),
         ..Default::default()
@@ -148,8 +149,7 @@ pub fn get_line_texture(start_node: ActiveNode, end_node: ActiveNode) -> Option<
     let angle = direction.y.atan2(direction.x);
 
     // Determine if line is valid connection between adjacent nodes
-    if distance > SPRITE_SPACING + TILE_NODE_SPRITE_SIZE && (angle == 0.0 || angle == PI / 2.0)
-    {
+    if distance > SPRITE_SPACING + TILE_NODE_SPRITE_SIZE && (angle == 0.0 || angle == PI / 2.0) {
         return None;
     } else if distance > (2.0 * (SPRITE_SPACING + TILE_NODE_SPRITE_SIZE).powi(2)).sqrt() {
         return None;
@@ -250,7 +250,7 @@ pub fn get_adjacent_nodes(node: &u16, puzzle: &Puzzle) -> Vec<u16> {
     let mut adjacent = Vec::new();
     let height = puzzle.height as u16;
     let node = *node;
-    
+
     let is_left_edge = node >= height;
     let is_top_edge = node + 1 % height == 0;
     let is_right_edge = node + height >= puzzle.width as u16 * height;
@@ -289,4 +289,183 @@ pub fn node_to_position(node: &u16, puzzle: &Puzzle) -> (f32, f32) {
     let y = (node % puzzle.height as u16) as f32 * SPRITE_SPACING * 2. + SPRITE_SPACING;
 
     (x, y)
+}
+
+fn get_set_tiles_vertical(node: &u16, node_x: f32, node_y: f32, set: &GameSet, puzzle: &Puzzle, asset_server: AssetServer) -> Vec<SpriteBundle> {
+    let mut vertical_tiles = Vec::new();
+    let tex_set_tile_vertical = asset_server.load(Texture::SetTileVertical.path());
+
+    let node_left = get_node_left(node, puzzle).unwrap_or(u16::MAX);
+    if is_left_edge(node, puzzle) || !set.nodes.contains(&node_left) {
+        vertical_tiles.push(SpriteBundle {
+            texture: tex_set_tile_vertical.clone(),
+            sprite: Sprite {
+                custom_size: Some(Vec2::new(
+                    TILE_NODE_SPRITE_SIZE,
+                    TILE_NODE_SPRITE_SIZE,
+                )),
+                color: Color::GREEN,
+                ..Default::default()
+            },
+            transform: Transform::from_xyz(node_x - SPRITE_SPACING, node_y, 0.0),
+            ..default()
+        })
+    }
+
+    let node_right = get_node_right(node, puzzle).unwrap_or(u16::MAX);
+    if is_right_edge(node, puzzle) || !set.nodes.contains(&node_right) {
+        vertical_tiles.push(SpriteBundle {
+            texture: tex_set_tile_vertical.clone(),
+            sprite: Sprite {
+                custom_size: Some(Vec2::new(
+                    TILE_NODE_SPRITE_SIZE,
+                    TILE_NODE_SPRITE_SIZE,
+                )),
+                color: Color::GREEN,
+                ..Default::default()
+            },
+            transform: Transform::from_xyz(node_x + SPRITE_SPACING, node_y, 0.0),
+            ..default()
+        });
+    }
+
+    // TODO up left, up right -- don't do down left and down right UNLESS node_down isn't in the set (avoids double spawning of sprite)
+
+    vertical_tiles
+}
+
+fn get_set_tiles_horizontal(node: &u16, node_x: f32, node_y: f32, set: &GameSet, puzzle: &Puzzle, asset_server: AssetServer) -> Vec<SpriteBundle> {
+    let mut horizontal_tiles = Vec::new();
+    let tex_set_tile_horizontal = asset_server.load(Texture::SetTileHorizontal.path());
+
+    let node_up = get_node_up(node, puzzle).unwrap_or(u16::MAX);
+    if is_top_edge(node, &puzzle) || !set.nodes.contains(&node_up) {
+        horizontal_tiles.push(SpriteBundle {
+            texture: tex_set_tile_horizontal.clone(),
+            sprite: Sprite {
+                custom_size: Some(Vec2::new(
+                    TILE_NODE_SPRITE_SIZE,
+                    TILE_NODE_SPRITE_SIZE,
+                )),
+                color: Color::GREEN,
+                ..Default::default()
+            },
+            transform: Transform::from_xyz(node_x, node_y + SPRITE_SPACING, 0.0),
+            ..default()
+        });
+    }
+
+    let node_down = get_node_down(node, puzzle).unwrap_or(u16::MAX);
+    if is_bottom_edge(node, &puzzle) || !set.nodes.contains(&node_down) {
+        horizontal_tiles.push(SpriteBundle {
+            texture: tex_set_tile_horizontal.clone(),
+            sprite: Sprite {
+                custom_size: Some(Vec2::new(
+                    TILE_NODE_SPRITE_SIZE,
+                    TILE_NODE_SPRITE_SIZE,
+                )),
+                color: Color::GREEN,
+                ..Default::default()
+            },
+            transform: Transform::from_xyz(node_x, node_y - SPRITE_SPACING, 0.0),
+            ..default()
+        });
+    }
+
+    // TODO up left, down left -- don't do up right and down right UNLESS node_right isn't in the set (avoids double spawning of sprite)
+
+    horizontal_tiles
+}
+
+fn get_set_tiles_bottom_right(node: &u16, node_x: f32, node_y: f32, set: &GameSet, puzzle: &Puzzle, asset_server: AssetServer) -> Vec<SpriteBundle> {
+    let mut bottom_right_tiles = Vec::new();
+    let tex_set_tile_bottom_right = asset_server.load(Texture::SetTileBottomRight.path());
+
+    let node_down = get_node_down(node, puzzle).unwrap_or(u16::MAX);
+    let node_right = get_node_right(node, puzzle).unwrap_or(u16::MAX);
+    if !set.nodes.contains(&node_down) && !set.nodes.contains(&node_right) {
+        bottom_right_tiles.push(SpriteBundle {
+            texture: tex_set_tile_bottom_right.clone(),
+            sprite: Sprite {
+                custom_size: Some(Vec2::new(
+                    TILE_NODE_SPRITE_SIZE,
+                    TILE_NODE_SPRITE_SIZE,
+                )),
+                color: Color::GREEN,
+                ..Default::default()
+            },
+            transform: Transform::from_xyz(
+                node_x + SPRITE_SPACING,
+                node_y - SPRITE_SPACING,
+                0.0,
+            ),
+            ..default()
+        });
+    }
+
+    let node_up_left = get_node_up_left(node, &puzzle).unwrap_or(u16::MAX);
+    let node_up = get_node_up(node, puzzle).unwrap_or(u16::MAX);
+    let node_left = get_node_left(node, puzzle).unwrap_or(u16::MAX);
+    if set.nodes.contains(&node_up)
+        && set.nodes.contains(&node_left)
+        && !set.nodes.contains(&node_up_left)
+    {
+        bottom_right_tiles.push(SpriteBundle {
+            texture: tex_set_tile_bottom_right.clone(),
+            sprite: Sprite {
+                custom_size: Some(Vec2::new(
+                    TILE_NODE_SPRITE_SIZE,
+                    TILE_NODE_SPRITE_SIZE,
+                )),
+                color: Color::GREEN,
+                ..Default::default()
+            },
+            transform: Transform::from_xyz(
+                node_x - SPRITE_SPACING,
+                node_y + SPRITE_SPACING,
+                0.0,
+            ),
+            ..default()
+        });
+    }
+
+    bottom_right_tiles
+}
+
+fn get_set_tiles_bottom_left(node: &u16, node_x: f32, node_y: f32, set: &GameSet, puzzle: &Puzzle, asset_server: AssetServer) -> Vec<SpriteBundle> {
+    let mut bottom_left_tiles = Vec::new();
+    // let tex_set_tile_bottom_left = asset_server.load(Texture::SetTileBottomLeft.path());
+
+    bottom_left_tiles
+}
+
+
+fn get_set_tiles_top_right(node: &u16, node_x: f32, node_y: f32, set: &GameSet, puzzle: &Puzzle, asset_server: AssetServer) -> Vec<SpriteBundle> {
+    let mut top_right_tiles = Vec::new();
+    // let tex_set_tile_top_right = asset_server.load(Texture::SetTileTopRight.path());
+
+    top_right_tiles
+}
+
+fn get_set_tiles_top_left(node: &u16, node_x: f32, node_y: f32, set: &GameSet, puzzle: &Puzzle, asset_server: AssetServer) -> Vec<SpriteBundle> {
+    let mut top_left_tiles = Vec::new();
+    // let tex_set_tile_top_left = asset_server.load(Texture::SetTileTopLeft.path());
+
+    top_left_tiles
+}
+
+pub fn get_set_tiles(set: &GameSet, puzzle: &Puzzle, asset_server: AssetServer) -> Vec<SpriteBundle> {
+    let mut tiles = Vec::new();
+
+    for node in set.nodes.iter() {
+        let (node_x, node_y) = node_to_position(node, &puzzle);
+        tiles.append(&mut get_set_tiles_vertical(node, node_x, node_y, set, puzzle, asset_server.clone()));
+        tiles.append(&mut get_set_tiles_horizontal(node, node_x, node_y, set, puzzle, asset_server.clone()));
+        tiles.append(&mut get_set_tiles_bottom_right(node, node_x, node_y, set, puzzle, asset_server.clone()));
+        tiles.append(&mut get_set_tiles_bottom_left(node, node_x, node_y, set, puzzle, asset_server.clone()));
+        tiles.append(&mut get_set_tiles_top_right(node, node_x, node_y, set, puzzle, asset_server.clone()));
+        tiles.append(&mut get_set_tiles_top_left(node, node_x, node_y, set, puzzle, asset_server.clone()));
+    }
+
+    tiles
 }

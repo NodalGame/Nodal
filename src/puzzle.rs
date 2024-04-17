@@ -2,11 +2,16 @@ pub mod puzzle {
     use std::process::exit;
 
     use crate::buttons::buttons::icon_button_style;
-    use crate::constants::{CDTN_RULE_SPRITE_SIZE, INTERNAL_SPACING_X, INTERNAL_SPACING_Y, SPRITE_SPACING, STACK_CDTN_RULE_SPACING, TILE_NODE_SPRITE_SIZE};
+    use crate::constants::{
+        CDTN_RULE_SPRITE_SIZE, INTERNAL_SPACING_X, INTERNAL_SPACING_Y, SPRITE_SPACING,
+        STACK_CDTN_RULE_SPACING, TILE_NODE_SPRITE_SIZE,
+    };
     use crate::game_node::game_node::{GameNode, NodeClass};
     use crate::game_set::game_set::GameSet;
     use crate::node_condition::node_condition::NodeCondition;
-    use crate::util::{get_adjacent_nodes, get_bg_tile, get_line_texture, get_node_left, is_left_edge, node_to_position};
+    use crate::util::{
+        get_adjacent_nodes, get_bg_tile, get_line_texture, get_node_down, get_node_left, get_node_right, get_node_up, get_node_up_left, get_node_up_right, get_set_tiles, is_bottom_edge, is_left_edge, is_right_edge, is_top_edge, node_to_position
+    };
     use crate::{texture::texture::Texture, MainCamera};
     use bevy::prelude::*;
     use bevy::window::PrimaryWindow;
@@ -73,7 +78,9 @@ pub mod puzzle {
                         .conditions
                         .contains(&NodeCondition::Universal)
                 {
-                    println!("Connected node is not of same class and isn't universal, fails check.");
+                    println!(
+                        "Connected node is not of same class and isn't universal, fails check."
+                    );
                     return false;
                 }
             }
@@ -177,37 +184,6 @@ pub mod puzzle {
         let tex_cdtn_linked = asset_server.load(Texture::CdtnLinked.path());
         let tex_cdtn_universal = asset_server.load(Texture::CdtnUniversal.path());
 
-        // Load set textures
-        let tex_set_tile_vertical = asset_server.load(Texture::SetTileVertical.path());
-
-
-        // Map tile spaces to sets to generate 
-        let mut set_tiles: Vec<SpriteBundle> = Vec::new();
-        for set_idx in 0..puzzle.sets.len() {
-            let set = &puzzle.sets[set_idx];
-            for set_node in set.nodes.iter() {
-                let (node_x, node_y) = node_to_position(set_node, &puzzle);
-                println!("got node x and y {} and {}", node_x, node_y);
-                // If on left edge or node left isn't in set, generate vertical tile
-                let node_left = get_node_left(set_node, &puzzle);
-                if node_left.is_none() || is_left_edge(set_node, &puzzle) || !set.nodes.contains(&node_left.unwrap()) {
-                    set_tiles.push(
-                        SpriteBundle {
-                            texture: tex_set_tile_vertical.clone(),
-                            sprite: Sprite {
-                                custom_size: Some(Vec2::new(TILE_NODE_SPRITE_SIZE, TILE_NODE_SPRITE_SIZE)),
-                                color: Color::GREEN,
-                                ..Default::default()
-                            },
-                            transform: Transform::from_xyz(node_x - SPRITE_SPACING, node_y, 0.0),
-                            ..default()
-                        }
-                    );
-                }
-                // TODO more checks
-            }
-        }
-
         // Create a width x height grid of nodes as sprite bundles, accounting for background tiles
         for x in 0..puzzle.width * 2 + 1 {
             for y in 0..puzzle.height * 2 + 1 {
@@ -221,11 +197,6 @@ pub mod puzzle {
                         asset_server.clone(),
                     ));
                     continue;
-                }
-
-                // Spawn set nodes
-                for set_tile in set_tiles.iter() {
-                    commands.spawn(set_tile.clone());
                 }
 
                 let node = ordered_nodes
@@ -360,6 +331,14 @@ pub mod puzzle {
                     PuzzleButtonAction::ReturnToMenu,
                 ));
             });
+
+        // Map tile spaces to sets to generate
+        for set_idx in 0..puzzle.sets.len() {
+            let set = &puzzle.sets[set_idx];
+            for set_tile in get_set_tiles(set, &puzzle, asset_server.clone()) {
+                commands.spawn(set_tile);
+            }
+        }
     }
 
     /// A system for handling lines added to the puzzle.
