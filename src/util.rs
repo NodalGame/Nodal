@@ -171,7 +171,7 @@ pub fn is_left_edge(node: &u16, puzzle: &Puzzle) -> bool {
 }
 
 pub fn is_top_edge(node: &u16, puzzle: &Puzzle) -> bool {
-    *node + 1 % puzzle.height as u16 == 0
+    (*node + 1) % puzzle.height as u16 == 0
 }
 
 pub fn is_right_edge(node: &u16, puzzle: &Puzzle) -> bool {
@@ -329,7 +329,84 @@ fn get_set_tiles_vertical(node: &u16, node_x: f32, node_y: f32, set: &GameSet, p
         });
     }
 
-    // TODO up left, up right -- don't do down left and down right UNLESS node_down isn't in the set (avoids double spawning of sprite)
+    if !is_top_edge(node, puzzle) {
+        let node_up = get_node_up(node, puzzle).unwrap_or(u16::MAX);
+
+        // Above left
+        let node_up_left = get_node_up_left(node, puzzle).unwrap_or(u16::MAX);
+        if !set.nodes.contains(&node_up_left) && !set.nodes.contains(&node_left) && set.nodes.contains(&node_up) {
+            vertical_tiles.push(SpriteBundle {
+                texture: tex_set_tile_vertical.clone(),
+                sprite: Sprite {
+                    custom_size: Some(Vec2::new(
+                        TILE_NODE_SPRITE_SIZE,
+                        TILE_NODE_SPRITE_SIZE,
+                    )),
+                    color: Color::GREEN,
+                    ..Default::default()
+                },
+                transform: Transform::from_xyz(node_x - SPRITE_SPACING, node_y + SPRITE_SPACING, 0.0),
+                ..default()
+            });
+        }
+
+        // Above right
+        let node_up_right = get_node_up_right(node, puzzle).unwrap_or(u16::MAX);
+        if !set.nodes.contains(&node_up_right) && !set.nodes.contains(&node_right) && set.nodes.contains(&node_up) {
+            vertical_tiles.push(SpriteBundle {
+                texture: tex_set_tile_vertical.clone(),
+                sprite: Sprite {
+                    custom_size: Some(Vec2::new(
+                        TILE_NODE_SPRITE_SIZE,
+                        TILE_NODE_SPRITE_SIZE,
+                    )),
+                    color: Color::GREEN,
+                    ..Default::default()
+                },
+                transform: Transform::from_xyz(node_x + SPRITE_SPACING, node_y + SPRITE_SPACING, 0.0),
+                ..default()
+            });
+        }
+
+        // let node_down = get_node_down(node, puzzle).unwrap_or(u16::MAX);
+        // if !is_bottom_edge(node, puzzle) && !set.nodes.contains(&node_down) {
+        //     // Below left
+        //     let node_down_left = get_node_down_left(node, puzzle).unwrap_or(u16::MAX);
+        //     if !set.nodes.contains(&node_down_left) {
+        //         vertical_tiles.push(SpriteBundle {
+        //             texture: tex_set_tile_vertical.clone(),
+        //             sprite: Sprite {
+        //                 custom_size: Some(Vec2::new(
+        //                     TILE_NODE_SPRITE_SIZE,
+        //                     TILE_NODE_SPRITE_SIZE,
+        //                 )),
+        //                 color: Color::GREEN,
+        //                 ..Default::default()
+        //             },
+        //             transform: Transform::from_xyz(node_x - SPRITE_SPACING, node_y - SPRITE_SPACING, 0.0),
+        //             ..default()
+        //         });
+        //     }
+
+        //     // Below right
+        //     let node_down_right = get_node_down_right(node, puzzle).unwrap_or(u16::MAX);
+        //     if !set.nodes.contains(&node_down_right) {
+        //         vertical_tiles.push(SpriteBundle {
+        //             texture: tex_set_tile_vertical.clone(),
+        //             sprite: Sprite {
+        //                 custom_size: Some(Vec2::new(
+        //                     TILE_NODE_SPRITE_SIZE,
+        //                     TILE_NODE_SPRITE_SIZE,
+        //                 )),
+        //                 color: Color::GREEN,
+        //                 ..Default::default()
+        //             },
+        //             transform: Transform::from_xyz(node_x + SPRITE_SPACING, node_y - SPRITE_SPACING, 0.0),
+        //             ..default()
+        //         });
+        //     }
+        // }
+    }
 
     vertical_tiles
 }
@@ -338,6 +415,7 @@ fn get_set_tiles_horizontal(node: &u16, node_x: f32, node_y: f32, set: &GameSet,
     let mut horizontal_tiles = Vec::new();
     let tex_set_tile_horizontal = asset_server.load(Texture::SetTileHorizontal.path());
 
+    // Directly above
     let node_up = get_node_up(node, puzzle).unwrap_or(u16::MAX);
     if is_top_edge(node, &puzzle) || !set.nodes.contains(&node_up) {
         horizontal_tiles.push(SpriteBundle {
@@ -355,6 +433,7 @@ fn get_set_tiles_horizontal(node: &u16, node_x: f32, node_y: f32, set: &GameSet,
         });
     }
 
+    // Directly below
     let node_down = get_node_down(node, puzzle).unwrap_or(u16::MAX);
     if is_bottom_edge(node, &puzzle) || !set.nodes.contains(&node_down) {
         horizontal_tiles.push(SpriteBundle {
@@ -372,7 +451,84 @@ fn get_set_tiles_horizontal(node: &u16, node_x: f32, node_y: f32, set: &GameSet,
         });
     }
 
-    // TODO up left, down left -- don't do up right and down right UNLESS node_right isn't in the set (avoids double spawning of sprite)
+    if !is_right_edge(node, &puzzle) {
+        let node_right = get_node_right(node, puzzle).unwrap_or(u16::MAX);
+
+        // Above right
+        let node_up_right = get_node_up_right(node, puzzle).unwrap_or(u16::MAX);
+        if !set.nodes.contains(&node_up_right) && !set.nodes.contains(&node_up) && set.nodes.contains(&node_right) {
+            horizontal_tiles.push(SpriteBundle {
+                texture: tex_set_tile_horizontal.clone(),
+                sprite: Sprite {
+                    custom_size: Some(Vec2::new(
+                        TILE_NODE_SPRITE_SIZE,
+                        TILE_NODE_SPRITE_SIZE,
+                    )),
+                    color: Color::GREEN,
+                    ..Default::default()
+                },
+                transform: Transform::from_xyz(node_x + SPRITE_SPACING, node_y + SPRITE_SPACING, 0.0),
+                ..default()
+            });
+        }
+    
+        // Below right
+        let node_down_right = get_node_down_right(node, puzzle).unwrap_or(u16::MAX);
+        if !set.nodes.contains(&node_down_right) && !set.nodes.contains(&node_down) && set.nodes.contains(&node_right) {
+            horizontal_tiles.push(SpriteBundle {
+                texture: tex_set_tile_horizontal.clone(),
+                sprite: Sprite {
+                    custom_size: Some(Vec2::new(
+                        TILE_NODE_SPRITE_SIZE,
+                        TILE_NODE_SPRITE_SIZE,
+                    )),
+                    color: Color::GREEN,
+                    ..Default::default()
+                },
+                transform: Transform::from_xyz(node_x + SPRITE_SPACING, node_y - SPRITE_SPACING, 0.0),
+                ..default()
+            });
+        }
+    }
+
+    // let node_left = get_node_left(node, puzzle).unwrap_or(u16::MAX);
+    // if !is_left_edge(node, &puzzle) && !set.nodes.contains(&node_left) {
+    //     // Above left
+    //     let node_up_left = get_node_up_left(node, puzzle).unwrap_or(u16::MAX);
+    //     if !set.nodes.contains(&node_up_left) {
+    //         horizontal_tiles.push(SpriteBundle {
+    //             texture: tex_set_tile_horizontal.clone(),
+    //             sprite: Sprite {
+    //                 custom_size: Some(Vec2::new(
+    //                     TILE_NODE_SPRITE_SIZE,
+    //                     TILE_NODE_SPRITE_SIZE,
+    //                 )),
+    //                 color: Color::GREEN,
+    //                 ..Default::default()
+    //             },
+    //             transform: Transform::from_xyz(node_x - SPRITE_SPACING, node_y + SPRITE_SPACING, 0.0),
+    //             ..default()
+    //         });
+    //     }
+    
+    //     // Below left
+    //     let node_down_left = get_node_down_left(node, puzzle).unwrap_or(u16::MAX);
+    //     if !set.nodes.contains(&node_down_left) {
+    //         horizontal_tiles.push(SpriteBundle {
+    //             texture: tex_set_tile_horizontal.clone(),
+    //             sprite: Sprite {
+    //                 custom_size: Some(Vec2::new(
+    //                     TILE_NODE_SPRITE_SIZE,
+    //                     TILE_NODE_SPRITE_SIZE,
+    //                 )),
+    //                 color: Color::GREEN,
+    //                 ..Default::default()
+    //             },
+    //             transform: Transform::from_xyz(node_x - SPRITE_SPACING, node_y - SPRITE_SPACING, 0.0),
+    //             ..default()
+    //         });
+    //     }
+    // }
 
     horizontal_tiles
 }
@@ -434,7 +590,55 @@ fn get_set_tiles_bottom_right(node: &u16, node_x: f32, node_y: f32, set: &GameSe
 
 fn get_set_tiles_bottom_left(node: &u16, node_x: f32, node_y: f32, set: &GameSet, puzzle: &Puzzle, asset_server: AssetServer) -> Vec<SpriteBundle> {
     let mut bottom_left_tiles = Vec::new();
-    // let tex_set_tile_bottom_left = asset_server.load(Texture::SetTileBottomLeft.path());
+    let tex_set_tile_bottom_left = asset_server.load(Texture::SetTileBottomLeft.path());
+
+    let node_down = get_node_down(node, puzzle).unwrap_or(u16::MAX);
+    let node_left = get_node_left(node, puzzle).unwrap_or(u16::MAX);
+    if !set.nodes.contains(&node_down) && !set.nodes.contains(&node_left) {
+        bottom_left_tiles.push(SpriteBundle {
+            texture: tex_set_tile_bottom_left.clone(),
+            sprite: Sprite {
+                custom_size: Some(Vec2::new(
+                    TILE_NODE_SPRITE_SIZE,
+                    TILE_NODE_SPRITE_SIZE,
+                )),
+                color: Color::GREEN,
+                ..Default::default()
+            },
+            transform: Transform::from_xyz(
+                node_x - SPRITE_SPACING,
+                node_y - SPRITE_SPACING,
+                0.0,
+            ),
+            ..default()
+        });
+    }
+
+    let node_up_right = get_node_up_right(node, &puzzle).unwrap_or(u16::MAX);
+    let node_up = get_node_up(node, puzzle).unwrap_or(u16::MAX);
+    let node_right = get_node_right(node, puzzle).unwrap_or(u16::MAX);
+    if set.nodes.contains(&node_up)
+        && set.nodes.contains(&node_right)
+        && !set.nodes.contains(&node_up_right)
+    {
+        bottom_left_tiles.push(SpriteBundle {
+            texture: tex_set_tile_bottom_left.clone(),
+            sprite: Sprite {
+                custom_size: Some(Vec2::new(
+                    TILE_NODE_SPRITE_SIZE,
+                    TILE_NODE_SPRITE_SIZE,
+                )),
+                color: Color::GREEN,
+                ..Default::default()
+            },
+            transform: Transform::from_xyz(
+                node_x + SPRITE_SPACING,
+                node_y + SPRITE_SPACING,
+                0.0,
+            ),
+            ..default()
+        });
+    }
 
     bottom_left_tiles
 }
@@ -442,14 +646,110 @@ fn get_set_tiles_bottom_left(node: &u16, node_x: f32, node_y: f32, set: &GameSet
 
 fn get_set_tiles_top_right(node: &u16, node_x: f32, node_y: f32, set: &GameSet, puzzle: &Puzzle, asset_server: AssetServer) -> Vec<SpriteBundle> {
     let mut top_right_tiles = Vec::new();
-    // let tex_set_tile_top_right = asset_server.load(Texture::SetTileTopRight.path());
+    let tex_set_tile_top_right = asset_server.load(Texture::SetTileTopRight.path());
+
+    let node_up = get_node_up(node, puzzle).unwrap_or(u16::MAX);
+    let node_right = get_node_right(node, puzzle).unwrap_or(u16::MAX);
+    if !set.nodes.contains(&node_up) && !set.nodes.contains(&node_right) {
+        top_right_tiles.push(SpriteBundle {
+            texture: tex_set_tile_top_right.clone(),
+            sprite: Sprite {
+                custom_size: Some(Vec2::new(
+                    TILE_NODE_SPRITE_SIZE,
+                    TILE_NODE_SPRITE_SIZE,
+                )),
+                color: Color::GREEN,
+                ..Default::default()
+            },
+            transform: Transform::from_xyz(
+                node_x + SPRITE_SPACING,
+                node_y + SPRITE_SPACING,
+                0.0,
+            ),
+            ..default()
+        });
+    }
+
+    let node_down_left = get_node_down_left(node, &puzzle).unwrap_or(u16::MAX);
+    let node_down = get_node_down(node, puzzle).unwrap_or(u16::MAX);
+    let node_left = get_node_left(node, puzzle).unwrap_or(u16::MAX);
+    if set.nodes.contains(&node_down)
+        && set.nodes.contains(&node_left)
+        && !set.nodes.contains(&node_down_left)
+    {
+        top_right_tiles.push(SpriteBundle {
+            texture: tex_set_tile_top_right.clone(),
+            sprite: Sprite {
+                custom_size: Some(Vec2::new(
+                    TILE_NODE_SPRITE_SIZE,
+                    TILE_NODE_SPRITE_SIZE,
+                )),
+                color: Color::GREEN,
+                ..Default::default()
+            },
+            transform: Transform::from_xyz(
+                node_x - SPRITE_SPACING,
+                node_y - SPRITE_SPACING,
+                0.0,
+            ),
+            ..default()
+        });
+    }
 
     top_right_tiles
 }
 
 fn get_set_tiles_top_left(node: &u16, node_x: f32, node_y: f32, set: &GameSet, puzzle: &Puzzle, asset_server: AssetServer) -> Vec<SpriteBundle> {
     let mut top_left_tiles = Vec::new();
-    // let tex_set_tile_top_left = asset_server.load(Texture::SetTileTopLeft.path());
+    let tex_set_tile_top_left = asset_server.load(Texture::SetTileTopLeft.path());
+
+    let node_up = get_node_up(node, puzzle).unwrap_or(u16::MAX);
+    let node_left = get_node_left(node, puzzle).unwrap_or(u16::MAX);
+    if !set.nodes.contains(&node_up) && !set.nodes.contains(&node_left) {
+        top_left_tiles.push(SpriteBundle {
+            texture: tex_set_tile_top_left.clone(),
+            sprite: Sprite {
+                custom_size: Some(Vec2::new(
+                    TILE_NODE_SPRITE_SIZE,
+                    TILE_NODE_SPRITE_SIZE,
+                )),
+                color: Color::GREEN,
+                ..Default::default()
+            },
+            transform: Transform::from_xyz(
+                node_x - SPRITE_SPACING,
+                node_y + SPRITE_SPACING,
+                0.0,
+            ),
+            ..default()
+        });
+    }
+
+    let node_down_right = get_node_down_right(node, &puzzle).unwrap_or(u16::MAX);
+    let node_down = get_node_down(node, puzzle).unwrap_or(u16::MAX);
+    let node_right = get_node_right(node, puzzle).unwrap_or(u16::MAX);
+    if set.nodes.contains(&node_down)
+        && set.nodes.contains(&node_right)
+        && !set.nodes.contains(&node_down_right)
+    {
+        top_left_tiles.push(SpriteBundle {
+            texture: tex_set_tile_top_left.clone(),
+            sprite: Sprite {
+                custom_size: Some(Vec2::new(
+                    TILE_NODE_SPRITE_SIZE,
+                    TILE_NODE_SPRITE_SIZE,
+                )),
+                color: Color::GREEN,
+                ..Default::default()
+            },
+            transform: Transform::from_xyz(
+                node_x + SPRITE_SPACING,
+                node_y - SPRITE_SPACING,
+                0.0,
+            ),
+            ..default()
+        });
+    }
 
     top_left_tiles
 }
