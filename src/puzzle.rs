@@ -374,11 +374,10 @@ pub mod puzzle {
             .cursor_position()
             .and_then(|cursor| camera.viewport_to_world(camera_transform, cursor))
             .map(|ray| ray.origin.truncate())
-            .unwrap_or_else(|| {
-                // TODO fix this it causes game to crash when you hover out of it
-                println!("Failed to get cursor position");
-                exit(1);
-            });
+            .unwrap_or(Vec2::NEG_INFINITY);
+        if world_position.eq(&Vec2::NEG_INFINITY) {
+            return;
+        }
 
         // On left click, start new line on a clicked node, if exists
         if mouse_button_input.just_pressed(MouseButton::Left) {

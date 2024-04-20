@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Bevy Game - Nodal</title>
+</head>
+<body>
+    <script type="module">
+        import init from './out/nodal.js'; // Adjust the path if necessary
+        init().then(() => {
+            console.log("WebAssembly loaded successfully");
+        }).catch(e => console.error("Failed to load WebAssembly:", e));
+    </script>
+</body>
+</html>

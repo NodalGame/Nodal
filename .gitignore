@@ -1,5 +1,6 @@
 # Compiled files
 /target/
+/out/
 
 # Generated files
 **/*.rs.bk
