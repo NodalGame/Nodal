@@ -20,6 +20,9 @@ jobs:
         target: wasm32-unknown-unknown
         override: true
 
+    - name: Install wasm-bindgen-cli
+      run: cargo install wasm-bindgen-cli
+
     - name: Build wasm package
       uses: actions-rs/cargo@v1
       with:
