@@ -162,7 +162,7 @@ pub mod menu {
             });
     }
 
-    fn puzzle_select_setup(mut commands: Commands, mut puzzle_manager: ResMut<PuzzleManager>) {
+    fn puzzle_select_setup(mut commands: Commands, mut puzzle_manager: ResMut<PuzzleManager>, asset_server: Res<AssetServer>) {
         // TODO preload in other menu? if this starts to slow down...
         let _ = puzzle_manager.populate(&PathBuf::from("assets/campaign/puzzles/"));
         commands
@@ -191,6 +191,13 @@ pub mod menu {
                         ..default()
                     })
                     .with_children(|parent| {
+                        // TODO remove -- just using for testing webapp loading puzzles
+                        let icon = asset_server.load("../assets/textures/sprites/NODE_YELLOW.png");
+                        parent.spawn(ImageBundle {
+                            style: button_icon_style(),
+                            image: UiImage::new(icon),
+                            ..default()
+                        });
                         for puzzle_id in puzzle_manager.get_puzzle_uuids() {
                             // Display the levels to select TODO scrollable and populate programmatically
                             parent
