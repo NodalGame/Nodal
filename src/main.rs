@@ -13,7 +13,9 @@ mod puzzle;
 pub mod puzzle_manager;
 pub mod texture;
 pub mod util;
+mod campaign;
 use buttons::buttons::button_system;
+use campaign::campaign::campaign_plugin;
 use puzzle::puzzle::*;
 
 mod splash;
@@ -29,6 +31,7 @@ enum AppState {
     #[default]
     Splash,
     Menu,
+    Campaign,
     Puzzle,
 }
 
@@ -54,7 +57,7 @@ fn main() {
         .add_systems(Startup, setup)
         .add_systems(Update, button_system)
         // Adds the plugins for each state
-        .add_plugins((splash_plugin, menu_plugin, puzzle_plugin))
+        .add_plugins((splash_plugin, menu_plugin, campaign_plugin, puzzle_plugin))
         .run();
 }
 

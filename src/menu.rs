@@ -7,10 +7,7 @@ pub mod menu {
     use crate::{
         buttons::buttons::{
             button_icon_style, button_text_style, text_button_style, NORMAL_BUTTON, TEXT_COLOR,
-        },
-        despawn_screen,
-        puzzle_manager::puzzle_manager::PuzzleManager,
-        AppState, SelectedPuzzle,
+        }, despawn_screen, puzzle_manager::puzzle_manager::PuzzleManager, texture::texture::Texture, AppState, SelectedPuzzle
     };
 
     // This plugin manages the menu, with 5 different screens:
@@ -27,6 +24,9 @@ pub mod menu {
             // Systems to handle the main menu screen
             .add_systems(OnEnter(MenuState::Main), main_menu_setup)
             .add_systems(OnExit(MenuState::Main), despawn_screen::<OnMainMenuScreen>)
+            // Systems to handle the submenu screen (campaign, community, daily challenge, etc)
+            .add_systems(OnEnter(MenuState::SubMenu), submenu_setup)
+            .add_systems(OnExit(MenuState::SubMenu), despawn_screen::<OnSubMenuScreen>)
             // Systems to handle the puzzle select screen
             .add_systems(OnEnter(MenuState::PuzzleSelect), puzzle_select_setup)
             .add_systems(
@@ -42,6 +42,7 @@ pub mod menu {
     #[derive(Clone, Copy, Default, Eq, PartialEq, Debug, Hash, States)]
     enum MenuState {
         Main,
+        SubMenu,
         PuzzleSelect,
         #[default]
         Disabled,
@@ -51,6 +52,10 @@ pub mod menu {
     #[derive(Component)]
     struct OnMainMenuScreen;
 
+    // Tag component used to tag entities added on the submenu screen
+    #[derive(Component)]
+    struct OnSubMenuScreen;
+
     // Tag component used to tag entities added on the puzzle select screen
     #[derive(Component)]
     struct OnPuzzleSelectScreen;
@@ -58,7 +63,8 @@ pub mod menu {
     // All actions that can be triggered from a button click
     #[derive(Component)]
     enum MenuButtonAction {
-        PuzzleSelect,
+        Campaign,
+        SubMenu,
         PlayPuzzle,
         Quit,
     }
@@ -126,10 +132,10 @@ pub mod menu {
                                     background_color: NORMAL_BUTTON.into(),
                                     ..default()
                                 },
-                                MenuButtonAction::PuzzleSelect,
+                                MenuButtonAction::SubMenu,
                             ))
                             .with_children(|parent| {
-                                let icon = asset_server.load("textures/Game Icons/right.png");
+                                let icon = asset_server.load(Texture::ClassBlue.path());
                                 parent.spawn(ImageBundle {
                                     style: button_icon_style(),
                                     image: UiImage::new(icon),
@@ -150,7 +156,7 @@ pub mod menu {
                                 MenuButtonAction::Quit,
                             ))
                             .with_children(|parent| {
-                                let icon = asset_server.load("textures/Game Icons/exitRight.png");
+                                let icon = asset_server.load(Texture::BtnGoBack.path());
                                 parent.spawn(ImageBundle {
                                     style: button_icon_style(),
                                     image: UiImage::new(icon),
@@ -162,9 +168,51 @@ pub mod menu {
             });
     }
 
+    fn submenu_setup(mut commands: Commands, asset_server: Res<AssetServer>) {
+        commands
+            .spawn((
+                NodeBundle {
+                    style: Style {
+                        width: Val::Percent(100.0),
+                        height: Val::Percent(100.0),
+                        align_items: AlignItems::Center,
+                        justify_content: JustifyContent::Center,
+                        ..default()
+                    },
+                    ..Default::default()
+                },
+                OnSubMenuScreen,
+            ))
+            .with_children(|parent| {
+                parent.spawn(NodeBundle {
+                    style: Style {
+                        flex_direction: FlexDirection::Column,
+                        align_items: AlignItems::Center,
+                        ..default()
+                    },
+                    background_color: Color::CYAN.into(),
+                    ..default()
+                })
+                .with_children(|parent| {
+                    // Campaign
+                    parent.spawn((
+                        ButtonBundle {
+                            style: text_button_style(),
+                            background_color: NORMAL_BUTTON.into(),
+                            ..default()
+                        },
+                        MenuButtonAction::Campaign,
+                    )).with_children(|parent| {
+                        parent.spawn(TextBundle::from_section("Campaign", button_text_style()));
+                    });
+                    // TODO browse levels, daily challenge 
+                });
+            });
+    }
+
     fn puzzle_select_setup(mut commands: Commands, mut puzzle_manager: ResMut<PuzzleManager>, asset_server: Res<AssetServer>) {
         // TODO preload in other menu? if this starts to slow down...
-        let _ = puzzle_manager.populate(&PathBuf::from("assets/campaign/puzzles/"));
+        let _ = puzzle_manager.populate(&"../assets/campaign/puzzles/".to_owned());
         commands
             .spawn((
                 NodeBundle {
@@ -234,14 +282,19 @@ pub mod menu {
         for (interaction, menu_button_action, button_puzzle_id) in &interaction_query {
             if *interaction == Interaction::Pressed {
                 match menu_button_action {
+                    // TODO remove this if it is going to be webapp
                     MenuButtonAction::Quit => {
                         app_exit_events.send(AppExit);
                     }
-                    MenuButtonAction::PuzzleSelect => {
-                        menu_state.set(MenuState::PuzzleSelect);
+                    MenuButtonAction::SubMenu => {
+                        menu_state.set(MenuState::SubMenu);
+                    }
+                    MenuButtonAction::Campaign => {
+                        app_state.set(AppState::Campaign);
+                        menu_state.set(MenuState::Disabled);
                     }
                     MenuButtonAction::PlayPuzzle => {
-                        app_state.set(AppState::Puzzle);
+                        app_state.set(AppState::Campaign);
                         menu_state.set(MenuState::Disabled);
                         selected_puzzle.uuid = button_puzzle_id.unwrap().uuid
                     }

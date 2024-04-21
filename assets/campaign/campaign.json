@@ -1,0 +1,20 @@
+{
+    "uuid": "620392de-9a5b-4cbe-a390-7f93ad2f2bab",
+    "name": "Test Campaign",
+    "puzzle_layout": [
+        {
+            "id": 0,
+            "puzzle_uuid": "e820699a-6e12-48db-b7b4-e8663cfba7b4",
+            "pos_x": 0,
+            "pos_y": 0,
+            "unlocks": [1]
+        },
+        {
+            "id": 1,
+            "puzzle_uuid": "e820699a-6e12-48db-b7b4-e8663cfba7b5",
+            "pos_x": 1,
+            "pos_y": 0,
+            "unlocks": []
+        }
+    ]
+}

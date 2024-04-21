@@ -25,30 +25,51 @@ pub mod puzzle_manager {
             }
         }
 
-        pub fn populate(&mut self, directory_path: &Path) -> serde_json::Result<()> {
-            for entry in WalkDir::new(directory_path)
-                .into_iter()
-                .filter_map(|e| e.ok())
-                .filter(|e| e.path().extension().map_or(false, |ext| ext == "json"))
-            {
-                let path = entry.path();
-
-                println!("{}", path.to_string_lossy());
-
-                // Open the file
-                let mut file = File::open(path).expect("Failed to open the file");
-
-                // Read the file contents into a string
-                let mut contents = String::new();
-                file.read_to_string(&mut contents)
-                    .expect("Failed to read the file");
-
-                let puzzle: Puzzle = match serde_json::from_str(&contents) {
+        /// Populates locally stored puzzles (from ../assets/campaign/puzzles/)
+        pub fn populate_campaign(&mut self) -> serde_json::Result<()> {
+            let mut puzzle_idx = 0;
+            loop {
+                let path = "../assets/campaign/puzzles/puzzle".to_owned() + &puzzle_idx.to_string() + ".json";
+                let puzzle: Puzzle = match serde_json::from_str(&path) {
                     Ok(data) => data,
-                    Err(e) => panic!("Failed to load puzzle: {:?}", e),
+                    Err(e) => break,
                 };
-                self.add_puzzle(puzzle.uuid, path.to_string_lossy().into_owned());
+
+                self.add_puzzle(puzzle.uuid, path.to_string());
+                puzzle_idx += 1;
             }
+            Ok(())
+        }
+
+        pub fn populate(&mut self, directory_path: &String) -> serde_json::Result<()> {
+            // for entry in WalkDir::new(directory_path)
+            //     .into_iter()
+            //     .filter_map(|e| e.ok())
+            //     .filter(|e| e.path().extension().map_or(false, |ext| ext == "json"))
+            // {
+                // let path = entry.path();
+
+                // println!("{}", path.to_string_lossy());
+
+                // // Open the file
+                // let mut file = File::open(path).expect("Failed to open the file");
+
+                // // Read the file contents into a string
+                // let mut contents = String::new();
+                // file.read_to_string(&mut contents)
+                //     .expect("Failed to read the file");
+            let mut puzzle_idx = 0;
+            loop {
+                let path = directory_path.clone() + "/puzzle" + &puzzle_idx.to_string() + ".json";
+                let puzzle: Puzzle = match serde_json::from_str(&path) {
+                    Ok(data) => data,
+                    Err(e) => break,
+                };
+                
+                self.add_puzzle(puzzle.uuid, path);
+                puzzle_idx += 1;
+            }
+            // }
             Ok(())
         }
 
