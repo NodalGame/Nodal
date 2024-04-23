@@ -10,7 +10,10 @@ pub mod puzzle {
     use crate::game_set::game_set::GameSet;
     use crate::node_condition::node_condition::NodeCondition;
     use crate::util::{
-        get_adjacent_nodes, get_bg_tile, get_line_texture, get_node_down, get_node_left, get_node_right, get_node_up, get_node_up_left, get_node_up_right, get_set_tiles, is_bottom_edge, is_left_edge, is_right_edge, is_top_edge, node_to_position
+        clicked_on_sprite, get_adjacent_nodes, get_bg_tile, get_cursor_world_position,
+        get_line_texture, get_node_down, get_node_left, get_node_right, get_node_up,
+        get_node_up_left, get_node_up_right, get_set_tiles, is_bottom_edge, is_left_edge,
+        is_right_edge, is_top_edge, node_to_position,
     };
     use crate::{texture::texture::Texture, MainCamera};
     use bevy::prelude::*;
@@ -28,6 +31,7 @@ pub mod puzzle {
     pub fn puzzle_plugin(app: &mut App) {
         app.add_systems(OnEnter(AppState::Puzzle), puzzle_setup)
             .add_systems(OnExit(AppState::Puzzle), despawn_screen::<OnPuzzleScene>)
+            .add_systems(OnExit(AppState::Puzzle), despawn_screen::<OnPuzzleUI>)
             .add_systems(Update, line_system.run_if(in_state(AppState::Puzzle)))
             .add_systems(Update, ui_action.run_if(in_state(AppState::Puzzle)))
             .insert_resource(ActiveNodes::default())
@@ -148,7 +152,7 @@ pub mod puzzle {
     enum PuzzleButtonAction {
         CheckAnswer,
         Reset,
-        ReturnToMenu,
+        ReturnToPreviousPage,
     }
 
     fn puzzle_setup(
@@ -189,12 +193,9 @@ pub mod puzzle {
             for y in 0..puzzle.height * 2 + 1 {
                 // If background tile, spawn it and continue
                 if x % 2 == 0 || y % 2 == 0 {
-                    commands.spawn(get_bg_tile(
-                        x,
-                        y,
-                        puzzle.width,
-                        puzzle.height,
-                        asset_server.clone(),
+                    commands.spawn((
+                        get_bg_tile(x, y, puzzle.width, puzzle.height, asset_server.clone()),
+                        OnPuzzleScene,
                     ));
                     continue;
                 }
@@ -328,7 +329,7 @@ pub mod puzzle {
                         image: UiImage::new(asset_server.load(Texture::BtnGoBack.path())),
                         ..Default::default()
                     },
-                    PuzzleButtonAction::ReturnToMenu,
+                    PuzzleButtonAction::ReturnToPreviousPage,
                 ));
             });
 
@@ -336,7 +337,7 @@ pub mod puzzle {
         for set_idx in 0..puzzle.sets.len() {
             let set = &puzzle.sets[set_idx];
             for set_tile in get_set_tiles(set, &puzzle, asset_server.clone()) {
-                commands.spawn(set_tile);
+                commands.spawn((set_tile, OnPuzzleScene));
             }
         }
     }
@@ -370,14 +371,7 @@ pub mod puzzle {
         let window = q_window.single();
 
         // Check if cursor inside window and get its position, convert to world coords, discard Z
-        let world_position = window
-            .cursor_position()
-            .and_then(|cursor| camera.viewport_to_world(camera_transform, cursor))
-            .map(|ray| ray.origin.truncate())
-            .unwrap_or(Vec2::NEG_INFINITY);
-        if world_position.eq(&Vec2::NEG_INFINITY) {
-            return;
-        }
+        let world_position = get_cursor_world_position(window, camera, camera_transform);
 
         // On left click, start new line on a clicked node, if exists
         if mouse_button_input.just_pressed(MouseButton::Left) {
@@ -456,33 +450,13 @@ pub mod puzzle {
         }
     }
 
-    fn clicked_on_sprite(sprite: &SpriteBundle, cursor: Vec2) -> bool {
-        let node_pos = sprite.transform.translation.truncate();
-        let distance = cursor.distance(node_pos);
-        // Assuming the sprite size is a good proxy for click detection radius
-        if distance
-            < sprite
-                .sprite
-                .custom_size
-                .unwrap_or_else(|| {
-                    // TODO fix this
-                    println!("Failed to get sprite size");
-                    exit(1);
-                })
-                .x
-                / 2.0
-        {
-            return true;
-        }
-        false
-    }
-
     fn ui_action(
         interaction_query: Query<
             (&Interaction, &PuzzleButtonAction),
             (Changed<Interaction>, With<Button>),
         >,
         active_nodes: Res<ActiveNodes>,
+        mut app_state: ResMut<NextState<AppState>>,
     ) {
         for (interaction, ui_button_action) in &interaction_query {
             if *interaction == Interaction::Pressed {
@@ -494,8 +468,10 @@ pub mod puzzle {
                     PuzzleButtonAction::Reset => {
                         println!("Clear lines button pressed");
                     }
-                    PuzzleButtonAction::ReturnToMenu => {
+                    PuzzleButtonAction::ReturnToPreviousPage => {
                         println!("Go back button pressed");
+                        // TODO track previous state before entering puzzle (campaign vs public level select)
+                        app_state.set(AppState::Campaign);
                     }
                 }
             }

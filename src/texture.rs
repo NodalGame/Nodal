@@ -71,19 +71,31 @@ pub mod texture {
                 }
 
                 Texture::SetTileVertical => "../assets/textures/background/SET_TILE_VERTICAL.png",
-                Texture::SetTileHorizontal => "../assets/textures/background/SET_TILE_HORIZONTAL.png",
-                Texture::SetTileBottomLeft => "../assets/textures/background/SET_TILE_BOTTOM_LEFT.png",
-                Texture::SetTileBottomRight => "../assets/textures/background/SET_TILE_BOTTOM_RIGHT.png",
+                Texture::SetTileHorizontal => {
+                    "../assets/textures/background/SET_TILE_HORIZONTAL.png"
+                }
+                Texture::SetTileBottomLeft => {
+                    "../assets/textures/background/SET_TILE_BOTTOM_LEFT.png"
+                }
+                Texture::SetTileBottomRight => {
+                    "../assets/textures/background/SET_TILE_BOTTOM_RIGHT.png"
+                }
                 Texture::SetTileTopLeft => "../assets/textures/background/SET_TILE_TOP_LEFT.png",
                 Texture::SetTileTopRight => "../assets/textures/background/SET_TILE_TOP_RIGHT.png",
 
                 Texture::BgTileNode => "../assets/textures/background/BG_TILE_NODE.png",
                 Texture::BgTileSideLeft => "../assets/textures/background/BG_TILE_SIDE_LEFT.png",
                 Texture::BgTileSideRight => "../assets/textures/background/BG_TILE_SIDE_RIGHT.png",
-                Texture::BgTileSideBottom => "../assets/textures/background/BG_TILE_SIDE_BOTTOM.png",
+                Texture::BgTileSideBottom => {
+                    "../assets/textures/background/BG_TILE_SIDE_BOTTOM.png"
+                }
                 Texture::BgTileSideTop => "../assets/textures/background/BG_TILE_SIDE_TOP.png",
-                Texture::BgTileBottomLeft => "../assets/textures/background/BG_TILE_BOTTOM_LEFT.png",
-                Texture::BgTileBottomRight => "../assets/textures/background/BG_TILE_BOTTOM_RIGHT.png",
+                Texture::BgTileBottomLeft => {
+                    "../assets/textures/background/BG_TILE_BOTTOM_LEFT.png"
+                }
+                Texture::BgTileBottomRight => {
+                    "../assets/textures/background/BG_TILE_BOTTOM_RIGHT.png"
+                }
                 Texture::BgTileTopLeft => "../assets/textures/background/BG_TILE_TOP_LEFT.png",
                 Texture::BgTileTopRight => "../assets/textures/background/BG_TILE_TOP_RIGHT.png",
                 Texture::BgTileBetweenHorizontal => {
@@ -92,7 +104,9 @@ pub mod texture {
                 Texture::BgTileBetweenVertical => {
                     "../assets/textures/background/BG_TILE_BETWEEN_VERTICAL.png"
                 }
-                Texture::BgTileBetweenCross => "../assets/textures/background/BG_TILE_BETWEEN_CROSS.png",
+                Texture::BgTileBetweenCross => {
+                    "../assets/textures/background/BG_TILE_BETWEEN_CROSS.png"
+                }
 
                 Texture::BtnCheckAnswer => "../assets/textures/buttons/BTN_CHECK_ANSWER.png",
                 Texture::BtnClearLines => "../assets/textures/buttons/BTN_CLEAR_LINES.png",

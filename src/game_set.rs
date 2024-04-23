@@ -15,7 +15,7 @@ pub mod game_set {
         Connected,
         /// There must be two nodes in the set for which there is no path between them.
         Disconnected,
-        /// There must be a cycle present in the set. 
+        /// There must be a cycle present in the set.
         Cycle,
         /// There must be no cycles present in the set.
         NoCycle,
@@ -29,6 +29,6 @@ pub mod game_set {
         ///     Linked: only nodes in the set with linked condition must be connected to this node.
         Scope,
         /// Sets with this rule must be homomorphic to each other
-        Homomorphic
+        Homomorphic,
     }
 }

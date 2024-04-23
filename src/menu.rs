@@ -7,7 +7,11 @@ pub mod menu {
     use crate::{
         buttons::buttons::{
             button_icon_style, button_text_style, text_button_style, NORMAL_BUTTON, TEXT_COLOR,
-        }, despawn_screen, puzzle_manager::puzzle_manager::PuzzleManager, texture::texture::Texture, AppState, SelectedPuzzle
+        },
+        despawn_screen,
+        puzzle_manager::puzzle_manager::PuzzleManager,
+        texture::texture::Texture,
+        AppState, SelectedPuzzle,
     };
 
     // This plugin manages the menu, with 5 different screens:
@@ -26,7 +30,10 @@ pub mod menu {
             .add_systems(OnExit(MenuState::Main), despawn_screen::<OnMainMenuScreen>)
             // Systems to handle the submenu screen (campaign, community, daily challenge, etc)
             .add_systems(OnEnter(MenuState::SubMenu), submenu_setup)
-            .add_systems(OnExit(MenuState::SubMenu), despawn_screen::<OnSubMenuScreen>)
+            .add_systems(
+                OnExit(MenuState::SubMenu),
+                despawn_screen::<OnSubMenuScreen>,
+            )
             // Systems to handle the puzzle select screen
             .add_systems(OnEnter(MenuState::PuzzleSelect), puzzle_select_setup)
             .add_systems(
@@ -34,8 +41,7 @@ pub mod menu {
                 despawn_screen::<OnPuzzleSelectScreen>,
             )
             // Common systems to all menu screens that handles buttons behavior
-            .add_systems(Update, menu_action.run_if(in_state(AppState::Menu)))
-            .insert_resource(PuzzleManager::new());
+            .add_systems(Update, menu_action.run_if(in_state(AppState::Menu)));
     }
 
     // State used for the current menu screen
@@ -184,33 +190,44 @@ pub mod menu {
                 OnSubMenuScreen,
             ))
             .with_children(|parent| {
-                parent.spawn(NodeBundle {
-                    style: Style {
-                        flex_direction: FlexDirection::Column,
-                        align_items: AlignItems::Center,
-                        ..default()
-                    },
-                    background_color: Color::CYAN.into(),
-                    ..default()
-                })
-                .with_children(|parent| {
-                    // Campaign
-                    parent.spawn((
-                        ButtonBundle {
-                            style: text_button_style(),
-                            background_color: NORMAL_BUTTON.into(),
+                parent
+                    .spawn(NodeBundle {
+                        style: Style {
+                            flex_direction: FlexDirection::Column,
+                            align_items: AlignItems::Center,
                             ..default()
                         },
-                        MenuButtonAction::Campaign,
-                    )).with_children(|parent| {
-                        parent.spawn(TextBundle::from_section("Campaign", button_text_style()));
+                        background_color: Color::CYAN.into(),
+                        ..default()
+                    })
+                    .with_children(|parent| {
+                        // Campaign
+                        parent
+                            .spawn((
+                                ButtonBundle {
+                                    style: text_button_style(),
+                                    background_color: NORMAL_BUTTON.into(),
+                                    ..default()
+                                },
+                                MenuButtonAction::Campaign,
+                            ))
+                            .with_children(|parent| {
+                                parent.spawn(TextBundle::from_section(
+                                    "Campaign",
+                                    button_text_style(),
+                                ));
+                            });
+                        // TODO browse levels, daily challenge
                     });
-                    // TODO browse levels, daily challenge 
-                });
             });
     }
 
-    fn puzzle_select_setup(mut commands: Commands, mut puzzle_manager: ResMut<PuzzleManager>, asset_server: Res<AssetServer>) {
+    // TODO repurpose this for the browse levels menu?
+    fn puzzle_select_setup(
+        mut commands: Commands,
+        mut puzzle_manager: ResMut<PuzzleManager>,
+        asset_server: Res<AssetServer>,
+    ) {
         // TODO preload in other menu? if this starts to slow down...
         let _ = puzzle_manager.populate(&"../assets/campaign/puzzles/".to_owned());
         commands

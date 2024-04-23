@@ -1,9 +1,17 @@
 use std::f32::consts::PI;
 
-use bevy::{asset::Handle, prelude::*, render::texture::Image, sprite::{self, SpriteBundle}};
+use bevy::{
+    asset::Handle,
+    prelude::*,
+    render::texture::Image,
+    sprite::{self, SpriteBundle},
+};
 
 use crate::{
-    constants::{SPRITE_SPACING, TILE_NODE_SPRITE_SIZE}, game_set::game_set::GameSet, texture::texture::Texture, ActiveNode, Puzzle
+    constants::{SPRITE_SPACING, TILE_NODE_SPRITE_SIZE},
+    game_set::game_set::GameSet,
+    texture::texture::Texture,
+    ActiveNode, Puzzle,
 };
 
 /// Returns a background tile as a sprite bundle.
@@ -291,7 +299,14 @@ pub fn node_to_position(node: &u16, puzzle: &Puzzle) -> (f32, f32) {
     (x, y)
 }
 
-fn get_set_tiles_vertical(node: &u16, node_x: f32, node_y: f32, set: &GameSet, puzzle: &Puzzle, asset_server: AssetServer) -> Vec<SpriteBundle> {
+fn get_set_tiles_vertical(
+    node: &u16,
+    node_x: f32,
+    node_y: f32,
+    set: &GameSet,
+    puzzle: &Puzzle,
+    asset_server: AssetServer,
+) -> Vec<SpriteBundle> {
     let mut vertical_tiles = Vec::new();
     let tex_set_tile_vertical = asset_server.load(Texture::SetTileVertical.path());
 
@@ -300,10 +315,7 @@ fn get_set_tiles_vertical(node: &u16, node_x: f32, node_y: f32, set: &GameSet, p
         vertical_tiles.push(SpriteBundle {
             texture: tex_set_tile_vertical.clone(),
             sprite: Sprite {
-                custom_size: Some(Vec2::new(
-                    TILE_NODE_SPRITE_SIZE,
-                    TILE_NODE_SPRITE_SIZE,
-                )),
+                custom_size: Some(Vec2::new(TILE_NODE_SPRITE_SIZE, TILE_NODE_SPRITE_SIZE)),
                 color: Color::GREEN,
                 ..Default::default()
             },
@@ -317,10 +329,7 @@ fn get_set_tiles_vertical(node: &u16, node_x: f32, node_y: f32, set: &GameSet, p
         vertical_tiles.push(SpriteBundle {
             texture: tex_set_tile_vertical.clone(),
             sprite: Sprite {
-                custom_size: Some(Vec2::new(
-                    TILE_NODE_SPRITE_SIZE,
-                    TILE_NODE_SPRITE_SIZE,
-                )),
+                custom_size: Some(Vec2::new(TILE_NODE_SPRITE_SIZE, TILE_NODE_SPRITE_SIZE)),
                 color: Color::GREEN,
                 ..Default::default()
             },
@@ -334,36 +343,44 @@ fn get_set_tiles_vertical(node: &u16, node_x: f32, node_y: f32, set: &GameSet, p
 
         // Above left
         let node_up_left = get_node_up_left(node, puzzle).unwrap_or(u16::MAX);
-        if !set.nodes.contains(&node_up_left) && !set.nodes.contains(&node_left) && set.nodes.contains(&node_up) {
+        if !set.nodes.contains(&node_up_left)
+            && !set.nodes.contains(&node_left)
+            && set.nodes.contains(&node_up)
+        {
             vertical_tiles.push(SpriteBundle {
                 texture: tex_set_tile_vertical.clone(),
                 sprite: Sprite {
-                    custom_size: Some(Vec2::new(
-                        TILE_NODE_SPRITE_SIZE,
-                        TILE_NODE_SPRITE_SIZE,
-                    )),
+                    custom_size: Some(Vec2::new(TILE_NODE_SPRITE_SIZE, TILE_NODE_SPRITE_SIZE)),
                     color: Color::GREEN,
                     ..Default::default()
                 },
-                transform: Transform::from_xyz(node_x - SPRITE_SPACING, node_y + SPRITE_SPACING, 0.0),
+                transform: Transform::from_xyz(
+                    node_x - SPRITE_SPACING,
+                    node_y + SPRITE_SPACING,
+                    0.0,
+                ),
                 ..default()
             });
         }
 
         // Above right
         let node_up_right = get_node_up_right(node, puzzle).unwrap_or(u16::MAX);
-        if !set.nodes.contains(&node_up_right) && !set.nodes.contains(&node_right) && set.nodes.contains(&node_up) {
+        if !set.nodes.contains(&node_up_right)
+            && !set.nodes.contains(&node_right)
+            && set.nodes.contains(&node_up)
+        {
             vertical_tiles.push(SpriteBundle {
                 texture: tex_set_tile_vertical.clone(),
                 sprite: Sprite {
-                    custom_size: Some(Vec2::new(
-                        TILE_NODE_SPRITE_SIZE,
-                        TILE_NODE_SPRITE_SIZE,
-                    )),
+                    custom_size: Some(Vec2::new(TILE_NODE_SPRITE_SIZE, TILE_NODE_SPRITE_SIZE)),
                     color: Color::GREEN,
                     ..Default::default()
                 },
-                transform: Transform::from_xyz(node_x + SPRITE_SPACING, node_y + SPRITE_SPACING, 0.0),
+                transform: Transform::from_xyz(
+                    node_x + SPRITE_SPACING,
+                    node_y + SPRITE_SPACING,
+                    0.0,
+                ),
                 ..default()
             });
         }
@@ -411,7 +428,14 @@ fn get_set_tiles_vertical(node: &u16, node_x: f32, node_y: f32, set: &GameSet, p
     vertical_tiles
 }
 
-fn get_set_tiles_horizontal(node: &u16, node_x: f32, node_y: f32, set: &GameSet, puzzle: &Puzzle, asset_server: AssetServer) -> Vec<SpriteBundle> {
+fn get_set_tiles_horizontal(
+    node: &u16,
+    node_x: f32,
+    node_y: f32,
+    set: &GameSet,
+    puzzle: &Puzzle,
+    asset_server: AssetServer,
+) -> Vec<SpriteBundle> {
     let mut horizontal_tiles = Vec::new();
     let tex_set_tile_horizontal = asset_server.load(Texture::SetTileHorizontal.path());
 
@@ -421,10 +445,7 @@ fn get_set_tiles_horizontal(node: &u16, node_x: f32, node_y: f32, set: &GameSet,
         horizontal_tiles.push(SpriteBundle {
             texture: tex_set_tile_horizontal.clone(),
             sprite: Sprite {
-                custom_size: Some(Vec2::new(
-                    TILE_NODE_SPRITE_SIZE,
-                    TILE_NODE_SPRITE_SIZE,
-                )),
+                custom_size: Some(Vec2::new(TILE_NODE_SPRITE_SIZE, TILE_NODE_SPRITE_SIZE)),
                 color: Color::GREEN,
                 ..Default::default()
             },
@@ -439,10 +460,7 @@ fn get_set_tiles_horizontal(node: &u16, node_x: f32, node_y: f32, set: &GameSet,
         horizontal_tiles.push(SpriteBundle {
             texture: tex_set_tile_horizontal.clone(),
             sprite: Sprite {
-                custom_size: Some(Vec2::new(
-                    TILE_NODE_SPRITE_SIZE,
-                    TILE_NODE_SPRITE_SIZE,
-                )),
+                custom_size: Some(Vec2::new(TILE_NODE_SPRITE_SIZE, TILE_NODE_SPRITE_SIZE)),
                 color: Color::GREEN,
                 ..Default::default()
             },
@@ -456,36 +474,44 @@ fn get_set_tiles_horizontal(node: &u16, node_x: f32, node_y: f32, set: &GameSet,
 
         // Above right
         let node_up_right = get_node_up_right(node, puzzle).unwrap_or(u16::MAX);
-        if !set.nodes.contains(&node_up_right) && !set.nodes.contains(&node_up) && set.nodes.contains(&node_right) {
+        if !set.nodes.contains(&node_up_right)
+            && !set.nodes.contains(&node_up)
+            && set.nodes.contains(&node_right)
+        {
             horizontal_tiles.push(SpriteBundle {
                 texture: tex_set_tile_horizontal.clone(),
                 sprite: Sprite {
-                    custom_size: Some(Vec2::new(
-                        TILE_NODE_SPRITE_SIZE,
-                        TILE_NODE_SPRITE_SIZE,
-                    )),
+                    custom_size: Some(Vec2::new(TILE_NODE_SPRITE_SIZE, TILE_NODE_SPRITE_SIZE)),
                     color: Color::GREEN,
                     ..Default::default()
                 },
-                transform: Transform::from_xyz(node_x + SPRITE_SPACING, node_y + SPRITE_SPACING, 0.0),
+                transform: Transform::from_xyz(
+                    node_x + SPRITE_SPACING,
+                    node_y + SPRITE_SPACING,
+                    0.0,
+                ),
                 ..default()
             });
         }
-    
+
         // Below right
         let node_down_right = get_node_down_right(node, puzzle).unwrap_or(u16::MAX);
-        if !set.nodes.contains(&node_down_right) && !set.nodes.contains(&node_down) && set.nodes.contains(&node_right) {
+        if !set.nodes.contains(&node_down_right)
+            && !set.nodes.contains(&node_down)
+            && set.nodes.contains(&node_right)
+        {
             horizontal_tiles.push(SpriteBundle {
                 texture: tex_set_tile_horizontal.clone(),
                 sprite: Sprite {
-                    custom_size: Some(Vec2::new(
-                        TILE_NODE_SPRITE_SIZE,
-                        TILE_NODE_SPRITE_SIZE,
-                    )),
+                    custom_size: Some(Vec2::new(TILE_NODE_SPRITE_SIZE, TILE_NODE_SPRITE_SIZE)),
                     color: Color::GREEN,
                     ..Default::default()
                 },
-                transform: Transform::from_xyz(node_x + SPRITE_SPACING, node_y - SPRITE_SPACING, 0.0),
+                transform: Transform::from_xyz(
+                    node_x + SPRITE_SPACING,
+                    node_y - SPRITE_SPACING,
+                    0.0,
+                ),
                 ..default()
             });
         }
@@ -510,7 +536,7 @@ fn get_set_tiles_horizontal(node: &u16, node_x: f32, node_y: f32, set: &GameSet,
     //             ..default()
     //         });
     //     }
-    
+
     //     // Below left
     //     let node_down_left = get_node_down_left(node, puzzle).unwrap_or(u16::MAX);
     //     if !set.nodes.contains(&node_down_left) {
@@ -533,7 +559,14 @@ fn get_set_tiles_horizontal(node: &u16, node_x: f32, node_y: f32, set: &GameSet,
     horizontal_tiles
 }
 
-fn get_set_tiles_bottom_right(node: &u16, node_x: f32, node_y: f32, set: &GameSet, puzzle: &Puzzle, asset_server: AssetServer) -> Vec<SpriteBundle> {
+fn get_set_tiles_bottom_right(
+    node: &u16,
+    node_x: f32,
+    node_y: f32,
+    set: &GameSet,
+    puzzle: &Puzzle,
+    asset_server: AssetServer,
+) -> Vec<SpriteBundle> {
     let mut bottom_right_tiles = Vec::new();
     let tex_set_tile_bottom_right = asset_server.load(Texture::SetTileBottomRight.path());
 
@@ -543,18 +576,11 @@ fn get_set_tiles_bottom_right(node: &u16, node_x: f32, node_y: f32, set: &GameSe
         bottom_right_tiles.push(SpriteBundle {
             texture: tex_set_tile_bottom_right.clone(),
             sprite: Sprite {
-                custom_size: Some(Vec2::new(
-                    TILE_NODE_SPRITE_SIZE,
-                    TILE_NODE_SPRITE_SIZE,
-                )),
+                custom_size: Some(Vec2::new(TILE_NODE_SPRITE_SIZE, TILE_NODE_SPRITE_SIZE)),
                 color: Color::GREEN,
                 ..Default::default()
             },
-            transform: Transform::from_xyz(
-                node_x + SPRITE_SPACING,
-                node_y - SPRITE_SPACING,
-                0.0,
-            ),
+            transform: Transform::from_xyz(node_x + SPRITE_SPACING, node_y - SPRITE_SPACING, 0.0),
             ..default()
         });
     }
@@ -569,18 +595,11 @@ fn get_set_tiles_bottom_right(node: &u16, node_x: f32, node_y: f32, set: &GameSe
         bottom_right_tiles.push(SpriteBundle {
             texture: tex_set_tile_bottom_right.clone(),
             sprite: Sprite {
-                custom_size: Some(Vec2::new(
-                    TILE_NODE_SPRITE_SIZE,
-                    TILE_NODE_SPRITE_SIZE,
-                )),
+                custom_size: Some(Vec2::new(TILE_NODE_SPRITE_SIZE, TILE_NODE_SPRITE_SIZE)),
                 color: Color::GREEN,
                 ..Default::default()
             },
-            transform: Transform::from_xyz(
-                node_x - SPRITE_SPACING,
-                node_y + SPRITE_SPACING,
-                0.0,
-            ),
+            transform: Transform::from_xyz(node_x - SPRITE_SPACING, node_y + SPRITE_SPACING, 0.0),
             ..default()
         });
     }
@@ -588,7 +607,14 @@ fn get_set_tiles_bottom_right(node: &u16, node_x: f32, node_y: f32, set: &GameSe
     bottom_right_tiles
 }
 
-fn get_set_tiles_bottom_left(node: &u16, node_x: f32, node_y: f32, set: &GameSet, puzzle: &Puzzle, asset_server: AssetServer) -> Vec<SpriteBundle> {
+fn get_set_tiles_bottom_left(
+    node: &u16,
+    node_x: f32,
+    node_y: f32,
+    set: &GameSet,
+    puzzle: &Puzzle,
+    asset_server: AssetServer,
+) -> Vec<SpriteBundle> {
     let mut bottom_left_tiles = Vec::new();
     let tex_set_tile_bottom_left = asset_server.load(Texture::SetTileBottomLeft.path());
 
@@ -598,18 +624,11 @@ fn get_set_tiles_bottom_left(node: &u16, node_x: f32, node_y: f32, set: &GameSet
         bottom_left_tiles.push(SpriteBundle {
             texture: tex_set_tile_bottom_left.clone(),
             sprite: Sprite {
-                custom_size: Some(Vec2::new(
-                    TILE_NODE_SPRITE_SIZE,
-                    TILE_NODE_SPRITE_SIZE,
-                )),
+                custom_size: Some(Vec2::new(TILE_NODE_SPRITE_SIZE, TILE_NODE_SPRITE_SIZE)),
                 color: Color::GREEN,
                 ..Default::default()
             },
-            transform: Transform::from_xyz(
-                node_x - SPRITE_SPACING,
-                node_y - SPRITE_SPACING,
-                0.0,
-            ),
+            transform: Transform::from_xyz(node_x - SPRITE_SPACING, node_y - SPRITE_SPACING, 0.0),
             ..default()
         });
     }
@@ -624,18 +643,11 @@ fn get_set_tiles_bottom_left(node: &u16, node_x: f32, node_y: f32, set: &GameSet
         bottom_left_tiles.push(SpriteBundle {
             texture: tex_set_tile_bottom_left.clone(),
             sprite: Sprite {
-                custom_size: Some(Vec2::new(
-                    TILE_NODE_SPRITE_SIZE,
-                    TILE_NODE_SPRITE_SIZE,
-                )),
+                custom_size: Some(Vec2::new(TILE_NODE_SPRITE_SIZE, TILE_NODE_SPRITE_SIZE)),
                 color: Color::GREEN,
                 ..Default::default()
             },
-            transform: Transform::from_xyz(
-                node_x + SPRITE_SPACING,
-                node_y + SPRITE_SPACING,
-                0.0,
-            ),
+            transform: Transform::from_xyz(node_x + SPRITE_SPACING, node_y + SPRITE_SPACING, 0.0),
             ..default()
         });
     }
@@ -643,8 +655,14 @@ fn get_set_tiles_bottom_left(node: &u16, node_x: f32, node_y: f32, set: &GameSet
     bottom_left_tiles
 }
 
-
-fn get_set_tiles_top_right(node: &u16, node_x: f32, node_y: f32, set: &GameSet, puzzle: &Puzzle, asset_server: AssetServer) -> Vec<SpriteBundle> {
+fn get_set_tiles_top_right(
+    node: &u16,
+    node_x: f32,
+    node_y: f32,
+    set: &GameSet,
+    puzzle: &Puzzle,
+    asset_server: AssetServer,
+) -> Vec<SpriteBundle> {
     let mut top_right_tiles = Vec::new();
     let tex_set_tile_top_right = asset_server.load(Texture::SetTileTopRight.path());
 
@@ -654,18 +672,11 @@ fn get_set_tiles_top_right(node: &u16, node_x: f32, node_y: f32, set: &GameSet, 
         top_right_tiles.push(SpriteBundle {
             texture: tex_set_tile_top_right.clone(),
             sprite: Sprite {
-                custom_size: Some(Vec2::new(
-                    TILE_NODE_SPRITE_SIZE,
-                    TILE_NODE_SPRITE_SIZE,
-                )),
+                custom_size: Some(Vec2::new(TILE_NODE_SPRITE_SIZE, TILE_NODE_SPRITE_SIZE)),
                 color: Color::GREEN,
                 ..Default::default()
             },
-            transform: Transform::from_xyz(
-                node_x + SPRITE_SPACING,
-                node_y + SPRITE_SPACING,
-                0.0,
-            ),
+            transform: Transform::from_xyz(node_x + SPRITE_SPACING, node_y + SPRITE_SPACING, 0.0),
             ..default()
         });
     }
@@ -680,18 +691,11 @@ fn get_set_tiles_top_right(node: &u16, node_x: f32, node_y: f32, set: &GameSet, 
         top_right_tiles.push(SpriteBundle {
             texture: tex_set_tile_top_right.clone(),
             sprite: Sprite {
-                custom_size: Some(Vec2::new(
-                    TILE_NODE_SPRITE_SIZE,
-                    TILE_NODE_SPRITE_SIZE,
-                )),
+                custom_size: Some(Vec2::new(TILE_NODE_SPRITE_SIZE, TILE_NODE_SPRITE_SIZE)),
                 color: Color::GREEN,
                 ..Default::default()
             },
-            transform: Transform::from_xyz(
-                node_x - SPRITE_SPACING,
-                node_y - SPRITE_SPACING,
-                0.0,
-            ),
+            transform: Transform::from_xyz(node_x - SPRITE_SPACING, node_y - SPRITE_SPACING, 0.0),
             ..default()
         });
     }
@@ -699,7 +703,14 @@ fn get_set_tiles_top_right(node: &u16, node_x: f32, node_y: f32, set: &GameSet, 
     top_right_tiles
 }
 
-fn get_set_tiles_top_left(node: &u16, node_x: f32, node_y: f32, set: &GameSet, puzzle: &Puzzle, asset_server: AssetServer) -> Vec<SpriteBundle> {
+fn get_set_tiles_top_left(
+    node: &u16,
+    node_x: f32,
+    node_y: f32,
+    set: &GameSet,
+    puzzle: &Puzzle,
+    asset_server: AssetServer,
+) -> Vec<SpriteBundle> {
     let mut top_left_tiles = Vec::new();
     let tex_set_tile_top_left = asset_server.load(Texture::SetTileTopLeft.path());
 
@@ -709,18 +720,11 @@ fn get_set_tiles_top_left(node: &u16, node_x: f32, node_y: f32, set: &GameSet, p
         top_left_tiles.push(SpriteBundle {
             texture: tex_set_tile_top_left.clone(),
             sprite: Sprite {
-                custom_size: Some(Vec2::new(
-                    TILE_NODE_SPRITE_SIZE,
-                    TILE_NODE_SPRITE_SIZE,
-                )),
+                custom_size: Some(Vec2::new(TILE_NODE_SPRITE_SIZE, TILE_NODE_SPRITE_SIZE)),
                 color: Color::GREEN,
                 ..Default::default()
             },
-            transform: Transform::from_xyz(
-                node_x - SPRITE_SPACING,
-                node_y + SPRITE_SPACING,
-                0.0,
-            ),
+            transform: Transform::from_xyz(node_x - SPRITE_SPACING, node_y + SPRITE_SPACING, 0.0),
             ..default()
         });
     }
@@ -735,18 +739,11 @@ fn get_set_tiles_top_left(node: &u16, node_x: f32, node_y: f32, set: &GameSet, p
         top_left_tiles.push(SpriteBundle {
             texture: tex_set_tile_top_left.clone(),
             sprite: Sprite {
-                custom_size: Some(Vec2::new(
-                    TILE_NODE_SPRITE_SIZE,
-                    TILE_NODE_SPRITE_SIZE,
-                )),
+                custom_size: Some(Vec2::new(TILE_NODE_SPRITE_SIZE, TILE_NODE_SPRITE_SIZE)),
                 color: Color::GREEN,
                 ..Default::default()
             },
-            transform: Transform::from_xyz(
-                node_x + SPRITE_SPACING,
-                node_y - SPRITE_SPACING,
-                0.0,
-            ),
+            transform: Transform::from_xyz(node_x + SPRITE_SPACING, node_y - SPRITE_SPACING, 0.0),
             ..default()
         });
     }
@@ -754,18 +751,86 @@ fn get_set_tiles_top_left(node: &u16, node_x: f32, node_y: f32, set: &GameSet, p
     top_left_tiles
 }
 
-pub fn get_set_tiles(set: &GameSet, puzzle: &Puzzle, asset_server: AssetServer) -> Vec<SpriteBundle> {
+pub fn get_set_tiles(
+    set: &GameSet,
+    puzzle: &Puzzle,
+    asset_server: AssetServer,
+) -> Vec<SpriteBundle> {
     let mut tiles = Vec::new();
 
     for node in set.nodes.iter() {
         let (node_x, node_y) = node_to_position(node, &puzzle);
-        tiles.append(&mut get_set_tiles_vertical(node, node_x, node_y, set, puzzle, asset_server.clone()));
-        tiles.append(&mut get_set_tiles_horizontal(node, node_x, node_y, set, puzzle, asset_server.clone()));
-        tiles.append(&mut get_set_tiles_bottom_right(node, node_x, node_y, set, puzzle, asset_server.clone()));
-        tiles.append(&mut get_set_tiles_bottom_left(node, node_x, node_y, set, puzzle, asset_server.clone()));
-        tiles.append(&mut get_set_tiles_top_right(node, node_x, node_y, set, puzzle, asset_server.clone()));
-        tiles.append(&mut get_set_tiles_top_left(node, node_x, node_y, set, puzzle, asset_server.clone()));
+        tiles.append(&mut get_set_tiles_vertical(
+            node,
+            node_x,
+            node_y,
+            set,
+            puzzle,
+            asset_server.clone(),
+        ));
+        tiles.append(&mut get_set_tiles_horizontal(
+            node,
+            node_x,
+            node_y,
+            set,
+            puzzle,
+            asset_server.clone(),
+        ));
+        tiles.append(&mut get_set_tiles_bottom_right(
+            node,
+            node_x,
+            node_y,
+            set,
+            puzzle,
+            asset_server.clone(),
+        ));
+        tiles.append(&mut get_set_tiles_bottom_left(
+            node,
+            node_x,
+            node_y,
+            set,
+            puzzle,
+            asset_server.clone(),
+        ));
+        tiles.append(&mut get_set_tiles_top_right(
+            node,
+            node_x,
+            node_y,
+            set,
+            puzzle,
+            asset_server.clone(),
+        ));
+        tiles.append(&mut get_set_tiles_top_left(
+            node,
+            node_x,
+            node_y,
+            set,
+            puzzle,
+            asset_server.clone(),
+        ));
     }
 
     tiles
+}
+
+pub fn clicked_on_sprite(sprite: &SpriteBundle, cursor: Vec2) -> bool {
+    let node_pos = sprite.transform.translation.truncate();
+    let distance = cursor.distance(node_pos);
+    // Assuming the sprite size is a good proxy for click detection radius
+    if distance < sprite.sprite.custom_size.unwrap_or(Vec2::MIN).x / 2.0 {
+        return true;
+    }
+    false
+}
+
+pub fn get_cursor_world_position(
+    window: &Window,
+    camera: &Camera,
+    camera_transform: &GlobalTransform,
+) -> Vec2 {
+    return window
+        .cursor_position()
+        .and_then(|cursor| camera.viewport_to_world(camera_transform, cursor))
+        .map(|ray| ray.origin.truncate())
+        .unwrap_or(Vec2::MIN);
 }

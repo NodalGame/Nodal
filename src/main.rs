@@ -5,6 +5,7 @@
 use bevy::prelude::*;
 
 pub mod buttons;
+mod campaign;
 pub mod constants;
 mod game_node;
 pub mod game_set;
@@ -13,12 +14,12 @@ mod puzzle;
 pub mod puzzle_manager;
 pub mod texture;
 pub mod util;
-mod campaign;
 use buttons::buttons::button_system;
 use campaign::campaign::campaign_plugin;
 use puzzle::puzzle::*;
 
 mod splash;
+use puzzle_manager::puzzle_manager::PuzzleManager;
 use splash::splash::*;
 
 mod menu;
@@ -51,6 +52,8 @@ fn main() {
         .init_resource::<SelectedPuzzle>()
         // Share the CameraControl resource
         .init_resource::<MainCamera>()
+        // Create a new puzzle manager to store puzzles (do it here and allow other plugins to manage shared load/unload)
+        .insert_resource(PuzzleManager::new())
         .add_plugins(DefaultPlugins)
         // Declare the game state, whose starting value is determined by the `Default` trait
         .init_state::<AppState>()
