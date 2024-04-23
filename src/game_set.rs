@@ -14,6 +14,8 @@ pub mod game_set {
         /// All nodes in this set must have a path to every other node in the set.
         Connected,
         /// There must be two nodes in the set for which there is no path between them.
+        Unconnected,
+        /// No nodes in this set may have a path to each other. 
         Disconnected,
         /// There must be a cycle present in the set.
         Cycle,
