@@ -1,17 +1,14 @@
-use std::f32::consts::PI;
+use std::{collections::VecDeque, f32::consts::PI};
 
 use bevy::{
     asset::Handle,
     prelude::*,
     render::texture::Image,
-    sprite::{self, SpriteBundle},
+    sprite::{self, SpriteBundle}, utils::{HashMap, HashSet},
 };
 
 use crate::{
-    constants::{SPRITE_SPACING, TILE_NODE_SPRITE_SIZE},
-    game_set::game_set::GameSet,
-    texture::texture::Texture,
-    ActiveNode, Puzzle,
+    constants::{SPRITE_SPACING, TILE_NODE_SPRITE_SIZE}, game_node::game_node::NodeClass, game_set::game_set::GameSet, texture::texture::Texture, ActiveNode, ActiveSet, Puzzle
 };
 
 /// Returns a background tile as a sprite bundle.
@@ -834,3 +831,117 @@ pub fn get_cursor_world_position(
         .map(|ray| ray.origin.truncate())
         .unwrap_or(Vec2::MIN);
 }
+
+/// Checks if the puzzle is solved. Verifies a few things: 
+/// - Is the connectivity of each node class spanning all nodes in the puzzle of that class? 
+/// - Is each node's set of conditions satisfied?  
+/// - Is each set rule satisfied? 
+pub fn check_answer(active_nodes: Vec<&ActiveNode>, active_sets: Vec<&ActiveSet>) -> bool {
+    // First verify that every node of the same class is connected to each other
+    let mut nodes_by_class: HashMap<NodeClass, Vec<ActiveNode>> = HashMap::new();
+    for node in &active_nodes {
+        nodes_by_class
+            .entry(node.node.class.clone())
+            .or_default()
+            .push(node.clone().clone());
+    }
+
+    // Check connectivity of each node class
+    for (class, nodes_in_class) in nodes_by_class {
+        let mut visited: HashSet<u16> = HashSet::new();
+        let mut queue: VecDeque<u16> = VecDeque::new();
+
+        if nodes_in_class.is_empty() {
+            continue;
+        }
+
+        queue.push_back(nodes_in_class.get(0).unwrap().node.id);
+        visited.insert(nodes_in_class.get(0).unwrap().node.id);
+
+        while queue.len() > 0 {
+            let curr_node_id = queue.pop_front().unwrap();
+            let curr_node = active_nodes
+                .iter()
+                .find(|node| node.node.id == curr_node_id)
+                .unwrap();
+            for connection in curr_node.connections.iter() {
+                if !visited.contains(connection) {
+                    visited.insert(*connection);
+                    queue.push_back(*connection);
+                }
+            }
+        }
+
+        // Check that all nodes in the class are connected to each other
+        for node in &nodes_in_class {
+            if !visited
+                .iter()
+                .any(|visited_node| *visited_node == node.node.id)
+            {
+                return false;
+            }
+        }
+    }
+
+    let mut succeeds = true;
+    active_nodes.clone().into_iter().for_each(|node| {
+        // Check that the node is immediately connected to only nodes of same class (unless it is universal)
+        if !node.class_connection_pass(active_nodes.clone()) {
+            println!("Node connected to nodes which aren't of same class");
+            succeeds = false;
+        }
+
+        // Check failed node conditions
+        let failed_conditions = node.get_failed_conditions(active_nodes.clone());
+        if !failed_conditions.is_empty() {
+            println!("Node failed conditions: {:?}", failed_conditions);
+            succeeds = false;
+        }
+    });
+
+    // TODO check all sets for failed rules
+
+    return succeeds;
+}
+
+// TODO think about how the underlying win condition will be handled. If there are two distinct networks of fully satisfied
+// nodes but they are not connected, then the puzzle is unsolved, but they all will be "satisfied" -- need to find a way to 
+// visually communicate this, then derive a method to check if the puzzle is solved. It could look something like having an
+// intermediate "conditions solved" state wherein the nodes are yellow border until all are connected to one network, after
+// which they become green? 
+
+// /// Updates the satisfied state of each active set and node in the puzzle. Uses the start and end nodes
+// /// as a heuristic to avoid visiting all nodes to update their satisfied state.
+// pub fn update_satisfied_states(
+//     active_nodes: Vec<&ActiveNode>,
+//     active_sets: Vec<&ActiveSet>,
+//     start_node: &ActiveNode,
+//     end_node: &ActiveNode,
+// ) {
+//     // Get the network of nodes branching from start_node (as all could be affected by a new line under certain conditions).
+//     let mut network_start_node = get_active_nodes_in_network(start_node, active_nodes);
+//     for node in network_start_node.iter_mut() {
+//         node.satisfied = is_satisfied(node, active_sets);
+//     }
+
+//     // If end_node is not in the start_node network, then we must perform the same set of checks
+//     if !network_start_node.contains(&end_node) {
+//         let mut network_end_node = get_active_nodes_in_network(end_node, active_nodes);
+//         for node in network_end_node.iter_mut() {
+//             node.satisfied = is_satisfied(node, active_sets);
+//         }
+//     }
+
+
+// }
+
+// fn get_active_nodes_in_network(start_node: &ActiveNode, active_nodes: Vec<&ActiveNode>) -> Vec<&ActiveNode> {
+//     // Traverse the active_nodes from start_node and add them to network as discovered through connections.
+// }
+
+// fn is_satisfied(
+//     active_node: &ActiveNode,
+//     encompassing_sets: Vec<&ActiveSet>,
+// ) -> bool {
+//     false
+// }

@@ -10,10 +10,7 @@ pub mod puzzle {
     use crate::game_set::game_set::GameSet;
     use crate::node_condition::node_condition::NodeCondition;
     use crate::util::{
-        clicked_on_sprite, get_adjacent_nodes, get_bg_tile, get_cursor_world_position,
-        get_line_texture, get_node_down, get_node_left, get_node_right, get_node_up,
-        get_node_up_left, get_node_up_right, get_set_tiles, is_bottom_edge, is_left_edge,
-        is_right_edge, is_top_edge, node_to_position,
+        check_answer, clicked_on_sprite, get_bg_tile, get_cursor_world_position, get_line_texture, get_set_tiles
     };
     use crate::{texture::texture::Texture, MainCamera};
     use bevy::prelude::*;
@@ -35,6 +32,7 @@ pub mod puzzle {
             .add_systems(Update, line_system.run_if(in_state(AppState::Puzzle)))
             .add_systems(Update, ui_action.run_if(in_state(AppState::Puzzle)))
             .insert_resource(ActiveNodes::default())
+            .insert_resource(ActiveSets::default())
             .insert_resource(ActiveLines::default())
             .insert_resource(CurrentLine::default());
     }
@@ -48,7 +46,7 @@ pub mod puzzle {
         pub sets: Vec<GameSet>,
     }
 
-    // Tracks all nodes in the puzzle, including sprite and position
+    // Tracks all nodes in the puzzle
     #[derive(Default, Resource, Component, Clone)]
     struct ActiveNodes {
         active_nodes: Vec<ActiveNode>,
@@ -60,6 +58,21 @@ pub mod puzzle {
         pub node: GameNode,
         pub connections: Vec<u16>,
         pub sprite: SpriteBundle,
+        // TODO will use in the proactive sat checks per puzzle update
+        pub satisfied: bool,
+    }
+
+    // Tracks all sets in the puzzle
+    #[derive(Default, Resource, Component, Clone)]
+    struct ActiveSets {
+        active_sets: Vec<ActiveSet>,
+    } 
+
+    // TODO ActiveSet should get its own file/module
+    #[derive(Component, Clone)]
+    pub struct ActiveSet {
+        pub set: GameSet,
+        pub satisfied: bool,
     }
 
     impl ActiveNode {
@@ -161,6 +174,7 @@ pub mod puzzle {
         puzzle_id: Res<SelectedPuzzle>,
         puzzle_manager: Res<PuzzleManager>,
         mut active_nodes: ResMut<ActiveNodes>,
+        mut active_sets: ResMut<ActiveSets>,
         // Query to get camera transform
         mut q_camera: Query<&mut Transform, With<MainCamera>>,
     ) {
@@ -274,6 +288,7 @@ pub mod puzzle {
                     node: node.clone(),
                     connections: Vec::new(),
                     sprite: node_sprite.clone(),
+                    satisfied: false,
                 });
             }
         }
@@ -339,6 +354,10 @@ pub mod puzzle {
             for set_tile in get_set_tiles(set, &puzzle, asset_server.clone()) {
                 commands.spawn((set_tile, OnPuzzleScene));
             }
+            active_sets.active_sets.push(ActiveSet {
+                set: puzzle.sets[set_idx].clone(),
+                satisfied: false,
+            });
         }
     }
 
@@ -456,13 +475,14 @@ pub mod puzzle {
             (Changed<Interaction>, With<Button>),
         >,
         active_nodes: Res<ActiveNodes>,
+        active_sets: Res<ActiveSets>,
         mut app_state: ResMut<NextState<AppState>>,
     ) {
         for (interaction, ui_button_action) in &interaction_query {
             if *interaction == Interaction::Pressed {
                 match ui_button_action {
                     PuzzleButtonAction::CheckAnswer => {
-                        let solved = check_answer(&active_nodes);
+                        let solved = check_answer(active_nodes.active_nodes.iter().collect(), active_sets.active_sets.iter().collect());
                         println!("Puzzle solved: {}", solved);
                     }
                     PuzzleButtonAction::Reset => {
@@ -476,75 +496,5 @@ pub mod puzzle {
                 }
             }
         }
-    }
-
-    /// Checks if the puzzle is solved.
-    fn check_answer(active_nodes: &Res<ActiveNodes>) -> bool {
-        // First verify that every node of the same class is connected to each other
-        let mut nodes_by_class: HashMap<NodeClass, Vec<ActiveNode>> = HashMap::new();
-        for node in active_nodes.active_nodes.iter() {
-            nodes_by_class
-                .entry(node.node.class.clone())
-                .or_default()
-                .push(node.clone());
-        }
-
-        // Check connectivity of each node class
-        for (class, nodes_in_class) in nodes_by_class {
-            let mut visited: HashSet<u16> = HashSet::new();
-            let mut queue: VecDeque<u16> = VecDeque::new();
-
-            if nodes_in_class.is_empty() {
-                continue;
-            }
-
-            queue.push_back(nodes_in_class.get(0).unwrap().node.id);
-            visited.insert(nodes_in_class.get(0).unwrap().node.id);
-
-            while queue.len() > 0 {
-                let curr_node_id = queue.pop_front().unwrap_or_else(|| {
-                    // TODO handle this better
-                    exit(1);
-                });
-                let curr_node = active_nodes
-                    .active_nodes
-                    .iter()
-                    .find(|node| node.node.id == curr_node_id)
-                    .unwrap();
-                for connection in curr_node.connections.iter() {
-                    if !visited.contains(connection) {
-                        visited.insert(*connection);
-                        queue.push_back(*connection);
-                    }
-                }
-            }
-
-            // Check that all nodes in the class are connected to each other
-            for node in &nodes_in_class {
-                if !visited
-                    .iter()
-                    .any(|visited_node| *visited_node == node.node.id)
-                {
-                    return false;
-                }
-            }
-        }
-
-        let active_node_refs: Vec<&ActiveNode> = active_nodes.active_nodes.iter().collect();
-        for node in &active_node_refs {
-            // Check that the node is immediately connected to only nodes of same class (unless it is universal)
-            if !node.class_connection_pass(active_node_refs.clone()) {
-                println!("Node connected to nodes which aren't of same class");
-                return false;
-            }
-
-            // Check failed node conditions
-            let failed_conditions = node.get_failed_conditions(active_node_refs.clone());
-            if !failed_conditions.is_empty() {
-                println!("Node failed conditions: {:?}", failed_conditions);
-                return false;
-            }
-        }
-        return true;
     }
 }
