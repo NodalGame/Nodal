@@ -4,26 +4,26 @@
 
 use bevy::prelude::*;
 
-pub mod buttons;
-mod campaign;
-pub mod constants;
-mod game_node;
-pub mod game_set;
-mod node_condition;
-mod puzzle;
-pub mod puzzle_manager;
-pub mod texture;
-pub mod util;
-use buttons::buttons::button_system;
-use campaign::campaign::campaign_plugin;
-use puzzle::puzzle::*;
+pub mod logic;
+use logic::puzzle_manager::*;
+use logic::util::*;
 
-mod splash;
-use puzzle_manager::puzzle_manager::PuzzleManager;
-use splash::splash::*;
+pub mod objects;
+use objects::game_node;
+use objects::game_set;
+use objects::node_condition;
 
-mod menu;
-use menu::menu::*;
+pub mod scenes;
+use scenes::campaign::campaign::*;
+use scenes::menu::menu::*;
+use scenes::puzzle::puzzle::*;
+use scenes::splash::splash::*;
+
+pub mod ui;
+use ui::buttons::*;
+use ui::constants::*;
+use ui::texture::*;
+
 use uuid::Uuid;
 
 // Enum that will be used as a global state for the game
@@ -53,12 +53,12 @@ fn main() {
         // Share the CameraControl resource
         .init_resource::<MainCamera>()
         // Create a new puzzle manager to store puzzles (do it here and allow other plugins to manage shared load/unload)
-        .insert_resource(PuzzleManager::new())
+        .insert_resource(puzzle_manager::PuzzleManager::new())
         .add_plugins(DefaultPlugins)
         // Declare the game state, whose starting value is determined by the `Default` trait
         .init_state::<AppState>()
         .add_systems(Startup, setup)
-        .add_systems(Update, button_system)
+        .add_systems(Update, buttons::button_system)
         // Adds the plugins for each state
         .add_plugins((splash_plugin, menu_plugin, campaign_plugin, puzzle_plugin))
         .run();

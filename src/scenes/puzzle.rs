@@ -1,28 +1,12 @@
 pub mod puzzle {
     use std::process::exit;
+    use core::hash::{Hash, Hasher};
 
-    use crate::buttons::buttons::icon_button_style;
-    use crate::constants::{
-        CDTN_RULE_SPRITE_SIZE, INTERNAL_SPACING_X, INTERNAL_SPACING_Y, SPRITE_SPACING,
-        STACK_CDTN_RULE_SPACING, TILE_NODE_SPRITE_SIZE,
-    };
-    use crate::game_node::game_node::{GameNode, NodeClass};
-    use crate::game_set::game_set::GameSet;
-    use crate::node_condition::node_condition::NodeCondition;
-    use crate::util::{
-        check_answer, clicked_on_sprite, get_bg_tile, get_cursor_world_position, get_line_texture, get_set_tiles
-    };
-    use crate::{texture::texture::Texture, MainCamera};
-    use bevy::prelude::*;
-    use bevy::window::PrimaryWindow;
+    use bevy::{app::{App, Update}, asset::AssetServer, ecs::{component::Component, query::{Changed, With}, schedule::{common_conditions::in_state, IntoSystemConfigs, NextState, OnEnter, OnExit}, system::{Commands, Query, Res, ResMut, Resource}}, hierarchy::BuildChildren, input::{mouse::MouseButton, ButtonInput}, math::{Vec2, Vec3}, render::camera::Camera, sprite::{Sprite, SpriteBundle}, transform::components::{GlobalTransform, Transform}, ui::{node_bundles::{ButtonBundle, NodeBundle}, widget::Button, AlignItems, Interaction, JustifyContent, Style, UiImage, Val}, window::{PrimaryWindow, Window}};
     use serde::Deserialize;
-    use std::collections::{HashMap, HashSet, VecDeque};
-    use std::hash::{Hash, Hasher};
     use uuid::Uuid;
 
-    use crate::{
-        despawn_screen, puzzle_manager::puzzle_manager::PuzzleManager, AppState, SelectedPuzzle,
-    };
+    use crate::{buttons::icon_button_style, check_answer, clicked_on_sprite, despawn_screen, get_bg_tile, get_cursor_world_position, get_line_texture, get_set_tiles, objects::{game_node::game_node::{GameNode, NodeClass}, game_set::game_set::GameSet, node_condition::node_condition::NodeCondition}, puzzle_manager::PuzzleManager, texture::Texture, AppState, MainCamera, SelectedPuzzle, CDTN_RULE_SPRITE_SIZE, INTERNAL_SPACING_X, INTERNAL_SPACING_Y, SPRITE_SPACING, STACK_CDTN_RULE_SPACING, TILE_NODE_SPRITE_SIZE};
 
     // This plugin will contain a playable puzzle.
     pub fn puzzle_plugin(app: &mut App) {
@@ -242,7 +226,7 @@ pub mod puzzle {
                         ..Default::default()
                     },
                     transform: Transform::from_xyz(node_x, node_y, 0.0),
-                    ..default()
+                    ..Default::default()
                 };
                 commands.spawn(node_sprite.clone()).insert(OnPuzzleScene);
 
@@ -277,7 +261,7 @@ pub mod puzzle {
                                     * (CDTN_RULE_SPRITE_SIZE + STACK_CDTN_RULE_SPACING),
                             0.0,
                         ),
-                        ..default()
+                        ..Default::default()
                     };
                     commands
                         .spawn(condition_sprite.clone())
@@ -302,7 +286,7 @@ pub mod puzzle {
                     puzzle.height as f32 * SPRITE_SPACING,
                     0.0,
                 ),
-                ..default()
+                ..Default::default()
             };
         }
 
@@ -315,9 +299,9 @@ pub mod puzzle {
                         height: Val::Percent(100.0),
                         align_items: AlignItems::End,
                         justify_content: JustifyContent::End,
-                        ..default()
+                        ..Default::default()
                     },
-                    ..default()
+                    ..Default::default()
                 },
                 OnPuzzleUI,
             ))
@@ -447,7 +431,7 @@ pub mod puzzle {
                     (end_pos.y + start_pos.y) / 2.0,
                     0.0,
                 ),
-                ..default()
+                ..Default::default()
             };
 
             // Update list of lines

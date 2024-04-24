@@ -1,17 +1,9 @@
 pub mod menu {
-    use std::path::PathBuf;
-
     use bevy::{app::AppExit, prelude::*};
     use uuid::Uuid;
 
     use crate::{
-        buttons::buttons::{
-            button_icon_style, button_text_style, text_button_style, NORMAL_BUTTON, TEXT_COLOR,
-        },
-        despawn_screen,
-        puzzle_manager::puzzle_manager::PuzzleManager,
-        texture::texture::Texture,
-        AppState, SelectedPuzzle,
+        buttons::{button_icon_style, button_text_style, text_button_style, NORMAL_BUTTON, TEXT_COLOR}, despawn_screen, puzzle_manager::PuzzleManager, texture::Texture, AppState, SelectedPuzzle
     };
 
     // This plugin manages the menu, with 5 different screens:

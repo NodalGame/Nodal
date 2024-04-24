@@ -3,23 +3,20 @@ pub mod campaign {
         app::{App, Update},
         asset::AssetServer,
         ecs::{
-            component::Component,
-            query::{Changed, With},
-            schedule::{
+            component::Component, query::{Changed, With}, schedule::{
                 common_conditions::in_state, IntoSystemConfigs, NextState, OnEnter, OnExit,
-            },
-            system::{Commands, Query, Res, ResMut, Resource},
+            }, system::{Commands, Query, Res, ResMut, Resource}
         },
         hierarchy::BuildChildren,
         input::{mouse::MouseButton, ButtonInput},
         math::{Vec2, Vec3},
-        render::{camera::Camera, color::Color},
+        render::camera::Camera,
         sprite::{Sprite, SpriteBundle},
         transform::components::{GlobalTransform, Transform},
         ui::{
-            node_bundles::{ButtonBundle, ImageBundle, NodeBundle},
+            node_bundles::{ButtonBundle, NodeBundle},
             widget::Button,
-            AlignItems, FlexDirection, Interaction, JustifyContent, Style, UiImage, Val,
+            AlignItems, Interaction, JustifyContent, Style, UiImage, Val,
         },
         utils::default,
         window::{PrimaryWindow, Window},
@@ -27,17 +24,7 @@ pub mod campaign {
     use serde::Deserialize;
     use uuid::Uuid;
 
-    use crate::{
-        buttons::buttons::{
-            button_icon_style, icon_button_style, text_button_style, NORMAL_BUTTON,
-        },
-        constants::{SPRITE_SPACING, TILE_NODE_SPRITE_SIZE},
-        despawn_screen,
-        puzzle_manager::{self, puzzle_manager::PuzzleManager},
-        texture::texture::Texture,
-        util::{clicked_on_sprite, get_cursor_world_position},
-        AppState, MainCamera, SelectedPuzzle,
-    };
+    use crate::{buttons::icon_button_style, clicked_on_sprite, despawn_screen, get_cursor_world_position, puzzle_manager::PuzzleManager, texture::Texture, AppState, MainCamera, SelectedPuzzle, SPRITE_SPACING, TILE_NODE_SPRITE_SIZE};
 
     // This plugin will contain a campaign (for now, just the main campaign).
     pub fn campaign_plugin(app: &mut App) {
@@ -105,7 +92,7 @@ pub mod campaign {
     ) {
         // Get the campaign by loading it directly
         let campaign =
-            serde_json::from_str::<Campaign>(include_str!("../assets/campaign/campaign.json"))
+            serde_json::from_str::<Campaign>(include_str!("../../assets/campaign/campaign.json"))
                 .unwrap();
 
         // Populate the puzzle manager with the campaign puzzles

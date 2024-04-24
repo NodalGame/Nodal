@@ -4,12 +4,10 @@ use bevy::{
     asset::Handle,
     prelude::*,
     render::texture::Image,
-    sprite::{self, SpriteBundle}, utils::{HashMap, HashSet},
+    sprite::SpriteBundle, utils::{HashMap, HashSet},
 };
 
-use crate::{
-    constants::{SPRITE_SPACING, TILE_NODE_SPRITE_SIZE}, game_node::game_node::NodeClass, game_set::game_set::GameSet, texture::texture::Texture, ActiveNode, ActiveSet, Puzzle
-};
+use crate::{objects::{game_node::game_node::NodeClass, game_set::game_set::GameSet}, texture::Texture, ActiveNode, ActiveSet, Puzzle, SPRITE_SPACING, TILE_NODE_SPRITE_SIZE};
 
 /// Returns a background tile as a sprite bundle.
 ///
