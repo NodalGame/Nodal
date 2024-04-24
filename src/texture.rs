@@ -11,6 +11,15 @@ pub mod texture {
         CdtnLeaf,
         CdtnLinked,
 
+        SetRuleConnected,
+        SetRuleUnconnected,
+        SetRuleDisconnected,
+        SetRuleCycle,
+        SetRuleNoCycle,
+        SetRuleXor,
+        SetRuleScope,
+        SetRuleHomomorphic,
+
         LineHorizontal,
         LineVertical,
         LineDiagonalBottomLeftTopRight,
@@ -45,7 +54,7 @@ pub mod texture {
 
     impl Default for Texture {
         fn default() -> Self {
-            Self::BgTileSideRight
+            Self::Missing
         }
     }
 
@@ -60,6 +69,15 @@ pub mod texture {
                 Texture::CdtnBranchEqual => "../assets/textures/sprites/CDTN_BRANCH_EQUAL.png",
                 Texture::CdtnLeaf => "../assets/textures/sprites/CDTN_LEAF.png",
                 Texture::CdtnLinked => "../assets/textures/sprites/CDTN_LINKED.png",
+
+                Texture::SetRuleConnected => "../assets/textures/sprites/SETRULE_CONNECTED.png",
+                Texture::SetRuleUnconnected => "../assets/textures/sprites/SETRULE_UNCONNECTED.png",
+                Texture::SetRuleDisconnected => "../assets/textures/sprites/SETRULE_DISCONNECTED.png",
+                Texture::SetRuleCycle => "../assets/textures/sprites/SETRULE_CYCLE.png",
+                Texture::SetRuleNoCycle => "../assets/textures/sprites/SETRULE_NO_CYCLE.png",
+                Texture::SetRuleXor => "../assets/textures/sprites/SETRULE_XOR.png",
+                Texture::SetRuleScope => "../assets/textures/sprites/SETRULE_SCOPE.png",
+                Texture::SetRuleHomomorphic => "../assets/textures/sprites/SETRULE_HOMOMORPHIC.png",
 
                 Texture::LineHorizontal => "../assets/textures/sprites/LINE_HORIZONTAL.png",
                 Texture::LineVertical => "../assets/textures/sprites/LINE_VERTICAL.png",
