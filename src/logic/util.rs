@@ -4,10 +4,15 @@ use bevy::{
     asset::Handle,
     prelude::*,
     render::texture::Image,
-    sprite::SpriteBundle, utils::{HashMap, HashSet},
+    sprite::SpriteBundle,
+    utils::{HashMap, HashSet},
 };
 
-use crate::{objects::{game_node::game_node::NodeClass, game_set::game_set::GameSet}, texture::Texture, ActiveNode, ActiveSet, Puzzle, SPRITE_SPACING, TILE_NODE_SPRITE_SIZE};
+use crate::{
+    objects::game_set::game_set::GameSet,
+    texture::Texture,
+    ActiveNode, ActiveSet, Puzzle, SPRITE_SPACING, TILE_NODE_SPRITE_SIZE,
+};
 
 /// Returns a background tile as a sprite bundle.
 ///
@@ -808,6 +813,18 @@ pub fn get_set_tiles(
     tiles
 }
 
+pub fn get_set_upper_left_node(set: &GameSet, puzzle: &Puzzle) -> u16 {
+    let mut upper_left_most_node = u16::MAX;
+    let mut upper_most_row = u8::MIN;
+    set.nodes.iter().for_each(|node| {
+        if node % puzzle.height as u16 > upper_most_row.into() && *node < upper_left_most_node {
+            upper_most_row = (node % puzzle.height as u16) as u8;
+            upper_left_most_node = *node;
+        }
+    });
+    upper_left_most_node
+}
+
 pub fn clicked_on_sprite(sprite: &SpriteBundle, cursor: Vec2) -> bool {
     let node_pos = sprite.transform.translation.truncate();
     let distance = cursor.distance(node_pos);
@@ -830,65 +847,45 @@ pub fn get_cursor_world_position(
         .unwrap_or(Vec2::MIN);
 }
 
-/// Checks if the puzzle is solved. Verifies a few things: 
-/// - Is the connectivity of each node class spanning all nodes in the puzzle of that class? 
+/// Checks if the puzzle is solved. Verifies a few things:
+/// - Is the connectivity of each node class spanning all nodes in the puzzle of that class?
 /// - Is each node's set of conditions satisfied?  
-/// - Is each set rule satisfied? 
+/// - Is each set rule satisfied?
 pub fn check_answer(active_nodes: Vec<&ActiveNode>, active_sets: Vec<&ActiveSet>) -> bool {
-    // First verify that every node of the same class is connected to each other
-    let mut nodes_by_class: HashMap<NodeClass, Vec<ActiveNode>> = HashMap::new();
-    for node in &active_nodes {
-        nodes_by_class
-            .entry(node.node.class.clone())
-            .or_default()
-            .push(node.clone().clone());
+    // First verify that all nodes are connected to each other
+    let mut visited: HashSet<u16> = HashSet::new();
+    let mut queue: VecDeque<u16> = VecDeque::new();
+
+    queue.push_back(active_nodes.get(0).unwrap().node.id);
+    visited.insert(active_nodes.get(0).unwrap().node.id);
+
+    while queue.len() > 0 {
+        let curr_node_id = queue.pop_front().unwrap();
+        let curr_node = active_nodes
+            .iter()
+            .find(|node| node.node.id == curr_node_id)
+            .unwrap();
+        for connection in curr_node.connections.iter() {
+            if !visited.contains(connection) {
+                visited.insert(*connection);
+                queue.push_back(*connection);
+            }
+        }
     }
 
-    // Check connectivity of each node class
-    for (class, nodes_in_class) in nodes_by_class {
-        let mut visited: HashSet<u16> = HashSet::new();
-        let mut queue: VecDeque<u16> = VecDeque::new();
-
-        if nodes_in_class.is_empty() {
-            continue;
-        }
-
-        queue.push_back(nodes_in_class.get(0).unwrap().node.id);
-        visited.insert(nodes_in_class.get(0).unwrap().node.id);
-
-        while queue.len() > 0 {
-            let curr_node_id = queue.pop_front().unwrap();
-            let curr_node = active_nodes
-                .iter()
-                .find(|node| node.node.id == curr_node_id)
-                .unwrap();
-            for connection in curr_node.connections.iter() {
-                if !visited.contains(connection) {
-                    visited.insert(*connection);
-                    queue.push_back(*connection);
-                }
-            }
-        }
-
-        // Check that all nodes in the class are connected to each other
-        for node in &nodes_in_class {
-            if !visited
-                .iter()
-                .any(|visited_node| *visited_node == node.node.id)
-            {
-                return false;
-            }
+    // Check that all nodes in the class are connected to each other
+    for node in active_nodes {
+        if !visited
+            .iter()
+            .any(|visited_node| *visited_node == node.node.id)
+        {
+            println!("Node {} not connected to any other node", node.node.id);
+            return false;
         }
     }
 
     let mut succeeds = true;
     active_nodes.clone().into_iter().for_each(|node| {
-        // Check that the node is immediately connected to only nodes of same class (unless it is universal)
-        if !node.class_connection_pass(active_nodes.clone()) {
-            println!("Node connected to nodes which aren't of same class");
-            succeeds = false;
-        }
-
         // Check failed node conditions
         let failed_conditions = node.get_failed_conditions(active_nodes.clone());
         if !failed_conditions.is_empty() {
@@ -903,10 +900,10 @@ pub fn check_answer(active_nodes: Vec<&ActiveNode>, active_sets: Vec<&ActiveSet>
 }
 
 // TODO think about how the underlying win condition will be handled. If there are two distinct networks of fully satisfied
-// nodes but they are not connected, then the puzzle is unsolved, but they all will be "satisfied" -- need to find a way to 
+// nodes but they are not connected, then the puzzle is unsolved, but they all will be "satisfied" -- need to find a way to
 // visually communicate this, then derive a method to check if the puzzle is solved. It could look something like having an
 // intermediate "conditions solved" state wherein the nodes are yellow border until all are connected to one network, after
-// which they become green? 
+// which they become green?
 
 // /// Updates the satisfied state of each active set and node in the puzzle. Uses the start and end nodes
 // /// as a heuristic to avoid visiting all nodes to update their satisfied state.
@@ -929,7 +926,6 @@ pub fn check_answer(active_nodes: Vec<&ActiveNode>, active_sets: Vec<&ActiveSet>
 //             node.satisfied = is_satisfied(node, active_sets);
 //         }
 //     }
-
 
 // }
 

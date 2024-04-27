@@ -3,9 +3,12 @@ pub mod campaign {
         app::{App, Update},
         asset::AssetServer,
         ecs::{
-            component::Component, query::{Changed, With}, schedule::{
+            component::Component,
+            query::{Changed, With},
+            schedule::{
                 common_conditions::in_state, IntoSystemConfigs, NextState, OnEnter, OnExit,
-            }, system::{Commands, Query, Res, ResMut, Resource}
+            },
+            system::{Commands, Query, Res, ResMut, Resource},
         },
         hierarchy::BuildChildren,
         input::{mouse::MouseButton, ButtonInput},
@@ -24,7 +27,11 @@ pub mod campaign {
     use serde::Deserialize;
     use uuid::Uuid;
 
-    use crate::{buttons::icon_button_style, clicked_on_sprite, despawn_screen, get_cursor_world_position, puzzle_manager::PuzzleManager, texture::Texture, AppState, MainCamera, SelectedPuzzle, SPRITE_SPACING, TILE_NODE_SPRITE_SIZE};
+    use crate::{
+        buttons::icon_button_style, clicked_on_sprite, despawn_screen, get_cursor_world_position,
+        puzzle_manager::PuzzleManager, texture::Texture, AppState, MainCamera, SelectedPuzzle,
+        SPRITE_SPACING, TILE_NODE_SPRITE_SIZE,
+    };
 
     // This plugin will contain a campaign (for now, just the main campaign).
     pub fn campaign_plugin(app: &mut App) {
@@ -100,7 +107,7 @@ pub mod campaign {
 
         // Get the texture that will be used for the puzzle images
         // TODO use actual image
-        let puzzle_tex = asset_server.load(Texture::ClassRed.path());
+        let puzzle_tex = asset_server.load(Texture::Node.path());
 
         for campaign_puzzle in campaign.puzzle_layout {
             // Add the puzzle as a sprite

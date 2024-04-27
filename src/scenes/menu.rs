@@ -3,7 +3,13 @@ pub mod menu {
     use uuid::Uuid;
 
     use crate::{
-        buttons::{button_icon_style, button_text_style, text_button_style, NORMAL_BUTTON, TEXT_COLOR}, despawn_screen, puzzle_manager::PuzzleManager, texture::Texture, AppState, SelectedPuzzle
+        buttons::{
+            button_icon_style, button_text_style, text_button_style, NORMAL_BUTTON, TEXT_COLOR,
+        },
+        despawn_screen,
+        puzzle_manager::PuzzleManager,
+        texture::Texture,
+        AppState, SelectedPuzzle,
     };
 
     // This plugin manages the menu, with 5 different screens:
@@ -133,7 +139,7 @@ pub mod menu {
                                 MenuButtonAction::SubMenu,
                             ))
                             .with_children(|parent| {
-                                let icon = asset_server.load(Texture::ClassBlue.path());
+                                let icon = asset_server.load(Texture::Node.path());
                                 parent.spawn(ImageBundle {
                                     style: button_icon_style(),
                                     image: UiImage::new(icon),

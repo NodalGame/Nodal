@@ -1,23 +1,17 @@
 pub mod game_node {
     use serde::{Deserialize, Serialize};
 
-    use crate::node_condition::node_condition::NodeCondition;
+    use crate::{
+        node_condition::node_condition::NodeCondition,
+        objects::connected_node_condition::connected_node_condition::ConnectedNodeCondition,
+    };
 
     /// GameNode is a deserialized node spec in a puzzle json, consisting of ID for its
-    /// location, class for its node class, and conditions impacting win conditions.
+    /// location in the puzzle and conditions it must satisfy.
     #[derive(Serialize, Deserialize, Clone, Debug, Eq, PartialEq, Hash)]
     pub struct GameNode {
         pub id: u16,
-        pub class: NodeClass,
         pub conditions: Vec<NodeCondition>,
-    }
-
-    /// NodeClass is the connection class of a node, wherein all of the same class
-    /// in a puzzle must be connected for the win condition.
-    #[derive(Serialize, Deserialize, Clone, Debug, Eq, PartialEq, Hash)]
-    pub enum NodeClass {
-        Red,
-        Blue,
-        Yellow,
+        pub connected_conditions: Vec<ConnectedNodeCondition>,
     }
 }

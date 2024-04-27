@@ -1,12 +1,50 @@
 pub mod puzzle {
-    use std::process::exit;
     use core::hash::{Hash, Hasher};
+    use std::process::exit;
 
-    use bevy::{app::{App, Update}, asset::AssetServer, ecs::{component::Component, query::{Changed, With}, schedule::{common_conditions::in_state, IntoSystemConfigs, NextState, OnEnter, OnExit}, system::{Commands, Query, Res, ResMut, Resource}}, hierarchy::BuildChildren, input::{mouse::MouseButton, ButtonInput}, math::{Vec2, Vec3}, render::camera::Camera, sprite::{Sprite, SpriteBundle}, transform::components::{GlobalTransform, Transform}, ui::{node_bundles::{ButtonBundle, NodeBundle}, widget::Button, AlignItems, Interaction, JustifyContent, Style, UiImage, Val}, window::{PrimaryWindow, Window}};
+    use bevy::{
+        app::{App, Update},
+        asset::AssetServer,
+        ecs::{
+            component::Component,
+            query::{Changed, With},
+            schedule::{
+                common_conditions::in_state, IntoSystemConfigs, NextState, OnEnter, OnExit,
+            },
+            system::{Commands, Query, Res, ResMut, Resource},
+        },
+        hierarchy::BuildChildren,
+        input::{mouse::MouseButton, ButtonInput},
+        math::{Vec2, Vec3},
+        render::camera::Camera,
+        sprite::{Sprite, SpriteBundle},
+        transform::components::{GlobalTransform, Transform},
+        ui::{
+            node_bundles::{ButtonBundle, NodeBundle},
+            widget::Button,
+            AlignItems, Interaction, JustifyContent, Style, UiImage, Val,
+        },
+        window::{PrimaryWindow, Window},
+    };
     use serde::Deserialize;
     use uuid::Uuid;
 
-    use crate::{buttons::icon_button_style, check_answer, clicked_on_sprite, despawn_screen, get_bg_tile, get_cursor_world_position, get_line_texture, get_set_tiles, objects::{game_node::game_node::{GameNode, NodeClass}, game_set::game_set::GameSet, node_condition::node_condition::NodeCondition}, puzzle_manager::PuzzleManager, texture::Texture, AppState, MainCamera, SelectedPuzzle, CDTN_RULE_SPRITE_SIZE, INTERNAL_SPACING_X, INTERNAL_SPACING_Y, SPRITE_SPACING, STACK_CDTN_RULE_SPACING, TILE_NODE_SPRITE_SIZE};
+    use crate::{
+        buttons::icon_button_style,
+        check_answer, clicked_on_sprite, despawn_screen, get_bg_tile, get_cursor_world_position,
+        get_line_texture, get_set_tiles, get_set_upper_left_node,
+        objects::{
+            connected_set_rule::connected_set_rule::ConnectedSetRule,
+            game_node::game_node::GameNode,
+            game_set::game_set::GameSet,
+            node_condition::node_condition::NodeCondition,
+            set_rule::set_rule::SetRule,
+        },
+        puzzle_manager::PuzzleManager,
+        texture::Texture,
+        AppState, MainCamera, SelectedPuzzle, CDTN_RULE_SPRITE_SIZE, INTERNAL_SPACING_X,
+        INTERNAL_SPACING_Y, SPRITE_SPACING, STACK_CDTN_RULE_SPACING, TILE_NODE_SPRITE_SIZE,
+    };
 
     // This plugin will contain a playable puzzle.
     pub fn puzzle_plugin(app: &mut App) {
@@ -50,7 +88,7 @@ pub mod puzzle {
     #[derive(Default, Resource, Component, Clone)]
     struct ActiveSets {
         active_sets: Vec<ActiveSet>,
-    } 
+    }
 
     // TODO ActiveSet should get its own file/module
     #[derive(Component, Clone)]
@@ -60,35 +98,6 @@ pub mod puzzle {
     }
 
     impl ActiveNode {
-        pub fn class_connection_pass(&self, active_nodes: Vec<&ActiveNode>) -> bool {
-            if self.node.conditions.contains(&NodeCondition::Universal) {
-                println!("Node is universal, passes check.");
-                return true;
-            }
-
-            for connection in &self.connections {
-                let connected_node = active_nodes.iter().find(|node| node.node.id == *connection);
-                if connected_node.is_none() {
-                    println!("Could not find connected node with id {}", connection);
-                    return false;
-                }
-                if connected_node.unwrap().node.class != self.node.class
-                    && !connected_node
-                        .unwrap()
-                        .node
-                        .conditions
-                        .contains(&NodeCondition::Universal)
-                {
-                    println!(
-                        "Connected node is not of same class and isn't universal, fails check."
-                    );
-                    return false;
-                }
-            }
-
-            return true;
-        }
-
         // TODO this will need to be updated to take set rules as well
         pub fn get_failed_conditions(&self, active_nodes: Vec<&ActiveNode>) -> Vec<NodeCondition> {
             self.node
@@ -176,15 +185,15 @@ pub mod puzzle {
 
         // TODO load only when needed, then cache in map to re-access in the screen spawning loop
         // Load node textures
-        let tex_node_red = asset_server.load(Texture::ClassRed.path());
-        let tex_node_blue = asset_server.load(Texture::ClassBlue.path());
-        let tex_node_yellow = asset_server.load(Texture::ClassYellow.path());
+        let tex_node = asset_server.load(Texture::Node.path());
 
         // Load condition textures
         let tex_cdtn_branch_equal = asset_server.load(Texture::CdtnBranchEqual.path());
         let tex_cdtn_leaf = asset_server.load(Texture::CdtnLeaf.path());
-        let tex_cdtn_linked = asset_server.load(Texture::CdtnLinked.path());
-        let tex_cdtn_universal = asset_server.load(Texture::CdtnUniversal.path());
+
+        // Load set rule textures
+        let tex_rule_connected = asset_server.load(Texture::SetRuleConnected.path());
+        let tex_rule_homomorphic = asset_server.load(Texture::SetRuleHomomorphic.path());
 
         // Create a width x height grid of nodes as sprite bundles, accounting for background tiles
         for x in 0..puzzle.width * 2 + 1 {
@@ -209,18 +218,9 @@ pub mod puzzle {
                 let node_x = x as f32 * SPRITE_SPACING;
                 let node_y = y as f32 * SPRITE_SPACING;
 
-                let node_texture = match node.class {
-                    NodeClass::Red => tex_node_red.clone(),
-                    NodeClass::Blue => tex_node_blue.clone(),
-                    NodeClass::Yellow => tex_node_yellow.clone(),
-                    _ => {
-                        println!("Error when adding nodes to screen, invalid class?");
-                        exit(1);
-                    }
-                };
-
                 let node_sprite = SpriteBundle {
-                    texture: node_texture,
+                    texture: tex_node,
+                    // TODO move getting the sprite to somewhere else so it's not duplicated
                     sprite: Sprite {
                         custom_size: Some(Vec2::new(TILE_NODE_SPRITE_SIZE, TILE_NODE_SPRITE_SIZE)),
                         ..Default::default()
@@ -236,8 +236,6 @@ pub mod puzzle {
                     let condition_texture = match condition {
                         NodeCondition::BranchEqual => tex_cdtn_branch_equal.clone(),
                         NodeCondition::Leaf => tex_cdtn_leaf.clone(),
-                        NodeCondition::Linked => tex_cdtn_linked.clone(),
-                        NodeCondition::Universal => tex_cdtn_universal.clone(),
                         _ => {
                             println!("Error when adding nodes to screen, invalid condition?");
                             exit(1);
@@ -246,13 +244,7 @@ pub mod puzzle {
 
                     let condition_sprite = SpriteBundle {
                         texture: condition_texture,
-                        sprite: Sprite {
-                            custom_size: Some(Vec2::new(
-                                CDTN_RULE_SPRITE_SIZE,
-                                CDTN_RULE_SPRITE_SIZE,
-                            )),
-                            ..Default::default()
-                        },
+                        sprite: condition.sprite().clone(),
                         transform: Transform::from_xyz(
                             node_x + TILE_NODE_SPRITE_SIZE - INTERNAL_SPACING_X,
                             node_y + TILE_NODE_SPRITE_SIZE
@@ -337,6 +329,64 @@ pub mod puzzle {
             let set = &puzzle.sets[set_idx];
             for set_tile in get_set_tiles(set, &puzzle, asset_server.clone()) {
                 commands.spawn((set_tile, OnPuzzleScene));
+            }
+
+            // Add the set rule sprites in the upper left-most corner of the set
+            let upper_left_node = get_set_upper_left_node(set, &puzzle);
+            let node_x = (upper_left_node / puzzle.height as u16) as f32 * SPRITE_SPACING;
+            let node_y = (upper_left_node % puzzle.height as u16) as f32 * SPRITE_SPACING;
+
+            let mut total_rule_idx = 0;
+            for rule in set.rules.iter() {
+                // TODO get textures via either set_rule.rs or texture.rs
+                let rule_texture = match rule {
+                    SetRule::Connected => tex_rule_connected.clone(),
+                    SetRule::Unconnected => todo!(),
+                    SetRule::Disconnected => todo!(),
+                    SetRule::Cycle => todo!(),
+                    SetRule::NoCycle => todo!(),
+                    SetRule::Scope => todo!(),
+                };
+
+                let rule_sprite = SpriteBundle {
+                    texture: rule_texture,
+                    sprite: rule.sprite().clone(),
+                    transform: Transform::from_xyz(
+                        node_x - TILE_NODE_SPRITE_SIZE,
+                        node_y + TILE_NODE_SPRITE_SIZE
+                            - INTERNAL_SPACING_Y
+                            - total_rule_idx as f32
+                                * (CDTN_RULE_SPRITE_SIZE + STACK_CDTN_RULE_SPACING),
+                        0.0,
+                    ),
+                    ..Default::default()
+                };
+                commands.spawn(rule_sprite.clone()).insert(OnPuzzleScene);
+
+                total_rule_idx += 1;
+            }
+            for crule in set.connected_rules.iter() {
+                // TODO get textures via either connected_set_rule.rs or texture.rs
+                let crule_texture = match crule {
+                    ConnectedSetRule::Homomorphism(crule) => tex_rule_homomorphic.clone(),
+                };
+
+                let crule_sprite = SpriteBundle {
+                    texture: crule_texture,
+                    sprite: crule.sprite().clone(),
+                    transform: Transform::from_xyz(
+                        node_x - TILE_NODE_SPRITE_SIZE,
+                        node_y + TILE_NODE_SPRITE_SIZE
+                            - INTERNAL_SPACING_Y
+                            - total_rule_idx as f32
+                                * (CDTN_RULE_SPRITE_SIZE + STACK_CDTN_RULE_SPACING),
+                        0.0,
+                    ),
+                    ..Default::default()
+                };
+                commands.spawn(crule_sprite.clone()).insert(OnPuzzleScene);
+
+                total_rule_idx += 1;
             }
             active_sets.active_sets.push(ActiveSet {
                 set: puzzle.sets[set_idx].clone(),
@@ -466,7 +516,10 @@ pub mod puzzle {
             if *interaction == Interaction::Pressed {
                 match ui_button_action {
                     PuzzleButtonAction::CheckAnswer => {
-                        let solved = check_answer(active_nodes.active_nodes.iter().collect(), active_sets.active_sets.iter().collect());
+                        let solved = check_answer(
+                            active_nodes.active_nodes.iter().collect(),
+                            active_sets.active_sets.iter().collect(),
+                        );
                         println!("Puzzle solved: {}", solved);
                     }
                     PuzzleButtonAction::Reset => {

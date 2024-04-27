@@ -2,14 +2,13 @@ pub mod texture {
 
     #[derive(Eq, PartialEq, Clone, Copy)]
     pub enum Texture {
-        ClassRed,
-        ClassBlue,
-        ClassYellow,
+        Node,
 
-        CdtnUniversal,
         CdtnBranchEqual,
         CdtnLeaf,
-        CdtnLinked,
+
+        CdtnLimitConnection,
+        CdtnDegreeEqual,
 
         SetRuleConnected,
         SetRuleUnconnected,
@@ -61,22 +60,26 @@ pub mod texture {
     impl Texture {
         pub fn path(&self) -> &str {
             match self {
-                Texture::ClassRed => "../assets/textures/sprites/NODE_RED.png",
-                Texture::ClassBlue => "../assets/textures/sprites/NODE_BLUE.png",
-                Texture::ClassYellow => "../assets/textures/sprites/NODE_YELLOW.png",
+                Texture::Node => "../assets/textures/sprites/NODE_EMPTY.png",
 
-                Texture::CdtnUniversal => "../assets/textures/sprites/CDTN_UNIVERSAL.png",
                 Texture::CdtnBranchEqual => "../assets/textures/sprites/CDTN_BRANCH_EQUAL.png",
                 Texture::CdtnLeaf => "../assets/textures/sprites/CDTN_LEAF.png",
-                Texture::CdtnLinked => "../assets/textures/sprites/CDTN_LINKED.png",
+
+                Texture::CdtnLimitConnection => {
+                    "../assets/textures/sprites/CDTN_LIMIT_CONNECTION.png"
+                }
+                Texture::CdtnDegreeEqual => "../assets/textures/sprites/CDTN_DEGREE_EQUAL.png",
 
                 Texture::SetRuleConnected => "../assets/textures/sprites/SETRULE_CONNECTED.png",
                 Texture::SetRuleUnconnected => "../assets/textures/sprites/SETRULE_UNCONNECTED.png",
-                Texture::SetRuleDisconnected => "../assets/textures/sprites/SETRULE_DISCONNECTED.png",
+                Texture::SetRuleDisconnected => {
+                    "../assets/textures/sprites/SETRULE_DISCONNECTED.png"
+                }
                 Texture::SetRuleCycle => "../assets/textures/sprites/SETRULE_CYCLE.png",
                 Texture::SetRuleNoCycle => "../assets/textures/sprites/SETRULE_NO_CYCLE.png",
                 Texture::SetRuleXor => "../assets/textures/sprites/SETRULE_XOR.png",
                 Texture::SetRuleScope => "../assets/textures/sprites/SETRULE_SCOPE.png",
+
                 Texture::SetRuleHomomorphic => "../assets/textures/sprites/SETRULE_HOMOMORPHIC.png",
 
                 Texture::LineHorizontal => "../assets/textures/sprites/LINE_HORIZONTAL.png",

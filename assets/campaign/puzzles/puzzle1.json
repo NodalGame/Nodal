@@ -1,60 +1,65 @@
 {
 	"uuid": "e820699a-6e12-48db-b7b4-e8663cfba7b4",
 	"name": "Puzzle1",
-	"width": 3,
-	"height": 3,
+	"width": 2,
+	"height": 2,
 	"nodes": [
 		{
 			"id": 0,
-			"class": "Blue",
-			"conditions": ["Universal"]
+			"conditions": ["BranchEqual"],
+			"connected_conditions": [
+				{
+					"LimitConnection": "Green"
+				},
+				{
+					"DegreeEqual": "Blue"
+				}
+			]
 		},
 		{
 			"id": 1,
-			"class": "Red",
-			"conditions": ["Linked", "BranchEqual"]
+			"conditions": ["Leaf"],
+			"connected_conditions": [
+				{
+					"DegreeEqual": "Blue"
+				}
+			]
 		},
 		{
 			"id": 2,
-			"class": "Yellow",
-			"conditions": []
+			"conditions": [],
+			"connected_conditions": []
 		},
 		{
 			"id": 3,
-			"class": "Red",
-			"conditions": []
-		},
-		{
-			"id": 4,
-			"class": "Red",
-			"conditions": []
-		},
-		{
-			"id": 5,
-			"class": "Red",
-			"conditions": []
-		},
-		{
-			"id": 6,
-			"class": "Red",
-			"conditions": []
-		},
-		{
-			"id": 7,
-			"class": "Red",
-			"conditions": []
-		},
-		{
-			"id": 8,
-			"class": "Red",
-			"conditions": []
+			"conditions": [],
+			"connected_conditions": [
+				{
+					"LimitConnection": "Green"
+				}
+			]
 		}
 	],
 	"sets": [
 		{
 			"id": 0,
-			"nodes": [1, 3, 4, 5, 7],
-			"rules": []
+			"nodes": [0, 1],
+			"rules": ["Connected"],
+			"connected_rules": [
+				{
+					"Homomorphic": "Yellow"
+				}
+			]
+		},
+		{
+			"id": 1,
+			"nodes": [2, 3],
+			"rules": [],
+			"connected_rules": [
+				{
+					"Homomorphic": "Yellow"
+				}
+			]
 		}
 	]
 }
