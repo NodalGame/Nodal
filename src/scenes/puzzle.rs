@@ -30,20 +30,9 @@ pub mod puzzle {
     use uuid::Uuid;
 
     use crate::{
-        buttons::icon_button_style,
-        check_answer, clicked_on_sprite, despawn_screen, get_bg_tile, get_cursor_world_position,
-        get_line_texture, get_set_tiles, get_set_upper_left_node,
-        objects::{
-            connected_set_rule::connected_set_rule::ConnectedSetRule,
-            game_node::game_node::GameNode,
-            game_set::game_set::GameSet,
-            node_condition::node_condition::NodeCondition,
-            set_rule::set_rule::SetRule,
-        },
-        puzzle_manager::PuzzleManager,
-        texture::Texture,
-        AppState, MainCamera, SelectedPuzzle, CDTN_RULE_SPRITE_SIZE, INTERNAL_SPACING_X,
-        INTERNAL_SPACING_Y, SPRITE_SPACING, STACK_CDTN_RULE_SPACING, TILE_NODE_SPRITE_SIZE,
+        buttons::icon_button_style, check_answer, clicked_on_sprite, despawn_screen, get_bg_tile, get_cursor_world_position, get_line_texture, get_set_tiles, get_set_upper_left_node, node_to_position, objects::{
+            connected_node_condition::connected_node_condition::ConnectedNodeCondition, connected_set_rule::connected_set_rule::ConnectedSetRule, game_node::game_node::GameNode, game_set::game_set::GameSet, node_condition::node_condition::NodeCondition, set_rule::set_rule::SetRule
+        }, puzzle_manager::PuzzleManager, texture::Texture, AppState, MainCamera, SelectedPuzzle, CDTN_RULE_SPRITE_SIZE, INTERNAL_SPACING_X, INTERNAL_SPACING_Y, SPRITE_SPACING, STACK_CDTN_RULE_SPACING, TILE_NODE_SPRITE_SIZE
     };
 
     // This plugin will contain a playable puzzle.
@@ -190,10 +179,12 @@ pub mod puzzle {
         // Load condition textures
         let tex_cdtn_branch_equal = asset_server.load(Texture::CdtnBranchEqual.path());
         let tex_cdtn_leaf = asset_server.load(Texture::CdtnLeaf.path());
+        let tex_cdtn_limit_connection = asset_server.load(Texture::CdtnLimitConnection.path());
+        let tex_cdtn_degree_equal = asset_server.load(Texture::CdtnDegreeEqual.path());
 
         // Load set rule textures
         let tex_rule_connected = asset_server.load(Texture::SetRuleConnected.path());
-        let tex_rule_homomorphic = asset_server.load(Texture::SetRuleHomomorphic.path());
+        let tex_rule_homomorphism = asset_server.load(Texture::SetRuleHomomorphism.path());
 
         // Create a width x height grid of nodes as sprite bundles, accounting for background tiles
         for x in 0..puzzle.width * 2 + 1 {
@@ -219,7 +210,7 @@ pub mod puzzle {
                 let node_y = y as f32 * SPRITE_SPACING;
 
                 let node_sprite = SpriteBundle {
-                    texture: tex_node,
+                    texture: tex_node.clone(),
                     // TODO move getting the sprite to somewhere else so it's not duplicated
                     sprite: Sprite {
                         custom_size: Some(Vec2::new(TILE_NODE_SPRITE_SIZE, TILE_NODE_SPRITE_SIZE)),
@@ -231,7 +222,8 @@ pub mod puzzle {
                 commands.spawn(node_sprite.clone()).insert(OnPuzzleScene);
 
                 // Spawn its conditions on the screen
-                for (cdtn_idx, condition) in node.conditions.iter().enumerate() {
+                let mut total_cdtn_idx = 0;
+                for condition in node.conditions.iter() {
                     // TODO get textures via either node_condition.rs or texture.rs
                     let condition_texture = match condition {
                         NodeCondition::BranchEqual => tex_cdtn_branch_equal.clone(),
@@ -249,7 +241,7 @@ pub mod puzzle {
                             node_x + TILE_NODE_SPRITE_SIZE - INTERNAL_SPACING_X,
                             node_y + TILE_NODE_SPRITE_SIZE
                                 - INTERNAL_SPACING_Y
-                                - cdtn_idx as f32
+                                - total_cdtn_idx as f32
                                     * (CDTN_RULE_SPRITE_SIZE + STACK_CDTN_RULE_SPACING),
                             0.0,
                         ),
@@ -258,6 +250,35 @@ pub mod puzzle {
                     commands
                         .spawn(condition_sprite.clone())
                         .insert(OnPuzzleScene);
+
+                    total_cdtn_idx += 1;
+                }
+
+                for con_cdtn in node.connected_conditions.iter() {
+                    // TODO get textures via either connected_node_condition.rs or texture.rs
+                    let con_cdtn_texture = match con_cdtn {
+                        ConnectedNodeCondition::LimitConnection(con_cdtn) => tex_cdtn_limit_connection.clone(),
+                        ConnectedNodeCondition::DegreeEqual(con_cdtn) => tex_cdtn_degree_equal.clone(),
+                    };
+
+                    let con_cdtn_sprite = SpriteBundle {
+                        texture: con_cdtn_texture,
+                        sprite: con_cdtn.sprite().clone(),
+                        transform: Transform::from_xyz(
+                            node_x + TILE_NODE_SPRITE_SIZE - INTERNAL_SPACING_X,
+                            node_y + TILE_NODE_SPRITE_SIZE
+                                - INTERNAL_SPACING_Y
+                                - total_cdtn_idx as f32
+                                    * (CDTN_RULE_SPRITE_SIZE + STACK_CDTN_RULE_SPACING),
+                            0.0,
+                        ),
+                        ..Default::default()
+                    };
+                    commands
+                        .spawn(con_cdtn_sprite.clone())
+                        .insert(OnPuzzleScene);
+
+                    total_cdtn_idx += 1;
                 }
 
                 active_nodes.active_nodes.push(ActiveNode {
@@ -333,8 +354,8 @@ pub mod puzzle {
 
             // Add the set rule sprites in the upper left-most corner of the set
             let upper_left_node = get_set_upper_left_node(set, &puzzle);
-            let node_x = (upper_left_node / puzzle.height as u16) as f32 * SPRITE_SPACING;
-            let node_y = (upper_left_node % puzzle.height as u16) as f32 * SPRITE_SPACING;
+
+            let (node_x, node_y) = node_to_position(&upper_left_node, &puzzle);
 
             let mut total_rule_idx = 0;
             for rule in set.rules.iter() {
@@ -352,7 +373,7 @@ pub mod puzzle {
                     texture: rule_texture,
                     sprite: rule.sprite().clone(),
                     transform: Transform::from_xyz(
-                        node_x - TILE_NODE_SPRITE_SIZE,
+                        node_x - TILE_NODE_SPRITE_SIZE + INTERNAL_SPACING_X,
                         node_y + TILE_NODE_SPRITE_SIZE
                             - INTERNAL_SPACING_Y
                             - total_rule_idx as f32
@@ -365,17 +386,18 @@ pub mod puzzle {
 
                 total_rule_idx += 1;
             }
+
             for crule in set.connected_rules.iter() {
                 // TODO get textures via either connected_set_rule.rs or texture.rs
                 let crule_texture = match crule {
-                    ConnectedSetRule::Homomorphism(crule) => tex_rule_homomorphic.clone(),
+                    ConnectedSetRule::Homomorphism(crule) => tex_rule_homomorphism.clone(),
                 };
 
                 let crule_sprite = SpriteBundle {
                     texture: crule_texture,
                     sprite: crule.sprite().clone(),
                     transform: Transform::from_xyz(
-                        node_x - TILE_NODE_SPRITE_SIZE,
+                        node_x - TILE_NODE_SPRITE_SIZE + INTERNAL_SPACING_X,
                         node_y + TILE_NODE_SPRITE_SIZE
                             - INTERNAL_SPACING_Y
                             - total_rule_idx as f32
@@ -388,6 +410,7 @@ pub mod puzzle {
 
                 total_rule_idx += 1;
             }
+
             active_sets.active_sets.push(ActiveSet {
                 set: puzzle.sets[set_idx].clone(),
                 satisfied: false,

@@ -885,14 +885,14 @@ pub fn check_answer(active_nodes: Vec<&ActiveNode>, active_sets: Vec<&ActiveSet>
     }
 
     let mut succeeds = true;
-    active_nodes.clone().into_iter().for_each(|node| {
-        // Check failed node conditions
-        let failed_conditions = node.get_failed_conditions(active_nodes.clone());
-        if !failed_conditions.is_empty() {
-            println!("Node failed conditions: {:?}", failed_conditions);
-            succeeds = false;
-        }
-    });
+    // active_nodes.clone().into_iter().for_each(|node| {
+    //     // Check failed node conditions
+    //     let failed_conditions = node.get_failed_conditions(active_nodes.clone());
+    //     if !failed_conditions.is_empty() {
+    //         println!("Node failed conditions: {:?}", failed_conditions);
+    //         succeeds = false;
+    //     }
+    // });
 
     // TODO check all sets for failed rules
 

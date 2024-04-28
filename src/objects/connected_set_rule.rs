@@ -23,8 +23,8 @@ pub mod connected_set_rule {
             }
         }
 
-        pub fn sprite(&self) -> &Sprite {
-            &Sprite {
+        pub fn sprite(&self) -> Sprite {
+            Sprite {
                 custom_size: Some(Vec2::new(CDTN_RULE_SPRITE_SIZE, CDTN_RULE_SPRITE_SIZE)),
                 color: self.rule_class().color().clone(),
                 ..Default::default()

@@ -2,7 +2,7 @@ pub mod connected_node_condition {
     use bevy::{math::Vec2, render::color::Color, sprite::Sprite};
     use serde::{Deserialize, Serialize};
 
-    use crate::{ActiveNode, CDTN_RULE_SPRITE_SIZE};
+    use crate::CDTN_RULE_SPRITE_SIZE;
 
     /// ConnectedNodeCondition applies a condition to a single node in a puzzle
     /// in relation to all other nodes of the same class, "connecting" them without
@@ -24,8 +24,8 @@ pub mod connected_node_condition {
             }
         }
 
-        pub fn sprite(&self) -> &Sprite {
-            &Sprite {
+        pub fn sprite(&self) -> Sprite {
+            Sprite {
                 custom_size: Some(Vec2::new(CDTN_RULE_SPRITE_SIZE, CDTN_RULE_SPRITE_SIZE)),
                 color: self.condition_class().color().clone(),
                 ..Default::default()

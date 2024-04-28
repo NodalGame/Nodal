@@ -26,8 +26,8 @@ pub mod set_rule {
     }
 
     impl SetRule {
-        pub fn sprite(&self) -> &Sprite {
-            &Sprite {
+        pub fn sprite(&self) -> Sprite {
+            Sprite {
                 custom_size: Some(Vec2::new(CDTN_RULE_SPRITE_SIZE, CDTN_RULE_SPRITE_SIZE)),
                 color: Color::WHITE,
                 ..Default::default()

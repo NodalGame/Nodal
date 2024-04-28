@@ -8,6 +8,7 @@ pub mod game_set {
     /// Set contains nodes over which it applies SetRules.
     #[derive(Serialize, Deserialize, Clone, Debug)]
     pub struct GameSet {
+        pub id: u8,
         pub nodes: Vec<u16>,
         pub rules: Vec<SetRule>,
         pub connected_rules: Vec<ConnectedSetRule>,
