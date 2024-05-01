@@ -9,9 +9,6 @@ use logic::puzzle_manager::*;
 use logic::util::*;
 
 pub mod objects;
-use objects::game_node;
-use objects::game_set;
-use objects::node_condition;
 
 pub mod scenes;
 use scenes::campaign::campaign::*;

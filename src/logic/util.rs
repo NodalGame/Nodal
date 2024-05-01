@@ -1,18 +1,14 @@
-use std::{collections::VecDeque, f32::consts::PI};
+use std::{collections::{HashMap, VecDeque}, f32::consts::PI};
 
 use bevy::{
     asset::Handle,
     prelude::*,
     render::texture::Image,
     sprite::SpriteBundle,
-    utils::{HashMap, HashSet},
+    utils::HashSet,
 };
 
-use crate::{
-    objects::game_set::game_set::GameSet,
-    texture::Texture,
-    ActiveNode, ActiveSet, Puzzle, SPRITE_SPACING, TILE_NODE_SPRITE_SIZE,
-};
+use crate::{objects::{active::{active_identifier::active_identifier::ActiveIdentifier, active_node::active_node::ActiveNode, active_set::active_set::ActiveSet, satisfiable_entity::satisfiable_entity::Satisfiable}, immutable::{game_set::game_set::GameSet, puzzle::puzzle::Puzzle}}, texture::Texture, SPRITE_SPACING, TILE_NODE_SPRITE_SIZE};
 
 /// Returns a background tile as a sprite bundle.
 ///
@@ -149,7 +145,7 @@ pub fn get_bg_tile(x: u8, y: u8, width: u8, height: u8, asset_server: AssetServe
     }
 }
 
-pub fn get_line_texture(start_node: ActiveNode, end_node: ActiveNode) -> Option<&'static Texture> {
+pub fn get_line_texture(start_node: &ActiveNode, end_node: &ActiveNode) -> Option<&'static Texture> {
     let start_pos = start_node.sprite.transform.translation.truncate();
     let end_pos = end_node.sprite.transform.translation.truncate();
     let direction = end_pos - start_pos;
@@ -899,43 +895,80 @@ pub fn check_answer(active_nodes: Vec<&ActiveNode>, active_sets: Vec<&ActiveSet>
     return succeeds;
 }
 
-// TODO think about how the underlying win condition will be handled. If there are two distinct networks of fully satisfied
-// nodes but they are not connected, then the puzzle is unsolved, but they all will be "satisfied" -- need to find a way to
-// visually communicate this, then derive a method to check if the puzzle is solved. It could look something like having an
-// intermediate "conditions solved" state wherein the nodes are yellow border until all are connected to one network, after
-// which they become green?
+/// Returns hashmap of satisfied states of relevant nodes, conditions, and set rules. 
+/// Uses the start and end nodes as a heuristic to avoid visiting all nodes to update their satisfied state.
+pub fn get_satisfied_states(
+    active_nodes: Vec<&ActiveNode>,
+    active_sets: Vec<&ActiveSet>,
+    start_node: &ActiveNode,
+    end_node: &ActiveNode,
+) -> HashMap<ActiveIdentifier, bool> {
+    // Getting networks starting from specific nodes
+    let mut network_start_node = get_active_nodes_in_network(start_node, &active_nodes);
 
-// /// Updates the satisfied state of each active set and node in the puzzle. Uses the start and end nodes
-// /// as a heuristic to avoid visiting all nodes to update their satisfied state.
-// pub fn update_satisfied_states(
-//     active_nodes: Vec<&ActiveNode>,
-//     active_sets: Vec<&ActiveSet>,
-//     start_node: &ActiveNode,
-//     end_node: &ActiveNode,
-// ) {
-//     // Get the network of nodes branching from start_node (as all could be affected by a new line under certain conditions).
-//     let mut network_start_node = get_active_nodes_in_network(start_node, active_nodes);
-//     for node in network_start_node.iter_mut() {
-//         node.satisfied = is_satisfied(node, active_sets);
-//     }
+    // If end_node not in network, extend it
+    if !network_start_node.contains(&end_node) {
+        network_start_node.extend(get_active_nodes_in_network(end_node, &active_nodes));
+    }
 
-//     // If end_node is not in the start_node network, then we must perform the same set of checks
-//     if !network_start_node.contains(&end_node) {
-//         let mut network_end_node = get_active_nodes_in_network(end_node, active_nodes);
-//         for node in network_end_node.iter_mut() {
-//             node.satisfied = is_satisfied(node, active_sets);
-//         }
-//     }
+    let mut satisfied_states: HashMap<ActiveIdentifier, bool> = HashMap::new();
 
-// }
+    for node in network_start_node.into_iter() {
+        satisfied_states.insert(node.active_id, node.compute_satisfied());
+        // TODO for each condition on the node also update satisfied 
+    }
 
-// fn get_active_nodes_in_network(start_node: &ActiveNode, active_nodes: Vec<&ActiveNode>) -> Vec<&ActiveNode> {
-//     // Traverse the active_nodes from start_node and add them to network as discovered through connections.
-// }
+    println!("Satisfied states: {:?}", satisfied_states);
 
-// fn is_satisfied(
-//     active_node: &ActiveNode,
-//     encompassing_sets: Vec<&ActiveSet>,
-// ) -> bool {
-//     false
-// }
+    satisfied_states
+
+    // TODO for each set which encompasses at least one node in the network, check its satisfied states
+}
+
+fn get_active_node_from_id(id: u16, active_nodes: Vec<&ActiveNode>) -> &ActiveNode {
+    active_nodes.iter().find(|node| node.node.id == id).unwrap()
+}
+
+fn get_mutable_node_from_id(id: u16, active_nodes: Vec<&mut ActiveNode>) -> Option<&mut ActiveNode> {
+    for node in active_nodes {
+        if node.node.id == id {
+            return Some(node);
+        }
+    }
+    None
+}
+
+fn get_active_nodes_in_network<'a>(
+    start_node: &'a ActiveNode,
+    active_nodes: &Vec<&'a ActiveNode>,
+) -> Vec<&'a ActiveNode> {
+    // Traverse the active_nodes from start_node and add them to network as discovered through connections.
+    let mut visited: HashSet<u16> = HashSet::new();
+    let mut queue: VecDeque<u16> = VecDeque::new();
+    let mut network: Vec<&ActiveNode> = Vec::new();
+
+    queue.push_back(start_node.node.id);
+    visited.insert(start_node.node.id);
+    network.push(get_active_node_from_id(start_node.node.id, active_nodes.to_vec()));
+
+    while queue.len() > 0 {
+        let curr_node_id = queue.pop_front().unwrap();
+        let curr_node = active_nodes
+            .iter()
+            .find(|node| node.node.id == curr_node_id)
+            .unwrap();
+        for connection in curr_node.connections.iter() {
+            if !visited.contains(connection) {
+                visited.insert(*connection);
+                queue.push_back(*connection);
+                network.push(get_active_node_from_id(*connection, active_nodes.to_vec()));
+            }
+        }
+    }
+
+    network
+}
+
+fn is_satisfied(active_node: &ActiveNode, encompassing_sets: Vec<&ActiveSet>) -> bool {
+    true
+}

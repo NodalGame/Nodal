@@ -80,7 +80,9 @@ pub mod texture {
                 Texture::SetRuleXor => "../assets/textures/sprites/SETRULE_XOR.png",
                 Texture::SetRuleScope => "../assets/textures/sprites/SETRULE_SCOPE.png",
 
-                Texture::SetRuleHomomorphism => "../assets/textures/sprites/SETRULE_HOMOMORPHISM.png",
+                Texture::SetRuleHomomorphism => {
+                    "../assets/textures/sprites/SETRULE_HOMOMORPHISM.png"
+                }
 
                 Texture::LineHorizontal => "../assets/textures/sprites/LINE_HORIZONTAL.png",
                 Texture::LineVertical => "../assets/textures/sprites/LINE_VERTICAL.png",

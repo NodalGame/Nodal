@@ -4,14 +4,14 @@ pub mod puzzle_manager {
     use std::{
         fs::{self, File},
         io::Read,
-        path::{Path, PathBuf},
+        path::PathBuf,
     };
 
     use bevy::utils::HashMap;
     use uuid::Uuid;
     use walkdir::WalkDir;
 
-    use crate::Puzzle;
+    use crate::objects::immutable::puzzle::puzzle::Puzzle;
 
     #[derive(Resource, Debug)]
     pub struct PuzzleManager {

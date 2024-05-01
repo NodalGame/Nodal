@@ -1,22 +1,18 @@
 pub mod puzzle {
-    use core::hash::{Hash, Hasher};
     use std::process::exit;
 
     use bevy::{
         app::{App, Update},
         asset::AssetServer,
         ecs::{
-            component::Component,
-            query::{Changed, With},
-            schedule::{
+            component::Component, query::{Changed, With}, schedule::{
                 common_conditions::in_state, IntoSystemConfigs, NextState, OnEnter, OnExit,
-            },
-            system::{Commands, Query, Res, ResMut, Resource},
+            }, system::{Commands, Query, Res, ResMut, Resource}
         },
         hierarchy::BuildChildren,
         input::{mouse::MouseButton, ButtonInput},
         math::{Vec2, Vec3},
-        render::camera::Camera,
+        render::{camera::Camera, color::Color},
         sprite::{Sprite, SpriteBundle},
         transform::components::{GlobalTransform, Transform},
         ui::{
@@ -27,12 +23,9 @@ pub mod puzzle {
         window::{PrimaryWindow, Window},
     };
     use serde::Deserialize;
-    use uuid::Uuid;
 
     use crate::{
-        buttons::icon_button_style, check_answer, clicked_on_sprite, despawn_screen, get_bg_tile, get_cursor_world_position, get_line_texture, get_set_tiles, get_set_upper_left_node, node_to_position, objects::{
-            connected_node_condition::connected_node_condition::ConnectedNodeCondition, connected_set_rule::connected_set_rule::ConnectedSetRule, game_node::game_node::GameNode, game_set::game_set::GameSet, node_condition::node_condition::NodeCondition, set_rule::set_rule::SetRule
-        }, puzzle_manager::PuzzleManager, texture::Texture, AppState, MainCamera, SelectedPuzzle, CDTN_RULE_SPRITE_SIZE, INTERNAL_SPACING_X, INTERNAL_SPACING_Y, SPRITE_SPACING, STACK_CDTN_RULE_SPACING, TILE_NODE_SPRITE_SIZE
+        buttons::icon_button_style, check_answer, clicked_on_sprite, despawn_screen, get_bg_tile, get_cursor_world_position, get_line_texture, get_satisfied_states, get_set_tiles, get_set_upper_left_node, node_to_position, objects::{active::{active_identifier::active_identifier::ActiveIdentifier, active_line::active_line::ActiveLine, active_node::active_node::ActiveNode, active_set::active_set::ActiveSet, satisfiable_entity::satisfiable_entity::Satisfiable}, immutable::{connected_node_condition::connected_node_condition::ConnectedNodeCondition, connected_set_rule::connected_set_rule::ConnectedSetRule, node_condition::node_condition::NodeCondition, puzzle::puzzle::Puzzle, set_rule::set_rule::SetRule}}, puzzle_manager::PuzzleManager, texture::Texture, AppState, MainCamera, SelectedPuzzle, CDTN_RULE_SPRITE_SIZE, INTERNAL_SPACING_X, INTERNAL_SPACING_Y, SPRITE_SPACING, STACK_CDTN_RULE_SPACING, TILE_NODE_SPRITE_SIZE
     };
 
     // This plugin will contain a playable puzzle.
@@ -49,12 +42,8 @@ pub mod puzzle {
     }
 
     #[derive(Deserialize, Debug)]
-    pub struct Puzzle {
-        pub uuid: Uuid,
-        pub width: u8,
-        pub height: u8,
-        pub nodes: Vec<GameNode>,
-        pub sets: Vec<GameSet>,
+    pub struct ActivePuzzle {
+        pub puzzle: Puzzle,
     }
 
     // Tracks all nodes in the puzzle
@@ -63,69 +52,16 @@ pub mod puzzle {
         active_nodes: Vec<ActiveNode>,
     }
 
-    // TODO ActiveNode should get its own file/module
-    #[derive(Component, Clone)]
-    pub struct ActiveNode {
-        pub node: GameNode,
-        pub connections: Vec<u16>,
-        pub sprite: SpriteBundle,
-        // TODO will use in the proactive sat checks per puzzle update
-        pub satisfied: bool,
-    }
-
     // Tracks all sets in the puzzle
     #[derive(Default, Resource, Component, Clone)]
     struct ActiveSets {
         active_sets: Vec<ActiveSet>,
     }
 
-    // TODO ActiveSet should get its own file/module
-    #[derive(Component, Clone)]
-    pub struct ActiveSet {
-        pub set: GameSet,
-        pub satisfied: bool,
-    }
-
-    impl ActiveNode {
-        // TODO this will need to be updated to take set rules as well
-        pub fn get_failed_conditions(&self, active_nodes: Vec<&ActiveNode>) -> Vec<NodeCondition> {
-            self.node
-                .conditions
-                .iter()
-                .filter(|c| !c.is_satisfied(self, &active_nodes))
-                .cloned()
-                .collect()
-        }
-    }
-
-    impl PartialEq for ActiveNode {
-        fn eq(&self, other: &Self) -> bool {
-            self.node == other.node && self.connections == other.connections
-            // Note: SpriteBundle is not compared
-        }
-    }
-
-    impl Eq for ActiveNode {}
-
-    impl Hash for ActiveNode {
-        fn hash<H: Hasher>(&self, state: &mut H) {
-            self.node.hash(state);
-            self.connections.hash(state);
-            // Note: SpriteBundle is not hashed
-        }
-    }
-
     // Tracks all lines connecting nodes in puzzle
     #[derive(Default, Resource)]
     struct ActiveLines {
         lines: Vec<ActiveLine>,
-    }
-
-    struct ActiveLine {
-        // TODO remove start_node end_node since they are very likely not needed, only need ref to the sprites
-        start_node: ActiveNode,
-        end_node: ActiveNode,
-        sprite: SpriteBundle,
     }
 
     // Start node of the line currently being drawn by user on the screen
@@ -209,17 +145,19 @@ pub mod puzzle {
                 let node_x = x as f32 * SPRITE_SPACING;
                 let node_y = y as f32 * SPRITE_SPACING;
 
+                // TODO move this to ActiveNode passing node_x and node_y
                 let node_sprite = SpriteBundle {
                     texture: tex_node.clone(),
                     // TODO move getting the sprite to somewhere else so it's not duplicated
                     sprite: Sprite {
                         custom_size: Some(Vec2::new(TILE_NODE_SPRITE_SIZE, TILE_NODE_SPRITE_SIZE)),
+                        color: Color::BLACK,
                         ..Default::default()
                     },
                     transform: Transform::from_xyz(node_x, node_y, 0.0),
                     ..Default::default()
                 };
-                commands.spawn(node_sprite.clone()).insert(OnPuzzleScene);
+                let node_sprite_id = commands.spawn(node_sprite.clone()).insert(OnPuzzleScene).id();
 
                 // Spawn its conditions on the screen
                 let mut total_cdtn_idx = 0;
@@ -257,8 +195,12 @@ pub mod puzzle {
                 for con_cdtn in node.connected_conditions.iter() {
                     // TODO get textures via either connected_node_condition.rs or texture.rs
                     let con_cdtn_texture = match con_cdtn {
-                        ConnectedNodeCondition::LimitConnection(con_cdtn) => tex_cdtn_limit_connection.clone(),
-                        ConnectedNodeCondition::DegreeEqual(con_cdtn) => tex_cdtn_degree_equal.clone(),
+                        ConnectedNodeCondition::LimitConnection(con_cdtn) => {
+                            tex_cdtn_limit_connection.clone()
+                        }
+                        ConnectedNodeCondition::DegreeEqual(con_cdtn) => {
+                            tex_cdtn_degree_equal.clone()
+                        }
                     };
 
                     let con_cdtn_sprite = SpriteBundle {
@@ -284,8 +226,10 @@ pub mod puzzle {
                 active_nodes.active_nodes.push(ActiveNode {
                     node: node.clone(),
                     connections: Vec::new(),
-                    sprite: node_sprite.clone(),
+                    sprite: node_sprite,
                     satisfied: false,
+                    active_id: ActiveIdentifier::new(),
+                    sprite_entity_id: node_sprite_id
                 });
             }
         }
@@ -414,6 +358,7 @@ pub mod puzzle {
             active_sets.active_sets.push(ActiveSet {
                 set: puzzle.sets[set_idx].clone(),
                 satisfied: false,
+                active_id: ActiveIdentifier::new(),
             });
         }
     }
@@ -433,11 +378,13 @@ pub mod puzzle {
     fn line_system(
         mut commands: Commands,
         mut active_nodes: ResMut<ActiveNodes>,
+        active_sets: ResMut<ActiveSets>,
         mut current_line: ResMut<CurrentLine>,
         mut lines: ResMut<ActiveLines>,
         mouse_button_input: Res<ButtonInput<MouseButton>>,
         q_window: Query<&Window, With<PrimaryWindow>>,
         q_camera: Query<(&Camera, &GlobalTransform), With<MainCamera>>,
+        mut q_sprites: Query<&mut Sprite>,
         asset_server: Res<AssetServer>,
     ) {
         // Get camera info and transform, assuming exacly 1 camera entity
@@ -463,17 +410,20 @@ pub mod puzzle {
                 return;
             }
 
+            // Create immutable clone of active_nodes for util function calls 
+            let active_nodes_immut = active_nodes.active_nodes.clone();
+
             // Grab the start node and end node objects from the active_nodes as an iter_mut
             let mut opt_start_node: Option<&mut ActiveNode> = None;
             let mut opt_end_node: Option<&mut ActiveNode> = None;
 
-            for active_node in active_nodes.active_nodes.iter_mut() {
+            active_nodes.active_nodes.iter_mut().for_each(|active_node| {
                 if active_node.node.id == current_line.start_node_id.unwrap() {
                     opt_start_node = Some(active_node);
                 } else if clicked_on_sprite(&active_node.sprite, world_position) {
                     opt_end_node = Some(active_node);
                 }
-            }
+            });
 
             if opt_start_node.is_none() || opt_end_node.is_none() {
                 return;
@@ -482,12 +432,12 @@ pub mod puzzle {
             let start_node = opt_start_node.unwrap();
             let end_node = opt_end_node.unwrap();
 
-            let start_pos = start_node.clone().sprite.transform.translation.truncate();
+            let start_pos = start_node.sprite.transform.translation.truncate();
             let end_pos = end_node.sprite.transform.translation.truncate();
 
             // Get the appropriate line texture, if exists (otherwise invalid node pair)
             let line_texture =
-                get_line_texture(start_node.clone(), end_node.clone()).unwrap_or(&Texture::Missing);
+                get_line_texture(start_node, end_node).unwrap_or(&Texture::Missing);
 
             if *line_texture == Texture::Missing {
                 return;
@@ -523,6 +473,23 @@ pub mod puzzle {
 
             // Regardless if we ended on a node or not, clear the current line
             current_line.start_node_id = None;
+
+            // Update satisfied states given the current start and end node
+            let satisfied_states = get_satisfied_states(
+                active_nodes_immut.iter().collect(),
+                active_sets.active_sets.iter().collect(),
+                &start_node,
+                &end_node,
+            );
+
+            active_nodes.active_nodes.iter_mut().for_each(|active_node| {
+                if satisfied_states.contains_key(&active_node.active_id) {
+                    active_node.set_satisfied(satisfied_states[&active_node.active_id]);
+                    if let Ok(mut sprite) = q_sprites.get_mut(active_node.sprite_entity_id) {
+                        active_node.update_sprite(sprite.as_mut());
+                    }
+                }
+            });
         }
     }
 

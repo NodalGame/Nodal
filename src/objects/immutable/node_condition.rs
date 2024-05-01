@@ -2,7 +2,7 @@ pub mod node_condition {
     use bevy::{math::Vec2, render::color::Color, sprite::Sprite};
     use serde::{Deserialize, Serialize};
 
-    use crate::{texture::Texture, ActiveNode, CDTN_RULE_SPRITE_SIZE};
+    use crate::{objects::active::active_node::active_node::ActiveNode, CDTN_RULE_SPRITE_SIZE};
 
     /// NodeCondition applies a condition to a single node in a puzzle, affecting its
     /// win condition.

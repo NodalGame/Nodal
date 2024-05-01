@@ -1,10 +1,7 @@
 pub mod game_node {
     use serde::{Deserialize, Serialize};
 
-    use crate::{
-        node_condition::node_condition::NodeCondition,
-        objects::connected_node_condition::connected_node_condition::ConnectedNodeCondition,
-    };
+    use crate::objects::immutable::{connected_node_condition::connected_node_condition::ConnectedNodeCondition, node_condition::node_condition::NodeCondition};
 
     /// GameNode is a deserialized node spec in a puzzle json, consisting of ID for its
     /// location in the puzzle and conditions it must satisfy.
