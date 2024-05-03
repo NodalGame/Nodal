@@ -1,8 +1,8 @@
 pub mod set_rule {
-    use bevy::{math::Vec2, render::color::Color, sprite::Sprite};
+    use bevy::{math::Vec2, sprite::Sprite};
     use serde::{Deserialize, Serialize};
 
-    use crate::CDTN_RULE_SPRITE_SIZE;
+    use crate::{CDTN_RULE_SPRITE_SIZE, COLOR_RULE_UNSAT};
 
     /// SetRule applies rules to a set of nodes which it wraps in a puzzle, possibly also impacting
     /// their conditions (e.g. Scope).
@@ -29,7 +29,7 @@ pub mod set_rule {
         pub fn sprite(&self) -> Sprite {
             Sprite {
                 custom_size: Some(Vec2::new(CDTN_RULE_SPRITE_SIZE, CDTN_RULE_SPRITE_SIZE)),
-                color: Color::WHITE,
+                color: COLOR_RULE_UNSAT,
                 ..Default::default()
             }
         }

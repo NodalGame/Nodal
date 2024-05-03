@@ -5,9 +5,13 @@ pub mod puzzle {
         app::{App, Update},
         asset::AssetServer,
         ecs::{
-            component::Component, query::{Changed, With}, schedule::{
+            component::Component,
+            entity::Entity,
+            query::{Changed, With},
+            schedule::{
                 common_conditions::in_state, IntoSystemConfigs, NextState, OnEnter, OnExit,
-            }, system::{Commands, Query, Res, ResMut, Resource}
+            },
+            system::{Commands, Query, Res, ResMut, Resource},
         },
         hierarchy::BuildChildren,
         input::{mouse::MouseButton, ButtonInput},
@@ -22,10 +26,34 @@ pub mod puzzle {
         },
         window::{PrimaryWindow, Window},
     };
-    use serde::Deserialize;
 
     use crate::{
-        buttons::icon_button_style, check_answer, clicked_on_sprite, despawn_screen, get_bg_tile, get_cursor_world_position, get_line_texture, get_satisfied_states, get_set_tiles, get_set_upper_left_node, node_to_position, objects::{active::{active_identifier::active_identifier::ActiveIdentifier, active_line::active_line::ActiveLine, active_node::active_node::ActiveNode, active_set::active_set::ActiveSet, satisfiable_entity::satisfiable_entity::Satisfiable}, immutable::{connected_node_condition::connected_node_condition::ConnectedNodeCondition, connected_set_rule::connected_set_rule::ConnectedSetRule, node_condition::node_condition::NodeCondition, puzzle::puzzle::Puzzle, set_rule::set_rule::SetRule}}, puzzle_manager::PuzzleManager, texture::Texture, AppState, MainCamera, SelectedPuzzle, CDTN_RULE_SPRITE_SIZE, INTERNAL_SPACING_X, INTERNAL_SPACING_Y, SPRITE_SPACING, STACK_CDTN_RULE_SPACING, TILE_NODE_SPRITE_SIZE
+        buttons::icon_button_style,
+        check_answer, clicked_on_sprite, despawn_screen, get_bg_tile, get_cursor_world_position,
+        get_line_texture, get_satisfied_states, get_set_tiles, get_set_upper_left_node,
+        node_to_position,
+        objects::{
+            active::{
+                active_connected_node_condition::active_connected_node_condition::ActiveConnectedNodeCondition,
+                active_connected_set_rule::active_connected_set_rule::ActiveConnectedSetRule,
+                active_identifier::active_identifier::ActiveIdentifier,
+                active_line::active_line::ActiveLine,
+                active_node::active_node::ActiveNode,
+                active_node_condition::active_node_condition::ActiveNodeCondition,
+                active_set::active_set::ActiveSet,
+                active_set_rule::active_set_rule::ActiveSetRule,
+                traits::traits::Satisfiable,
+            },
+            immutable::{
+                connected_node_condition::connected_node_condition::ConnectedNodeCondition,
+                connected_set_rule::connected_set_rule::ConnectedSetRule,
+                node_condition::node_condition::NodeCondition, set_rule::set_rule::SetRule,
+            },
+        },
+        puzzle_manager::PuzzleManager,
+        texture::Texture,
+        AppState, MainCamera, SelectedPuzzle, CDTN_RULE_SPRITE_SIZE, INTERNAL_SPACING_X,
+        INTERNAL_SPACING_Y, SPRITE_SPACING, STACK_CDTN_RULE_SPACING, TILE_NODE_SPRITE_SIZE,
     };
 
     // This plugin will contain a playable puzzle.
@@ -39,11 +67,6 @@ pub mod puzzle {
             .insert_resource(ActiveSets::default())
             .insert_resource(ActiveLines::default())
             .insert_resource(CurrentLine::default());
-    }
-
-    #[derive(Deserialize, Debug)]
-    pub struct ActivePuzzle {
-        pub puzzle: Puzzle,
     }
 
     // Tracks all nodes in the puzzle
@@ -157,9 +180,13 @@ pub mod puzzle {
                     transform: Transform::from_xyz(node_x, node_y, 0.0),
                     ..Default::default()
                 };
-                let node_sprite_id = commands.spawn(node_sprite.clone()).insert(OnPuzzleScene).id();
+                let node_sprite_id = commands
+                    .spawn(node_sprite.clone())
+                    .insert(OnPuzzleScene)
+                    .id();
 
-                // Spawn its conditions on the screen
+                let mut active_node_conditions: Vec<ActiveNodeCondition> = vec![];
+
                 let mut total_cdtn_idx = 0;
                 for condition in node.conditions.iter() {
                     // TODO get textures via either node_condition.rs or texture.rs
@@ -185,12 +212,24 @@ pub mod puzzle {
                         ),
                         ..Default::default()
                     };
-                    commands
+
+                    let condition_sprite_id = commands
                         .spawn(condition_sprite.clone())
-                        .insert(OnPuzzleScene);
+                        .insert(OnPuzzleScene)
+                        .id();
+
+                    active_node_conditions.push(ActiveNodeCondition {
+                        active_id: ActiveIdentifier::new(),
+                        sprite: condition_sprite,
+                        sprite_entity_id: condition_sprite_id,
+                        satisfied: false,
+                        condition: condition.clone(),
+                    });
 
                     total_cdtn_idx += 1;
                 }
+
+                let mut active_connected_conditions: Vec<ActiveConnectedNodeCondition> = vec![];
 
                 for con_cdtn in node.connected_conditions.iter() {
                     // TODO get textures via either connected_node_condition.rs or texture.rs
@@ -216,9 +255,19 @@ pub mod puzzle {
                         ),
                         ..Default::default()
                     };
-                    commands
+
+                    let connected_condition_sprite_id = commands
                         .spawn(con_cdtn_sprite.clone())
-                        .insert(OnPuzzleScene);
+                        .insert(OnPuzzleScene)
+                        .id();
+
+                    active_connected_conditions.push(ActiveConnectedNodeCondition {
+                        active_id: ActiveIdentifier::new(),
+                        condition: con_cdtn.clone(),
+                        sprite: con_cdtn_sprite,
+                        sprite_entity_id: connected_condition_sprite_id,
+                        satisfied: false,
+                    });
 
                     total_cdtn_idx += 1;
                 }
@@ -229,7 +278,9 @@ pub mod puzzle {
                     sprite: node_sprite,
                     satisfied: false,
                     active_id: ActiveIdentifier::new(),
-                    sprite_entity_id: node_sprite_id
+                    sprite_entity_id: node_sprite_id,
+                    active_conditions: active_node_conditions,
+                    active_connected_conditions: active_connected_conditions,
                 });
             }
         }
@@ -292,14 +343,18 @@ pub mod puzzle {
         // Map tile spaces to sets to generate
         for set_idx in 0..puzzle.sets.len() {
             let set = &puzzle.sets[set_idx];
-            for set_tile in get_set_tiles(set, &puzzle, asset_server.clone()) {
-                commands.spawn((set_tile, OnPuzzleScene));
+            let set_tiles = get_set_tiles(set, &puzzle, asset_server.clone());
+            let mut set_sprite_entity_ids: Vec<Entity> = vec![];
+            for set_tile in set_tiles.clone() {
+                set_sprite_entity_ids.push(commands.spawn(set_tile).insert(OnPuzzleScene).id());
             }
 
             // Add the set rule sprites in the upper left-most corner of the set
             let upper_left_node = get_set_upper_left_node(set, &puzzle);
 
             let (node_x, node_y) = node_to_position(&upper_left_node, &puzzle);
+
+            let mut active_set_rules: Vec<ActiveSetRule> = vec![];
 
             let mut total_rule_idx = 0;
             for rule in set.rules.iter() {
@@ -326,10 +381,23 @@ pub mod puzzle {
                     ),
                     ..Default::default()
                 };
-                commands.spawn(rule_sprite.clone()).insert(OnPuzzleScene);
+                let rule_sprite_id = commands
+                    .spawn(rule_sprite.clone())
+                    .insert(OnPuzzleScene)
+                    .id();
+
+                active_set_rules.push(ActiveSetRule {
+                    active_id: ActiveIdentifier::new(),
+                    sprite: rule_sprite,
+                    sprite_entity_id: rule_sprite_id,
+                    satisfied: false,
+                    rule: rule.clone(),
+                });
 
                 total_rule_idx += 1;
             }
+
+            let mut active_connected_set_rules: Vec<ActiveConnectedSetRule> = vec![];
 
             for crule in set.connected_rules.iter() {
                 // TODO get textures via either connected_set_rule.rs or texture.rs
@@ -350,7 +418,18 @@ pub mod puzzle {
                     ),
                     ..Default::default()
                 };
-                commands.spawn(crule_sprite.clone()).insert(OnPuzzleScene);
+                let crule_sprite_id = commands
+                    .spawn(crule_sprite.clone())
+                    .insert(OnPuzzleScene)
+                    .id();
+
+                active_connected_set_rules.push(ActiveConnectedSetRule {
+                    active_id: ActiveIdentifier::new(),
+                    rule: crule.clone(),
+                    sprite: crule_sprite,
+                    sprite_entity_id: crule_sprite_id,
+                    satisfied: false,
+                });
 
                 total_rule_idx += 1;
             }
@@ -359,6 +438,10 @@ pub mod puzzle {
                 set: puzzle.sets[set_idx].clone(),
                 satisfied: false,
                 active_id: ActiveIdentifier::new(),
+                active_set_rules: active_set_rules,
+                active_connected_set_rules: active_connected_set_rules,
+                sprites: set_tiles,
+                sprite_entity_ids: set_sprite_entity_ids,
             });
         }
     }
@@ -410,20 +493,23 @@ pub mod puzzle {
                 return;
             }
 
-            // Create immutable clone of active_nodes for util function calls 
+            // Create immutable clone of active_nodes for util function calls
             let active_nodes_immut = active_nodes.active_nodes.clone();
 
             // Grab the start node and end node objects from the active_nodes as an iter_mut
             let mut opt_start_node: Option<&mut ActiveNode> = None;
             let mut opt_end_node: Option<&mut ActiveNode> = None;
 
-            active_nodes.active_nodes.iter_mut().for_each(|active_node| {
-                if active_node.node.id == current_line.start_node_id.unwrap() {
-                    opt_start_node = Some(active_node);
-                } else if clicked_on_sprite(&active_node.sprite, world_position) {
-                    opt_end_node = Some(active_node);
-                }
-            });
+            active_nodes
+                .active_nodes
+                .iter_mut()
+                .for_each(|active_node| {
+                    if active_node.node.id == current_line.start_node_id.unwrap() {
+                        opt_start_node = Some(active_node);
+                    } else if clicked_on_sprite(&active_node.sprite, world_position) {
+                        opt_end_node = Some(active_node);
+                    }
+                });
 
             if opt_start_node.is_none() || opt_end_node.is_none() {
                 return;
@@ -436,8 +522,7 @@ pub mod puzzle {
             let end_pos = end_node.sprite.transform.translation.truncate();
 
             // Get the appropriate line texture, if exists (otherwise invalid node pair)
-            let line_texture =
-                get_line_texture(start_node, end_node).unwrap_or(&Texture::Missing);
+            let line_texture = get_line_texture(start_node, end_node).unwrap_or(&Texture::Missing);
 
             if *line_texture == Texture::Missing {
                 return;
@@ -482,14 +567,17 @@ pub mod puzzle {
                 &end_node,
             );
 
-            active_nodes.active_nodes.iter_mut().for_each(|active_node| {
-                if satisfied_states.contains_key(&active_node.active_id) {
-                    active_node.set_satisfied(satisfied_states[&active_node.active_id]);
-                    if let Ok(mut sprite) = q_sprites.get_mut(active_node.sprite_entity_id) {
-                        active_node.update_sprite(sprite.as_mut());
+            active_nodes
+                .active_nodes
+                .iter_mut()
+                .for_each(|active_node| {
+                    if satisfied_states.contains_key(&active_node.active_id) {
+                        active_node.set_satisfied(satisfied_states[&active_node.active_id]);
+                        if let Ok(mut sprite) = q_sprites.get_mut(active_node.sprite_entity_id) {
+                            active_node.update_sprite(sprite.as_mut());
+                        }
                     }
-                }
-            });
+                });
         }
     }
 

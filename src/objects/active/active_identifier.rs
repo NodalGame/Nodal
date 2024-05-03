@@ -8,7 +8,7 @@ pub mod active_identifier {
 
     impl ActiveIdentifier {
         pub fn new() -> Self {
-            ActiveIdentifier { id: Uuid::new_v4()}
+            ActiveIdentifier { id: Uuid::new_v4() }
         }
 
         pub fn get_id(&self) -> &Uuid {

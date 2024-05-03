@@ -2,7 +2,10 @@ pub mod connected_set_rule {
     use bevy::{math::Vec2, render::color::Color, sprite::Sprite};
     use serde::{Deserialize, Serialize};
 
-    use crate::CDTN_RULE_SPRITE_SIZE;
+    use crate::{
+        CDTN_RULE_SPRITE_SIZE, COLOR_RULE_ORANGE_UNSAT, COLOR_RULE_RED_UNSAT,
+        COLOR_RULE_YELLOW_UNSAT,
+    };
 
     /// ConnectedSetRule implies connectivity between rules across
     /// different sets that share the same rule class. For example, a
@@ -43,9 +46,9 @@ pub mod connected_set_rule {
     impl RuleClass {
         pub fn color(&self) -> &Color {
             match self {
-                RuleClass::Yellow => &Color::YELLOW,
-                RuleClass::Orange => &Color::ORANGE,
-                RuleClass::Red => &Color::RED,
+                RuleClass::Yellow => &COLOR_RULE_YELLOW_UNSAT,
+                RuleClass::Orange => &COLOR_RULE_ORANGE_UNSAT,
+                RuleClass::Red => &COLOR_RULE_RED_UNSAT,
             }
         }
     }

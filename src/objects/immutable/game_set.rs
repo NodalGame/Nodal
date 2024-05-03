@@ -1,7 +1,9 @@
 pub mod game_set {
     use serde::{Deserialize, Serialize};
 
-    use crate::objects::immutable::{connected_set_rule::connected_set_rule::ConnectedSetRule, set_rule::set_rule::SetRule};
+    use crate::objects::immutable::{
+        connected_set_rule::connected_set_rule::ConnectedSetRule, set_rule::set_rule::SetRule,
+    };
 
     /// Set contains nodes over which it applies SetRules.
     #[derive(Serialize, Deserialize, Clone, Debug)]

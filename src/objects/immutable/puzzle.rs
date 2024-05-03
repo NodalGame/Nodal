@@ -4,7 +4,7 @@ pub mod puzzle {
 
     use crate::objects::immutable::{game_node::game_node::GameNode, game_set::game_set::GameSet};
 
-    #[derive(Deserialize, Debug)]
+    #[derive(Clone, Deserialize, Debug)]
     pub struct Puzzle {
         pub uuid: Uuid,
         pub width: u8,
