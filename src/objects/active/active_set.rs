@@ -7,9 +7,7 @@ pub mod active_set {
 
     use crate::objects::{
         active::{
-            active_connected_set_rule::active_connected_set_rule::ActiveConnectedSetRule,
-            active_identifier::active_identifier::ActiveIdentifier,
-            active_set_rule::active_set_rule::ActiveSetRule, traits::traits::Satisfiable,
+            active_connected_set_rule::active_connected_set_rule::ActiveConnectedSetRule, active_identifier::active_identifier::ActiveIdentifier, active_node::active_node::ActiveNode, active_set_rule::active_set_rule::ActiveSetRule, traits::traits::Satisfiable
         },
         immutable::game_set::game_set::GameSet,
     };

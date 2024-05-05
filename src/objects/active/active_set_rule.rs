@@ -24,6 +24,11 @@ pub mod active_set_rule {
     }
 
     impl ActiveSetRule {
+        pub fn check_satisfied(&self) -> bool {
+            // TODO check if rule is satisfied
+            true
+        }
+
         pub fn update_sprite(&mut self, sprite: &mut Sprite) {
             sprite.color = if self.satisfied {
                 COLOR_RULE_SAT

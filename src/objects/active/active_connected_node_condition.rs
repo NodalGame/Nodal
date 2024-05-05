@@ -27,6 +27,11 @@ pub mod active_connected_node_condition {
     }
 
     impl ActiveConnectedNodeCondition {
+        pub fn check_satisfied(&self) -> bool {
+            // TODO check if satisfied against other conditions of same class
+            true
+        }
+
         pub fn update_sprite(&mut self, sprite: &mut Sprite) {
             sprite.color = match self.condition.condition_class() {
                 ConditionClass::Blue => {

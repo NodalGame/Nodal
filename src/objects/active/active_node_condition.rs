@@ -24,6 +24,11 @@ pub mod active_node_condition {
     }
 
     impl ActiveNodeCondition {
+        pub fn check_satisfied(&self) -> bool {
+            // TODO check if condition is satisfied
+            true
+        }
+
         pub fn update_sprite(&mut self, sprite: &mut Sprite) {
             sprite.color = if self.satisfied {
                 COLOR_CDTN_SAT

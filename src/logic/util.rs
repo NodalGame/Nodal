@@ -925,32 +925,54 @@ pub fn get_satisfied_states(
 
     let mut satisfied_states: HashMap<ActiveIdentifier, bool> = HashMap::new();
 
-    for node in network_start_node.into_iter() {
+    for node in network_start_node.clone().into_iter() {
         satisfied_states.insert(node.active_id, node.check_satisfied());
-        // TODO for each condition on the node also update satisfied
+        for condition in node.active_conditions.iter() {
+            satisfied_states.insert(condition.active_id, condition.check_satisfied());
+        }
+        // TODO track which ones have been checked to not duplicate, this is reflexive
+        for connected_condition in node.active_connected_conditions.iter() {
+            satisfied_states.insert(connected_condition.active_id, connected_condition.check_satisfied());
+        }
     }
 
-    println!("Satisfied states: {:?}", satisfied_states);
+    let network_sets = get_sets_in_network(active_sets, &network_start_node);
+
+    for set in network_sets.into_iter() {
+        for rule in set.active_set_rules.iter() {
+            satisfied_states.insert(rule.active_id, rule.check_satisfied());
+        }
+        // TODO track which ones have been checked to not duplicate, this is reflexive
+        for connected_rule in set.active_connected_set_rules.iter() {
+            satisfied_states.insert(connected_rule.active_id, connected_rule.check_satisfied());
+        }
+    }
 
     satisfied_states
 
     // TODO for each set which encompasses at least one node in the network, check its satisfied states
 }
 
-fn get_active_node_from_id(id: u16, active_nodes: Vec<&ActiveNode>) -> &ActiveNode {
-    active_nodes.iter().find(|node| node.node.id == id).unwrap()
-}
+fn get_sets_in_network<'a>(
+    active_sets: Vec<&'a ActiveSet>,
+    network: &Vec<&'a ActiveNode>,
+) -> Vec<&'a ActiveSet> {
+    let mut network_sets: Vec<&ActiveSet> = Vec::new();
 
-fn get_mutable_node_from_id(
-    id: u16,
-    active_nodes: Vec<&mut ActiveNode>,
-) -> Option<&mut ActiveNode> {
-    for node in active_nodes {
-        if node.node.id == id {
-            return Some(node);
+    // Convert network to list of node ids
+    let network_ids: Vec<u16> = network.iter().map(|node| node.node.id).collect();
+
+    for set in active_sets.iter() {
+        if set.set.nodes.iter().any(|node| network_ids.contains(node)) {
+            network_sets.push(set);
         }
     }
-    None
+
+    network_sets
+}
+
+fn get_active_node_from_id(id: u16, active_nodes: Vec<&ActiveNode>) -> &ActiveNode {
+    active_nodes.iter().find(|node| node.node.id == id).unwrap()
 }
 
 fn get_active_nodes_in_network<'a>(

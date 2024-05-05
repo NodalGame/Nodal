@@ -461,7 +461,7 @@ pub mod puzzle {
     fn line_system(
         mut commands: Commands,
         mut active_nodes: ResMut<ActiveNodes>,
-        active_sets: ResMut<ActiveSets>,
+        mut active_sets: ResMut<ActiveSets>,
         mut current_line: ResMut<CurrentLine>,
         mut lines: ResMut<ActiveLines>,
         mouse_button_input: Res<ButtonInput<MouseButton>>,
@@ -567,6 +567,7 @@ pub mod puzzle {
                 &end_node,
             );
 
+            // Update visual state of all active nodes and conditions 
             active_nodes
                 .active_nodes
                 .iter_mut()
@@ -577,7 +578,80 @@ pub mod puzzle {
                             active_node.update_sprite(sprite.as_mut());
                         }
                     }
+                    active_node.active_conditions.iter_mut().for_each(|active_condition| {
+                        if satisfied_states.contains_key(&active_condition.active_id) {
+                            active_condition.set_satisfied(satisfied_states[&active_condition.active_id]);
+                            if let Ok(mut sprite) = q_sprites.get_mut(active_condition.sprite_entity_id) {
+                                active_condition.update_sprite(sprite.as_mut());
+                            }
+                        }
+                    });
+                    active_node.active_connected_conditions.iter_mut().for_each(|active_connected_condition| {
+                        if satisfied_states.contains_key(&active_connected_condition.active_id) {
+                            active_connected_condition.set_satisfied(satisfied_states[&active_connected_condition.active_id]);
+                            if let Ok(mut sprite) = q_sprites.get_mut(active_connected_condition.sprite_entity_id) {
+                                active_connected_condition.update_sprite(sprite.as_mut());
+                            }
+                        }
+                    });
                 });
+
+            // Update visual state of all active set rules
+            active_sets.active_sets.iter_mut().for_each(|active_set| {
+                active_set.active_set_rules.iter_mut().for_each(|active_set_rule| {
+                    if satisfied_states.contains_key(&active_set_rule.active_id) {
+                        active_set_rule.set_satisfied(satisfied_states[&active_set_rule.active_id]);
+                        if let Ok(mut sprite) = q_sprites.get_mut(active_set_rule.sprite_entity_id) {
+                            active_set_rule.update_sprite(sprite.as_mut());
+                        }
+                    }
+                });
+                active_set.active_connected_set_rules.iter_mut().for_each(|active_connected_set_rule| {
+                    if satisfied_states.contains_key(&active_connected_set_rule.active_id) {
+                        active_connected_set_rule.set_satisfied(satisfied_states[&active_connected_set_rule.active_id]);
+                        if let Ok(mut sprite) = q_sprites.get_mut(active_connected_set_rule.sprite_entity_id) {
+                            active_connected_set_rule.update_sprite(sprite.as_mut());
+                        }
+                    }
+                });
+            });
+
+            // If all satisfiable objects are satisfied, puzzle is solved. 
+            let mut solved = true;
+            for active_node in active_nodes.active_nodes.iter() {
+                if !active_node.satisfied { 
+                    println!("Puzzle not solved, {}", active_node.node.id);
+                    solved = false;
+                }
+                for condition in &active_node.active_conditions {
+                    if !condition.satisfied {
+                        println!("Puzzle not solved, {}", condition.active_id.get_id());
+                        solved = false;
+                    }
+                }
+                for connected_condition in &active_node.active_connected_conditions {
+                    if !connected_condition.satisfied {
+                        println!("Puzzle not solved, {}", connected_condition.active_id.get_id());
+                        solved = false;
+                    }
+                }
+            }
+            for active_set in active_sets.active_sets.iter() {
+                for active_set_rule in &active_set.active_set_rules {
+                    if !active_set_rule.satisfied {
+                        println!("Puzzle not solved, {}", active_set_rule.active_id.get_id());
+                        solved = false;
+                    }
+                }
+                for active_connected_set_rule in &active_set.active_connected_set_rules {
+                    if !active_connected_set_rule.satisfied {
+                        println!("Puzzle not solved, {}", active_connected_set_rule.active_id.get_id());
+                        solved = false;
+                    }
+                }
+            }
+
+            println!("Solved: {}", solved);
         }
     }
 
