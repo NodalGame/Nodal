@@ -13,7 +13,7 @@ use crate::{
             active_identifier::active_identifier::ActiveIdentifier,
             active_node::active_node::ActiveNode, active_set::active_set::ActiveSet,
         },
-        immutable::{game_set::game_set::GameSet, puzzle::puzzle::Puzzle},
+        immutable::{game_set::game_set::GameSet, puzzle::puzzle::Puzzle, solution::solution::active_nodes_to_solution},
     },
     texture::Texture,
     SPRITE_SPACING, TILE_NODE_SPRITE_SIZE,
@@ -49,7 +49,7 @@ pub fn get_bg_tile(x: u8, y: u8, width: u8, height: u8, asset_server: AssetServe
         asset_server.load(Texture::BgTileBetweenVertical.path());
     let bg_between_cross: Handle<Image> = asset_server.load(Texture::BgTileBetweenCross.path());
 
-    let transform = Transform::from_xyz(x as f32 * SPRITE_SPACING, y as f32 * SPRITE_SPACING, 0.0);
+    let transform = Transform::from_xyz(x as f32 * SPRITE_SPACING, y as f32 * SPRITE_SPACING, -1.0);
     let sprite = Sprite {
         custom_size: Some(Vec2::new(TILE_NODE_SPRITE_SIZE, TILE_NODE_SPRITE_SIZE)),
         ..Default::default()
@@ -924,11 +924,12 @@ pub fn get_satisfied_states(
     }
 
     let mut satisfied_states: HashMap<ActiveIdentifier, bool> = HashMap::new();
+    let solution = active_nodes_to_solution(&active_nodes);
 
     for node in network_start_node.clone().into_iter() {
         satisfied_states.insert(node.active_id, node.check_satisfied());
         for condition in node.active_conditions.iter() {
-            satisfied_states.insert(condition.active_id, condition.check_satisfied());
+            satisfied_states.insert(condition.active_id, condition.check_satisfied(node, &solution));
         }
         // TODO track which ones have been checked to not duplicate, this is reflexive
         for connected_condition in node.active_connected_conditions.iter() {

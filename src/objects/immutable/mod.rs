@@ -9,3 +9,5 @@ pub mod connected_set_rule;
 pub mod meta_set_rule;
 pub mod puzzle;
 pub mod set_rule;
+pub mod solution;
+pub mod game_line;

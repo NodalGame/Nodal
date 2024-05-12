@@ -1,10 +1,10 @@
 pub mod node_condition {
-    use bevy::{math::Vec2, render::color::Color, sprite::Sprite};
+
+    use bevy::{math::Vec2, sprite::Sprite};
     use serde::{Deserialize, Serialize};
 
     use crate::{
-        objects::active::active_node::active_node::ActiveNode, CDTN_RULE_SPRITE_SIZE,
-        COLOR_CDTN_UNSAT,
+        logic::node_condition_checks::node_condition_checks::is_branch_equal, objects::immutable::{game_node::game_node::GameNode, solution::solution::{solution_to_adjacency_list, Solution}}, CDTN_RULE_SPRITE_SIZE, COLOR_CDTN_UNSAT
     };
 
     /// NodeCondition applies a condition to a single node in a puzzle, affecting its
@@ -26,32 +26,13 @@ pub mod node_condition {
             }
         }
 
-        /// Returns true if the condition is satisfied for the given node.
-        ///
-        /// # Parameters
-        ///
-        /// - `node`: The current node upon which the condition is placed.
-        /// - `active_nodes`: The active nodes in the puzzle, including their connections.
-        /// TODO node condition satisified check needs to include set rules
-        ///
-        /// # Returns
-        ///
-        /// True if the condition is satisfied, false otherwise.
-        pub fn is_satisfied(&self, node: &ActiveNode, active_nodes: &Vec<&ActiveNode>) -> bool {
+        // This takes static instead of active objects since this logic has to be re-used 
+        // to validate puzzle answers which aren't being actively displayed. 
+        pub fn is_satisfied(&self, node: &GameNode, solution: &Solution) -> bool {
             match self {
-                NodeCondition::BranchEqual => self.is_branch_equal(node, active_nodes.to_vec()),
-                NodeCondition::Leaf => self.is_leaf(node, active_nodes.to_vec()),
+                NodeCondition::BranchEqual => is_branch_equal(node, solution),
+                NodeCondition::Leaf => false,
             }
-        }
-
-        // TODO branch equal condition logic
-        fn is_branch_equal(&self, node: &ActiveNode, active_nodes: Vec<&ActiveNode>) -> bool {
-            false
-        }
-
-        // TODO leaf condition logic
-        fn is_leaf(&self, node: &ActiveNode, active_nodes: Vec<&ActiveNode>) -> bool {
-            true
         }
     }
 }
