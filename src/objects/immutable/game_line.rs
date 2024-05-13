@@ -2,7 +2,7 @@ pub mod game_line {
     use crate::objects::active::active_node::active_node::ActiveNode;
 
 
-    #[derive(Eq, Hash, Clone, Copy)]
+    #[derive(Eq, Hash, Clone, Copy, Debug)]
 pub struct GameLine {
         pub node_a_id: u16,
         pub node_b_id: u16,

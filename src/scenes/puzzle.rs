@@ -28,11 +28,7 @@ pub mod puzzle {
     };
 
     use crate::{
-        buttons::icon_button_style,
-        check_answer, clicked_on_sprite, despawn_screen, get_bg_tile, get_cursor_world_position,
-        get_line_texture, get_satisfied_states, get_set_tiles, get_set_upper_left_node,
-        node_to_position,
-        objects::{
+        buttons::icon_button_style, check_answer, clicked_on_sprite, despawn_screen, get_bg_tile, get_cursor_world_position, get_line_texture, get_satisfied_states, get_set_tiles, get_set_upper_left_node, node_to_position, objects::{
             active::{
                 active_connected_node_condition::active_connected_node_condition::ActiveConnectedNodeCondition,
                 active_connected_set_rule::active_connected_set_rule::ActiveConnectedSetRule,
@@ -49,11 +45,7 @@ pub mod puzzle {
                 connected_set_rule::connected_set_rule::ConnectedSetRule,
                 node_condition::node_condition::NodeCondition, set_rule::set_rule::SetRule,
             },
-        },
-        puzzle_manager::PuzzleManager,
-        texture::Texture,
-        AppState, MainCamera, SelectedPuzzle, CDTN_RULE_SPRITE_SIZE, INTERNAL_SPACING_X,
-        INTERNAL_SPACING_Y, SPRITE_SPACING, STACK_CDTN_RULE_SPACING, TILE_NODE_SPRITE_SIZE,
+        }, puzzle_manager::PuzzleManager, texture::Texture, AppState, MainCamera, SelectedPuzzle, CDTN_RULE_SPRITE_SIZE, INTERNAL_SPACING_X, INTERNAL_SPACING_Y, SPRITE_SPACING, STACK_CDTN_RULE_SPACING, TILE_NODE_SPRITE_SIZE
     };
 
     // This plugin will contain a playable puzzle.
@@ -493,9 +485,6 @@ pub mod puzzle {
                 return;
             }
 
-            // Create immutable clone of active_nodes for util function calls
-            let active_nodes_immut = active_nodes.active_nodes.clone();
-
             // Grab the start node and end node objects from the active_nodes as an iter_mut
             let mut opt_start_node: Option<&mut ActiveNode> = None;
             let mut opt_end_node: Option<&mut ActiveNode> = None;
@@ -559,12 +548,16 @@ pub mod puzzle {
             // Regardless if we ended on a node or not, clear the current line
             current_line.start_node_id = None;
 
+            // Create immutable references 
+            let immut_start_node = start_node.clone();
+            let immut_end_node = end_node.clone();
+
             // Update satisfied states given the current start and end node
             let satisfied_states = get_satisfied_states(
-                active_nodes_immut.iter().collect(),
-                active_sets.active_sets.iter().collect(),
-                &start_node,
-                &end_node,
+                &active_nodes.active_nodes,
+                &active_sets.active_sets,
+                &immut_start_node,
+                &immut_end_node,
             );
 
             // Update visual state of all active nodes and conditions 

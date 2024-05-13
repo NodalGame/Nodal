@@ -4,11 +4,12 @@ pub mod solution {
     use crate::objects::{active::active_node::active_node::ActiveNode, immutable::game_line::game_line::{connections_to_lines, GameLine}};
 
     // A proposed solution to a puzzle, aka, a list of game node connections.
+    #[derive(Clone, Debug)]
     pub struct Solution {
         pub connections: Vec<GameLine>
     }
 
-    pub fn active_nodes_to_solution(active_nodes: &Vec<&ActiveNode>) -> Solution {
+    pub fn active_nodes_to_solution(active_nodes: &Vec<ActiveNode>) -> Solution {
         let mut lines_set = HashSet::new();
 
         for active_node in active_nodes {

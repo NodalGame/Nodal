@@ -14,9 +14,7 @@ use crate::{
             active_node::active_node::ActiveNode, active_set::active_set::ActiveSet,
         },
         immutable::{game_set::game_set::GameSet, puzzle::puzzle::Puzzle, solution::solution::active_nodes_to_solution},
-    },
-    texture::Texture,
-    SPRITE_SPACING, TILE_NODE_SPRITE_SIZE,
+    }, texture::Texture, SPRITE_SPACING, TILE_NODE_SPRITE_SIZE
 };
 
 /// Returns a background tile as a sprite bundle.
@@ -910,8 +908,8 @@ pub fn check_answer(active_nodes: Vec<&ActiveNode>, active_sets: Vec<&ActiveSet>
 /// Returns hashmap of satisfied states of relevant nodes, conditions, and set rules.
 /// Uses the start and end nodes as a heuristic to avoid visiting all nodes to update their satisfied state.
 pub fn get_satisfied_states(
-    active_nodes: Vec<&ActiveNode>,
-    active_sets: Vec<&ActiveSet>,
+    active_nodes: &Vec<ActiveNode>,
+    active_sets: &Vec<ActiveSet>,
     start_node: &ActiveNode,
     end_node: &ActiveNode,
 ) -> HashMap<ActiveIdentifier, bool> {
@@ -924,12 +922,13 @@ pub fn get_satisfied_states(
     }
 
     let mut satisfied_states: HashMap<ActiveIdentifier, bool> = HashMap::new();
-    let solution = active_nodes_to_solution(&active_nodes);
+    let solution = active_nodes_to_solution(&network_start_node);
+    println!("get_satisfied_states with solution {:?}", solution);
 
     for node in network_start_node.clone().into_iter() {
         satisfied_states.insert(node.active_id, node.check_satisfied());
         for condition in node.active_conditions.iter() {
-            satisfied_states.insert(condition.active_id, condition.check_satisfied(node, &solution));
+            satisfied_states.insert(condition.active_id, condition.check_satisfied(&node, &solution));
         }
         // TODO track which ones have been checked to not duplicate, this is reflexive
         for connected_condition in node.active_connected_conditions.iter() {
@@ -955,35 +954,35 @@ pub fn get_satisfied_states(
 }
 
 fn get_sets_in_network<'a>(
-    active_sets: Vec<&'a ActiveSet>,
-    network: &Vec<&'a ActiveNode>,
-) -> Vec<&'a ActiveSet> {
-    let mut network_sets: Vec<&ActiveSet> = Vec::new();
+    active_sets: &Vec<ActiveSet>,
+    network: &Vec<ActiveNode>,
+) -> Vec<ActiveSet> {
+    let mut network_sets: Vec<ActiveSet> = Vec::new();
 
     // Convert network to list of node ids
     let network_ids: Vec<u16> = network.iter().map(|node| node.node.id).collect();
 
     for set in active_sets.iter() {
         if set.set.nodes.iter().any(|node| network_ids.contains(node)) {
-            network_sets.push(set);
+            network_sets.push(set.clone());
         }
     }
 
     network_sets
 }
 
-fn get_active_node_from_id(id: u16, active_nodes: Vec<&ActiveNode>) -> &ActiveNode {
-    active_nodes.iter().find(|node| node.node.id == id).unwrap()
+fn get_active_node_from_id(id: u16, active_nodes: Vec<ActiveNode>) -> ActiveNode {
+    active_nodes.iter().find(|node| node.node.id == id).unwrap().clone()
 }
 
 fn get_active_nodes_in_network<'a>(
-    start_node: &'a ActiveNode,
-    active_nodes: &Vec<&'a ActiveNode>,
-) -> Vec<&'a ActiveNode> {
+    start_node: &ActiveNode,
+    active_nodes: &Vec<ActiveNode>,
+) -> Vec<ActiveNode> {
     // Traverse the active_nodes from start_node and add them to network as discovered through connections.
     let mut visited: HashSet<u16> = HashSet::new();
     let mut queue: VecDeque<u16> = VecDeque::new();
-    let mut network: Vec<&ActiveNode> = Vec::new();
+    let mut network: Vec<ActiveNode> = Vec::new();
 
     queue.push_back(start_node.node.id);
     visited.insert(start_node.node.id);
@@ -1008,8 +1007,4 @@ fn get_active_nodes_in_network<'a>(
     }
 
     network
-}
-
-fn is_satisfied(active_node: &ActiveNode, encompassing_sets: Vec<&ActiveSet>) -> bool {
-    true
 }
