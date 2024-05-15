@@ -1,12 +1,17 @@
 pub mod active_line {
-    use bevy::sprite::SpriteBundle;
+    use bevy::{ecs::entity::Entity, sprite::SpriteBundle};
 
-    use crate::objects::active::active_node::active_node::ActiveNode;
+    use crate::objects::active::{
+        active_identifier::active_identifier::ActiveIdentifier,
+        active_node::active_node::ActiveNode,
+    };
 
     #[derive(Clone)]
     pub struct ActiveLine {
+        pub active_id: ActiveIdentifier,
         pub start_node: ActiveNode,
         pub end_node: ActiveNode,
         pub sprite: SpriteBundle,
+        pub sprite_entity_id: Entity,
     }
 }

@@ -7,6 +7,7 @@ pub mod puzzle {
         ecs::{
             component::Component,
             entity::Entity,
+            event::{Event, EventReader, EventWriter},
             query::{Changed, With},
             schedule::{
                 common_conditions::in_state, IntoSystemConfigs, NextState, OnEnter, OnExit,
@@ -24,20 +25,23 @@ pub mod puzzle {
             widget::Button,
             AlignItems, Interaction, JustifyContent, Style, UiImage, Val,
         },
+        utils::HashMap,
         window::{PrimaryWindow, Window},
     };
 
     use crate::{
-        buttons::icon_button_style, check_answer, clicked_on_sprite, despawn_screen, get_bg_tile, get_cursor_world_position, get_line_texture, get_satisfied_states, get_set_tiles, get_set_upper_left_node, node_to_position, objects::{
+        buttons::icon_button_style,
+        check_answer, clicked_on_sprite, despawn_screen, get_all_satisfied_states, get_bg_tile,
+        get_cursor_world_position, get_filtered_satisfied_states, get_line_texture, get_set_tiles,
+        get_set_upper_left_node, node_to_position,
+        objects::{
             active::{
                 active_connected_node_condition::active_connected_node_condition::ActiveConnectedNodeCondition,
                 active_connected_set_rule::active_connected_set_rule::ActiveConnectedSetRule,
                 active_identifier::active_identifier::ActiveIdentifier,
-                active_line::active_line::ActiveLine,
-                active_node::active_node::ActiveNode,
+                active_line::active_line::ActiveLine, active_node::active_node::ActiveNode,
                 active_node_condition::active_node_condition::ActiveNodeCondition,
-                active_set::active_set::ActiveSet,
-                active_set_rule::active_set_rule::ActiveSetRule,
+                active_set::active_set::ActiveSet, active_set_rule::active_set_rule::ActiveSetRule,
                 traits::traits::Satisfiable,
             },
             immutable::{
@@ -45,7 +49,11 @@ pub mod puzzle {
                 connected_set_rule::connected_set_rule::ConnectedSetRule,
                 node_condition::node_condition::NodeCondition, set_rule::set_rule::SetRule,
             },
-        }, puzzle_manager::PuzzleManager, texture::Texture, AppState, MainCamera, SelectedPuzzle, CDTN_RULE_SPRITE_SIZE, INTERNAL_SPACING_X, INTERNAL_SPACING_Y, SPRITE_SPACING, STACK_CDTN_RULE_SPACING, TILE_NODE_SPRITE_SIZE
+        },
+        puzzle_manager::PuzzleManager,
+        texture::Texture,
+        AppState, MainCamera, SelectedPuzzle, CDTN_RULE_SPRITE_SIZE, INTERNAL_SPACING_X,
+        INTERNAL_SPACING_Y, SPRITE_SPACING, STACK_CDTN_RULE_SPACING, TILE_NODE_SPRITE_SIZE,
     };
 
     // This plugin will contain a playable puzzle.
@@ -55,11 +63,19 @@ pub mod puzzle {
             .add_systems(OnExit(AppState::Puzzle), despawn_screen::<OnPuzzleUI>)
             .add_systems(Update, line_system.run_if(in_state(AppState::Puzzle)))
             .add_systems(Update, ui_action.run_if(in_state(AppState::Puzzle)))
+            .add_event::<UpdateSatisfiedStates>()
+            .add_systems(Update, update_satisfied_states_ui)
             .insert_resource(ActiveNodes::default())
             .insert_resource(ActiveSets::default())
             .insert_resource(ActiveLines::default())
             .insert_resource(CurrentLine::default());
     }
+
+    /// A map of satisfiable entities with an active identifier to their updated satisfied state.
+    pub type SatisfiedStatesMap = HashMap<ActiveIdentifier, bool>;
+
+    #[derive(Event, Debug, Clone, Default)]
+    struct UpdateSatisfiedStates(SatisfiedStatesMap);
 
     // Tracks all nodes in the puzzle
     #[derive(Default, Resource, Component, Clone)]
@@ -96,7 +112,6 @@ pub mod puzzle {
     // All actions that can be triggered from a button click
     #[derive(Component)]
     enum PuzzleButtonAction {
-        CheckAnswer,
         Reset,
         ReturnToPreviousPage,
     }
@@ -306,14 +321,14 @@ pub mod puzzle {
                 OnPuzzleUI,
             ))
             .with_children(|parent| {
-                parent.spawn((
-                    ButtonBundle {
-                        style: icon_button_style(),
-                        image: UiImage::new(asset_server.load(Texture::BtnCheckAnswer.path())),
-                        ..Default::default()
-                    },
-                    PuzzleButtonAction::CheckAnswer,
-                ));
+                // parent.spawn((
+                //     ButtonBundle {
+                //         style: icon_button_style(),
+                //         image: UiImage::new(asset_server.load(Texture::BtnCheckAnswer.path())),
+                //         ..Default::default()
+                //     },
+                //     PuzzleButtonAction::CheckAnswer,
+                // ));
                 parent.spawn((
                     ButtonBundle {
                         style: icon_button_style(),
@@ -460,6 +475,7 @@ pub mod puzzle {
         q_window: Query<&Window, With<PrimaryWindow>>,
         q_camera: Query<(&Camera, &GlobalTransform), With<MainCamera>>,
         mut q_sprites: Query<&mut Sprite>,
+        mut event_writer: EventWriter<UpdateSatisfiedStates>,
         asset_server: Res<AssetServer>,
     ) {
         // Get camera info and transform, assuming exacly 1 camera entity
@@ -531,88 +547,47 @@ pub mod puzzle {
                 ..Default::default()
             };
 
-            // Update list of lines
-            lines.lines.push(ActiveLine {
-                start_node: start_node.clone(),
-                end_node: end_node.clone(),
-                sprite: line_sprite.clone(),
-            });
-
             // Update connections of both start and end node
             start_node.connections.push(end_node.node.id);
             end_node.connections.push(start_node.node.id);
 
             // Add line to the screen
-            commands.spawn(line_sprite).insert(OnPuzzleScene);
+            let line_entity_id = commands
+                .spawn(line_sprite.clone())
+                .insert(OnPuzzleScene)
+                .id();
+
+            // Update list of lines
+            lines.lines.push(ActiveLine {
+                start_node: start_node.clone(),
+                end_node: end_node.clone(),
+                sprite: line_sprite.clone(),
+                active_id: ActiveIdentifier::new(),
+                sprite_entity_id: line_entity_id,
+            });
 
             // Regardless if we ended on a node or not, clear the current line
             current_line.start_node_id = None;
 
-            // Create immutable references 
+            // Create immutable references
             let immut_start_node = start_node.clone();
             let immut_end_node = end_node.clone();
 
             // Update satisfied states given the current start and end node
-            let satisfied_states = get_satisfied_states(
+            let satisfied_states = get_filtered_satisfied_states(
                 &active_nodes.active_nodes,
                 &active_sets.active_sets,
                 &immut_start_node,
                 &immut_end_node,
             );
 
-            // Update visual state of all active nodes and conditions 
-            active_nodes
-                .active_nodes
-                .iter_mut()
-                .for_each(|active_node| {
-                    if satisfied_states.contains_key(&active_node.active_id) {
-                        active_node.set_satisfied(satisfied_states[&active_node.active_id]);
-                        if let Ok(mut sprite) = q_sprites.get_mut(active_node.sprite_entity_id) {
-                            active_node.update_sprite(sprite.as_mut());
-                        }
-                    }
-                    active_node.active_conditions.iter_mut().for_each(|active_condition| {
-                        if satisfied_states.contains_key(&active_condition.active_id) {
-                            active_condition.set_satisfied(satisfied_states[&active_condition.active_id]);
-                            if let Ok(mut sprite) = q_sprites.get_mut(active_condition.sprite_entity_id) {
-                                active_condition.update_sprite(sprite.as_mut());
-                            }
-                        }
-                    });
-                    active_node.active_connected_conditions.iter_mut().for_each(|active_connected_condition| {
-                        if satisfied_states.contains_key(&active_connected_condition.active_id) {
-                            active_connected_condition.set_satisfied(satisfied_states[&active_connected_condition.active_id]);
-                            if let Ok(mut sprite) = q_sprites.get_mut(active_connected_condition.sprite_entity_id) {
-                                active_connected_condition.update_sprite(sprite.as_mut());
-                            }
-                        }
-                    });
-                });
+            // Send an event to update all the relevant states visually
+            event_writer.send(UpdateSatisfiedStates(satisfied_states));
 
-            // Update visual state of all active set rules
-            active_sets.active_sets.iter_mut().for_each(|active_set| {
-                active_set.active_set_rules.iter_mut().for_each(|active_set_rule| {
-                    if satisfied_states.contains_key(&active_set_rule.active_id) {
-                        active_set_rule.set_satisfied(satisfied_states[&active_set_rule.active_id]);
-                        if let Ok(mut sprite) = q_sprites.get_mut(active_set_rule.sprite_entity_id) {
-                            active_set_rule.update_sprite(sprite.as_mut());
-                        }
-                    }
-                });
-                active_set.active_connected_set_rules.iter_mut().for_each(|active_connected_set_rule| {
-                    if satisfied_states.contains_key(&active_connected_set_rule.active_id) {
-                        active_connected_set_rule.set_satisfied(satisfied_states[&active_connected_set_rule.active_id]);
-                        if let Ok(mut sprite) = q_sprites.get_mut(active_connected_set_rule.sprite_entity_id) {
-                            active_connected_set_rule.update_sprite(sprite.as_mut());
-                        }
-                    }
-                });
-            });
-
-            // If all satisfiable objects are satisfied, puzzle is solved. 
+            // If all satisfiable objects are satisfied, puzzle is solved.
             let mut solved = true;
             for active_node in active_nodes.active_nodes.iter() {
-                if !active_node.satisfied { 
+                if !active_node.satisfied {
                     println!("Puzzle not solved, {}", active_node.node.id);
                     solved = false;
                 }
@@ -624,7 +599,10 @@ pub mod puzzle {
                 }
                 for connected_condition in &active_node.active_connected_conditions {
                     if !connected_condition.satisfied {
-                        println!("Puzzle not solved, {}", connected_condition.active_id.get_id());
+                        println!(
+                            "Puzzle not solved, {}",
+                            connected_condition.active_id.get_id()
+                        );
                         solved = false;
                     }
                 }
@@ -638,7 +616,10 @@ pub mod puzzle {
                 }
                 for active_connected_set_rule in &active_set.active_connected_set_rules {
                     if !active_connected_set_rule.satisfied {
-                        println!("Puzzle not solved, {}", active_connected_set_rule.active_id.get_id());
+                        println!(
+                            "Puzzle not solved, {}",
+                            active_connected_set_rule.active_id.get_id()
+                        );
                         solved = false;
                     }
                 }
@@ -648,26 +629,128 @@ pub mod puzzle {
         }
     }
 
+    /// A system for updating all (relevant) satisfiable sprites on screen when an UpdateSatisfiedStates event is sent.
+    fn update_satisfied_states_ui(
+        mut event_reader: EventReader<UpdateSatisfiedStates>,
+        mut active_nodes: ResMut<ActiveNodes>,
+        mut active_sets: ResMut<ActiveSets>,
+        mut q_sprites: Query<&mut Sprite>,
+    ) {
+        for UpdateSatisfiedStates(satisfied_states) in event_reader.read() {
+            // Update visual state of all active nodes and conditions
+            active_nodes
+                .active_nodes
+                .iter_mut()
+                .for_each(|active_node| {
+                    if satisfied_states.contains_key(&active_node.active_id) {
+                        active_node.set_satisfied(satisfied_states[&active_node.active_id]);
+                        if let Ok(mut sprite) = q_sprites.get_mut(active_node.sprite_entity_id) {
+                            active_node.update_sprite(sprite.as_mut());
+                        }
+                    }
+                    active_node
+                        .active_conditions
+                        .iter_mut()
+                        .for_each(|active_condition| {
+                            if satisfied_states.contains_key(&active_condition.active_id) {
+                                active_condition
+                                    .set_satisfied(satisfied_states[&active_condition.active_id]);
+                                if let Ok(mut sprite) =
+                                    q_sprites.get_mut(active_condition.sprite_entity_id)
+                                {
+                                    active_condition.update_sprite(sprite.as_mut());
+                                }
+                            }
+                        });
+                    active_node.active_connected_conditions.iter_mut().for_each(
+                        |active_connected_condition| {
+                            if satisfied_states.contains_key(&active_connected_condition.active_id)
+                            {
+                                active_connected_condition.set_satisfied(
+                                    satisfied_states[&active_connected_condition.active_id],
+                                );
+                                if let Ok(mut sprite) =
+                                    q_sprites.get_mut(active_connected_condition.sprite_entity_id)
+                                {
+                                    active_connected_condition.update_sprite(sprite.as_mut());
+                                }
+                            }
+                        },
+                    );
+                });
+
+            // Update visual state of all active set rules
+            active_sets.active_sets.iter_mut().for_each(|active_set| {
+                active_set
+                    .active_set_rules
+                    .iter_mut()
+                    .for_each(|active_set_rule| {
+                        if satisfied_states.contains_key(&active_set_rule.active_id) {
+                            active_set_rule
+                                .set_satisfied(satisfied_states[&active_set_rule.active_id]);
+                            if let Ok(mut sprite) =
+                                q_sprites.get_mut(active_set_rule.sprite_entity_id)
+                            {
+                                active_set_rule.update_sprite(sprite.as_mut());
+                            }
+                        }
+                    });
+                active_set.active_connected_set_rules.iter_mut().for_each(
+                    |active_connected_set_rule| {
+                        if satisfied_states.contains_key(&active_connected_set_rule.active_id) {
+                            active_connected_set_rule.set_satisfied(
+                                satisfied_states[&active_connected_set_rule.active_id],
+                            );
+                            if let Ok(mut sprite) =
+                                q_sprites.get_mut(active_connected_set_rule.sprite_entity_id)
+                            {
+                                active_connected_set_rule.update_sprite(sprite.as_mut());
+                            }
+                        }
+                    },
+                );
+            });
+        }
+    }
+
     fn ui_action(
+        mut commands: Commands,
         interaction_query: Query<
             (&Interaction, &PuzzleButtonAction),
             (Changed<Interaction>, With<Button>),
         >,
-        active_nodes: Res<ActiveNodes>,
+        mut active_nodes: ResMut<ActiveNodes>,
         active_sets: Res<ActiveSets>,
+        mut active_lines: ResMut<ActiveLines>,
+        mut q_sprites: Query<&mut Sprite>,
         mut app_state: ResMut<NextState<AppState>>,
+        mut event_writer: EventWriter<UpdateSatisfiedStates>,
     ) {
         for (interaction, ui_button_action) in &interaction_query {
             if *interaction == Interaction::Pressed {
                 match ui_button_action {
-                    PuzzleButtonAction::CheckAnswer => {
-                        let solved = check_answer(
-                            active_nodes.active_nodes.iter().collect(),
-                            active_sets.active_sets.iter().collect(),
-                        );
-                        println!("Puzzle solved: {}", solved);
-                    }
+                    // PuzzleButtonAction::CheckAnswer => {
+                    //     let solved = check_answer(
+                    //         active_nodes.active_nodes.iter().collect(),
+                    //         active_sets.active_sets.iter().collect(),
+                    //     );
+                    //     println!("Puzzle solved: {}", solved);
+                    // }
                     PuzzleButtonAction::Reset => {
+                        active_nodes.active_nodes.iter_mut().for_each(|node| {
+                            node.connections.clear();
+                        });
+                        active_lines.lines.iter_mut().for_each(|active_line| {
+                            commands.entity(active_line.sprite_entity_id).despawn();
+                            // if let Ok(mut sprite) = q_sprites.get_mut(active_line.sprite_entity_id) {
+                            //     commands.entity(sprite.as_mut()).despawn();
+                            // }
+                        });
+                        active_lines.lines.clear();
+                        event_writer.send(UpdateSatisfiedStates(get_all_satisfied_states(
+                            &active_nodes.active_nodes,
+                            &active_sets.active_sets,
+                        )));
                         println!("Clear lines button pressed");
                     }
                     PuzzleButtonAction::ReturnToPreviousPage => {

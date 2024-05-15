@@ -13,8 +13,13 @@ use crate::{
             active_identifier::active_identifier::ActiveIdentifier,
             active_node::active_node::ActiveNode, active_set::active_set::ActiveSet,
         },
-        immutable::{game_set::game_set::GameSet, puzzle::puzzle::Puzzle, solution::solution::active_nodes_to_solution},
-    }, texture::Texture, SPRITE_SPACING, TILE_NODE_SPRITE_SIZE
+        immutable::{
+            game_set::game_set::GameSet, puzzle::puzzle::Puzzle,
+            solution::solution::active_nodes_to_solution,
+        },
+    },
+    texture::Texture,
+    SatisfiedStatesMap, SPRITE_SPACING, TILE_NODE_SPRITE_SIZE,
 };
 
 /// Returns a background tile as a sprite bundle.
@@ -905,14 +910,52 @@ pub fn check_answer(active_nodes: Vec<&ActiveNode>, active_sets: Vec<&ActiveSet>
     return succeeds;
 }
 
-/// Returns hashmap of satisfied states of relevant nodes, conditions, and set rules.
+/// Returns SatisfiedStatesMap containing all nodes, conditions, and set rules.
+pub fn get_all_satisfied_states(
+    active_nodes: &Vec<ActiveNode>,
+    active_sets: &Vec<ActiveSet>,
+) -> SatisfiedStatesMap {
+    let mut satisfied_states: SatisfiedStatesMap = SatisfiedStatesMap::new();
+    let solution = active_nodes_to_solution(&active_nodes);
+
+    for node in active_nodes.iter() {
+        satisfied_states.insert(node.active_id, node.check_satisfied());
+        for condition in node.active_conditions.iter() {
+            satisfied_states.insert(
+                condition.active_id,
+                condition.check_satisfied(&node, &solution),
+            );
+        }
+        // TODO track which ones have been checked to not duplicate, this is reflexive
+        for connected_condition in node.active_connected_conditions.iter() {
+            satisfied_states.insert(
+                connected_condition.active_id,
+                connected_condition.check_satisfied(),
+            );
+        }
+    }
+
+    for set in active_sets.iter() {
+        for rule in set.active_set_rules.iter() {
+            satisfied_states.insert(rule.active_id, rule.check_satisfied());
+        }
+        // TODO track which ones have been checked to not duplicate, this is reflexive
+        for connected_rule in set.active_connected_set_rules.iter() {
+            satisfied_states.insert(connected_rule.active_id, connected_rule.check_satisfied());
+        }
+    }
+
+    satisfied_states
+}
+
+/// Returns SatisfiedStatesMap containing relevant nodes, conditions, and set rules.
 /// Uses the start and end nodes as a heuristic to avoid visiting all nodes to update their satisfied state.
-pub fn get_satisfied_states(
+pub fn get_filtered_satisfied_states(
     active_nodes: &Vec<ActiveNode>,
     active_sets: &Vec<ActiveSet>,
     start_node: &ActiveNode,
     end_node: &ActiveNode,
-) -> HashMap<ActiveIdentifier, bool> {
+) -> SatisfiedStatesMap {
     // Getting networks starting from specific nodes
     let mut network_start_node = get_active_nodes_in_network(start_node, &active_nodes);
 
@@ -921,18 +964,23 @@ pub fn get_satisfied_states(
         network_start_node.extend(get_active_nodes_in_network(end_node, &active_nodes));
     }
 
-    let mut satisfied_states: HashMap<ActiveIdentifier, bool> = HashMap::new();
+    let mut satisfied_states: SatisfiedStatesMap = SatisfiedStatesMap::new();
     let solution = active_nodes_to_solution(&network_start_node);
-    println!("get_satisfied_states with solution {:?}", solution);
 
     for node in network_start_node.clone().into_iter() {
         satisfied_states.insert(node.active_id, node.check_satisfied());
         for condition in node.active_conditions.iter() {
-            satisfied_states.insert(condition.active_id, condition.check_satisfied(&node, &solution));
+            satisfied_states.insert(
+                condition.active_id,
+                condition.check_satisfied(&node, &solution),
+            );
         }
         // TODO track which ones have been checked to not duplicate, this is reflexive
         for connected_condition in node.active_connected_conditions.iter() {
-            satisfied_states.insert(connected_condition.active_id, connected_condition.check_satisfied());
+            satisfied_states.insert(
+                connected_condition.active_id,
+                connected_condition.check_satisfied(),
+            );
         }
     }
 
@@ -972,7 +1020,11 @@ fn get_sets_in_network<'a>(
 }
 
 fn get_active_node_from_id(id: u16, active_nodes: Vec<ActiveNode>) -> ActiveNode {
-    active_nodes.iter().find(|node| node.node.id == id).unwrap().clone()
+    active_nodes
+        .iter()
+        .find(|node| node.node.id == id)
+        .unwrap()
+        .clone()
 }
 
 fn get_active_nodes_in_network<'a>(

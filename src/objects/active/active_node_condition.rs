@@ -7,9 +7,13 @@ pub mod active_node_condition {
     use crate::{
         objects::{
             active::{
-                active_identifier::active_identifier::ActiveIdentifier, active_node::active_node::ActiveNode, traits::traits::Satisfiable
+                active_identifier::active_identifier::ActiveIdentifier,
+                active_node::active_node::ActiveNode, traits::traits::Satisfiable,
             },
-            immutable::{node_condition::node_condition::NodeCondition, solution::{self, solution::Solution}},
+            immutable::{
+                node_condition::node_condition::NodeCondition,
+                solution::{self, solution::Solution},
+            },
         },
         COLOR_CDTN_SAT, COLOR_CDTN_UNSAT,
     };
@@ -25,9 +29,7 @@ pub mod active_node_condition {
 
     impl ActiveNodeCondition {
         pub fn check_satisfied(&self, node: &ActiveNode, solution: &Solution) -> bool {
-            return self.condition.is_satisfied(
-                &node.node, 
-                solution);
+            return self.condition.is_satisfied(&node.node, solution);
         }
 
         pub fn update_sprite(&mut self, sprite: &mut Sprite) {
