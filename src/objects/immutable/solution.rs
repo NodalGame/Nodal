@@ -32,6 +32,11 @@ pub mod solution {
             .collect()
     }
 
+    /// Converts a solution to a hash of node ids to connecting nodes. It is reflexive, so if
+    /// node A is connected to node B, then node B is connected to node A, represented by
+    /// {0: [1], 1: [0]} in the hash.
+    ///
+    /// TODO solution should be struct, impl Solution .to_adjacency_list fn
     pub fn solution_to_adjacency_list(solution: &Solution) -> AdjacencyList {
         let mut graph = HashMap::new();
         for line in solution {

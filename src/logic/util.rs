@@ -919,7 +919,7 @@ pub fn get_all_satisfied_states(
     let solution = active_nodes_to_solution(&active_nodes);
 
     for node in active_nodes.iter() {
-        satisfied_states.insert(node.active_id, node.check_satisfied());
+        satisfied_states.insert(node.active_id, node.check_satisfied(&solution));
         for condition in node.active_conditions.iter() {
             satisfied_states.insert(
                 condition.active_id,
@@ -967,8 +967,11 @@ pub fn get_filtered_satisfied_states(
     let mut satisfied_states: SatisfiedStatesMap = SatisfiedStatesMap::new();
     let solution = active_nodes_to_solution(&network_start_node);
 
+    for node in active_nodes.iter() {
+        satisfied_states.insert(node.active_id, node.check_satisfied(&solution));
+    }
+
     for node in network_start_node.clone().into_iter() {
-        satisfied_states.insert(node.active_id, node.check_satisfied());
         for condition in node.active_conditions.iter() {
             satisfied_states.insert(
                 condition.active_id,

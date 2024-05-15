@@ -14,7 +14,7 @@ pub mod active_node {
                 active_node_condition::active_node_condition::ActiveNodeCondition,
                 traits::traits::Satisfiable,
             },
-            immutable::game_node::game_node::GameNode,
+            immutable::{game_node::game_node::GameNode, solution::solution::Solution},
         },
         COLOR_NODE_SAT, COLOR_NODE_UNSAT,
     };
@@ -33,9 +33,8 @@ pub mod active_node {
     }
 
     impl ActiveNode {
-        pub fn check_satisfied(&self) -> bool {
-            // TODO check if part of main network
-            true
+        pub fn check_satisfied(&self, solution: &Solution) -> bool {
+            return self.node.is_satisfied(solution);
         }
 
         pub fn update_sprite(&mut self, sprite: &mut Sprite) {
