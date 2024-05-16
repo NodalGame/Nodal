@@ -18,6 +18,8 @@ pub mod set_rule {
         Cycle,
         /// There must be no cycles present in the set.
         NoCycle,
+        /// Only one connection may be made between a node within the set and any node outside the set.
+        Leaf,
         /// Limits the scope of the condition of all nodes in the set to just the set.
         /// NOTE: This does not affect the game's universal win condition of all nodes of same class connecting!
         /// Ex: BranchEqual: stops counting branch length for lines connecting to nodes outside the set.

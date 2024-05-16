@@ -7,7 +7,6 @@ pub mod texture {
         CdtnBranchEqual,
         CdtnLeaf,
 
-        CdtnLimitConnection,
         CdtnDegreeEqual,
 
         SetRuleConnected,
@@ -65,9 +64,6 @@ pub mod texture {
                 Texture::CdtnBranchEqual => "../assets/textures/sprites/CDTN_BRANCH_EQUAL.png",
                 Texture::CdtnLeaf => "../assets/textures/sprites/CDTN_LEAF.png",
 
-                Texture::CdtnLimitConnection => {
-                    "../assets/textures/sprites/CDTN_LIMIT_CONNECTION.png"
-                }
                 Texture::CdtnDegreeEqual => "../assets/textures/sprites/CDTN_DEGREE_EQUAL.png",
 
                 Texture::SetRuleConnected => "../assets/textures/sprites/SETRULE_CONNECTED.png",

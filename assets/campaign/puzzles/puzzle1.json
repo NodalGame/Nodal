@@ -1,53 +1,36 @@
 {
 	"uuid": "e820699a-6e12-48db-b7b4-e8663cfba7b4",
 	"name": "Puzzle1",
-	"width": 3,
-	"height": 3,
+	"width": 2,
+	"height": 2,
 	"nodes": [
 		{
 			"id": 0,
-			"conditions": ["BranchEqual"],
-			"connected_conditions": []
+			"conditions": [],
+			"connected_conditions": [
+				{"DegreeEqual": "Blue"}
+			]
 		},
 		{
 			"id": 1,
 			"conditions": [],
-			"connected_conditions": []
+			"connected_conditions": [
+				{"DegreeEqual": "Green"}
+			]
 		},
 		{
 			"id": 2,
 			"conditions": [],
-			"connected_conditions": []
+			"connected_conditions": [
+				{"DegreeEqual": "Blue"}
+			]
 		},
 		{
 			"id": 3,
 			"conditions": [],
-			"connected_conditions": []
-		},
-		{
-			"id": 4,
-			"conditions": [],
-			"connected_conditions": []
-		},
-		{
-			"id": 5,
-			"conditions": [],
-			"connected_conditions": []
-		},
-		{
-			"id": 6,
-			"conditions": [],
-			"connected_conditions": []
-		},
-		{
-			"id": 7,
-			"conditions": [],
-			"connected_conditions": []
-		},
-		{
-			"id": 8,
-			"conditions": ["BranchEqual"],
-			"connected_conditions": []
+			"connected_conditions": [
+				{"DegreeEqual": "Green"}
+			]
 		}
 	],
 	"sets": []

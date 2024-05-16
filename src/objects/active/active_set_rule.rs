@@ -45,11 +45,6 @@ pub mod active_set_rule {
 
         fn set_satisfied(&mut self, value: bool) {
             self.satisfied = value;
-            println!(
-                "Setting satisfied to {} for rule {}",
-                value,
-                self.active_id.get_id()
-            );
         }
     }
 }

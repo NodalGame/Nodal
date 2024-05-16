@@ -890,7 +890,6 @@ pub fn check_answer(active_nodes: Vec<&ActiveNode>, active_sets: Vec<&ActiveSet>
             .iter()
             .any(|visited_node| *visited_node == node.node.id)
         {
-            println!("Node {} not connected to any other node", node.node.id);
             return false;
         }
     }
@@ -965,10 +964,12 @@ pub fn get_filtered_satisfied_states(
     }
 
     let mut satisfied_states: SatisfiedStatesMap = SatisfiedStatesMap::new();
-    let solution = active_nodes_to_solution(&network_start_node);
+    let solution = active_nodes_to_solution(&active_nodes);
 
+    // We must update all nodes in puzzle since creating a new network will impact all satisfied states on nodes
     for node in active_nodes.iter() {
-        satisfied_states.insert(node.active_id, node.check_satisfied(&solution));
+        let sat = node.check_satisfied(&solution);
+        satisfied_states.insert(node.active_id, sat);
     }
 
     for node in network_start_node.clone().into_iter() {

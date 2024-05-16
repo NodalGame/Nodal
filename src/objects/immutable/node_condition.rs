@@ -4,7 +4,7 @@ pub mod node_condition {
     use serde::{Deserialize, Serialize};
 
     use crate::{
-        logic::node_condition_checks::node_condition_checks::is_branch_equal,
+        logic::node_condition_checks::node_condition_checks::{is_branch_equal, is_leaf},
         objects::immutable::{
             game_node::game_node::GameNode,
             solution::solution::{solution_to_adjacency_list, Solution},
@@ -36,7 +36,7 @@ pub mod node_condition {
         pub fn is_satisfied(&self, node: &GameNode, solution: &Solution) -> bool {
             match self {
                 NodeCondition::BranchEqual => is_branch_equal(node, solution),
-                NodeCondition::Leaf => false,
+                NodeCondition::Leaf => is_leaf(node, solution),
             }
         }
     }

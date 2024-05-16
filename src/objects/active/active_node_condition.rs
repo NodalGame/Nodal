@@ -48,11 +48,6 @@ pub mod active_node_condition {
 
         fn set_satisfied(&mut self, value: bool) {
             self.satisfied = value;
-            println!(
-                "Setting satisfied to {} for condition {}",
-                value,
-                self.active_id.get_id()
-            );
         }
     }
 }

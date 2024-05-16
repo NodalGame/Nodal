@@ -49,7 +49,6 @@ pub mod active_node {
     impl Satisfiable for ActiveNode {
         fn set_satisfied(&mut self, value: bool) {
             self.satisfied = value;
-            println!("Setting satisfied to {} for node {}", value, self.node.id);
         }
 
         fn identifier(&self) -> &ActiveIdentifier {

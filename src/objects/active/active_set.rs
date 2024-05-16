@@ -41,7 +41,6 @@ pub mod active_set {
     impl Satisfiable for ActiveSet {
         fn set_satisfied(&mut self, value: bool) {
             self.satisfied = value;
-            println!("Setting satisfied to {} for set {}", value, self.set.id);
         }
 
         fn identifier(&self) -> &ActiveIdentifier {

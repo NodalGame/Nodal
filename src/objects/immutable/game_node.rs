@@ -23,6 +23,11 @@ pub mod game_node {
 
     impl GameNode {
         /// Returns true if node is part of a network and there exists only one network in the puzzle.
+        /// TODO This is highly inefficient to call for every node, rather we can do one call for all
+        /// nodes in the puzzle and update them at once: 
+        /// - get network(s)
+        /// - if >1 network, all nodes false
+        /// - else if node in network, set true, else false
         pub fn is_satisfied(&self, solution: &Solution) -> bool {
             let adj_matrix = solution_to_adjacency_list(solution);
 

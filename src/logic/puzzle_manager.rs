@@ -27,15 +27,12 @@ pub mod puzzle_manager {
 
         /// Populates locally stored puzzles (from ../assets/campaign/puzzles/)
         pub fn populate_campaign(&mut self) -> serde_json::Result<()> {
-            println!("Called populate_campaign");
             for entry in WalkDir::new(&PathBuf::from("assets/campaign/puzzles/"))
                 .into_iter()
                 .filter_map(|e| e.ok())
                 .filter(|e| e.path().extension().map_or(false, |ext| ext == "json"))
             {
                 let path = entry.path();
-
-                println!("{}", path.to_string_lossy());
 
                 // Open the file
                 let mut file = File::open(path).expect("Failed to open the file");
@@ -63,8 +60,6 @@ pub mod puzzle_manager {
             {
                 let path = entry.path();
 
-                println!("{}", path.to_string_lossy());
-
                 // Open the file
                 let mut file = File::open(path).expect("Failed to open the file");
 
@@ -83,7 +78,6 @@ pub mod puzzle_manager {
         }
 
         fn add_puzzle(&mut self, uuid: Uuid, path: String) {
-            println!("Adding puzzle: {:?} path {:?}", uuid.to_string(), path);
             self.puzzles.insert(uuid, path);
         }
 

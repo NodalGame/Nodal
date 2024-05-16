@@ -12,8 +12,6 @@ pub mod connected_node_condition {
     /// needing to be within the same set.
     #[derive(Serialize, Deserialize, Clone, Debug, Eq, PartialEq, Hash)]
     pub enum ConnectedNodeCondition {
-        /// This node must only directly connect to nodes of the same condition class.
-        LimitConnection(ConditionClass),
         /// This node's degree (number of node connections) must be equal to every other
         /// node with this condition of the same ConditionClass.
         DegreeEqual(ConditionClass),
@@ -22,7 +20,6 @@ pub mod connected_node_condition {
     impl ConnectedNodeCondition {
         pub fn condition_class(&self) -> &ConditionClass {
             match self {
-                ConnectedNodeCondition::LimitConnection(condition_class) => condition_class,
                 ConnectedNodeCondition::DegreeEqual(condition_class) => condition_class,
             }
         }

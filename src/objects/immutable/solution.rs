@@ -20,7 +20,6 @@ pub mod solution {
 
         for active_node in active_nodes {
             connections_to_lines(active_node).iter().for_each(|&line| {
-                println!("inserting line {:?}", line);
                 lines_set.insert(line);
             });
         }

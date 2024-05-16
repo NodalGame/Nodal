@@ -130,7 +130,6 @@ pub mod puzzle {
         let puzzle = puzzle_manager
             .load_puzzle(&puzzle_id.uuid)
             .unwrap_or_else(|| {
-                println!("Failed to load puzzle with id {}", puzzle_id.uuid);
                 exit(1); // TODO cause game to not crash, and do this check in menu BEFORE switching scenes
             });
 
@@ -145,7 +144,6 @@ pub mod puzzle {
         // Load condition textures
         let tex_cdtn_branch_equal = asset_server.load(Texture::CdtnBranchEqual.path());
         let tex_cdtn_leaf = asset_server.load(Texture::CdtnLeaf.path());
-        let tex_cdtn_limit_connection = asset_server.load(Texture::CdtnLimitConnection.path());
         let tex_cdtn_degree_equal = asset_server.load(Texture::CdtnDegreeEqual.path());
 
         // Load set rule textures
@@ -167,7 +165,6 @@ pub mod puzzle {
                 let node = ordered_nodes
                     .get((x / 2 * puzzle.height + y / 2) as usize)
                     .unwrap_or_else(|| {
-                        println!("Error when adding nodes to screen, index out of range?");
                         exit(1);
                     });
 
@@ -201,7 +198,6 @@ pub mod puzzle {
                         NodeCondition::BranchEqual => tex_cdtn_branch_equal.clone(),
                         NodeCondition::Leaf => tex_cdtn_leaf.clone(),
                         _ => {
-                            println!("Error when adding nodes to screen, invalid condition?");
                             exit(1);
                         }
                     };
@@ -241,9 +237,6 @@ pub mod puzzle {
                 for con_cdtn in node.connected_conditions.iter() {
                     // TODO get textures via either connected_node_condition.rs or texture.rs
                     let con_cdtn_texture = match con_cdtn {
-                        ConnectedNodeCondition::LimitConnection(con_cdtn) => {
-                            tex_cdtn_limit_connection.clone()
-                        }
                         ConnectedNodeCondition::DegreeEqual(con_cdtn) => {
                             tex_cdtn_degree_equal.clone()
                         }
@@ -372,6 +365,7 @@ pub mod puzzle {
                     SetRule::Disconnected => todo!(),
                     SetRule::Cycle => todo!(),
                     SetRule::NoCycle => todo!(),
+                    SetRule::Leaf => todo!(),
                     SetRule::Scope => todo!(),
                 };
 
@@ -584,48 +578,6 @@ pub mod puzzle {
             // Send an event to update all the relevant states visually
             event_writer.send(UpdateSatisfiedStates(satisfied_states));
 
-            // If all satisfiable objects are satisfied, puzzle is solved.
-            let mut solved = true;
-            for active_node in active_nodes.active_nodes.iter() {
-                if !active_node.satisfied {
-                    println!("Puzzle not solved, {}", active_node.node.id);
-                    solved = false;
-                }
-                for condition in &active_node.active_conditions {
-                    if !condition.satisfied {
-                        println!("Puzzle not solved, {}", condition.active_id.get_id());
-                        solved = false;
-                    }
-                }
-                for connected_condition in &active_node.active_connected_conditions {
-                    if !connected_condition.satisfied {
-                        println!(
-                            "Puzzle not solved, {}",
-                            connected_condition.active_id.get_id()
-                        );
-                        solved = false;
-                    }
-                }
-            }
-            for active_set in active_sets.active_sets.iter() {
-                for active_set_rule in &active_set.active_set_rules {
-                    if !active_set_rule.satisfied {
-                        println!("Puzzle not solved, {}", active_set_rule.active_id.get_id());
-                        solved = false;
-                    }
-                }
-                for active_connected_set_rule in &active_set.active_connected_set_rules {
-                    if !active_connected_set_rule.satisfied {
-                        println!(
-                            "Puzzle not solved, {}",
-                            active_connected_set_rule.active_id.get_id()
-                        );
-                        solved = false;
-                    }
-                }
-            }
-
-            println!("Solved: {}", solved);
         }
     }
 
@@ -636,7 +588,9 @@ pub mod puzzle {
         mut active_sets: ResMut<ActiveSets>,
         mut q_sprites: Query<&mut Sprite>,
     ) {
+        let mut processed_update = false;
         for UpdateSatisfiedStates(satisfied_states) in event_reader.read() {
+            processed_update = true;
             // Update visual state of all active nodes and conditions
             active_nodes
                 .active_nodes
@@ -711,6 +665,51 @@ pub mod puzzle {
                 );
             });
         }
+
+        // If we processed any updates, then check if puzzle was solved
+        if processed_update { 
+            let mut solved = true;
+            for active_node in active_nodes.active_nodes.iter() {
+                if !active_node.satisfied {
+                    println!("Puzzle not solved, node {}", active_node.node.id);
+                    solved = false;
+                }
+                for condition in &active_node.active_conditions {
+                    if !condition.satisfied {
+                        println!("Puzzle not solved, condition {}", condition.active_id.get_id());
+                        solved = false;
+                    }
+                }
+                for connected_condition in &active_node.active_connected_conditions {
+                    if !connected_condition.satisfied {
+                        println!(
+                            "Puzzle not solved, connected condition {}",
+                            connected_condition.active_id.get_id()
+                        );
+                        solved = false;
+                    }
+                }
+            }
+            for active_set in active_sets.active_sets.iter() {
+                for active_set_rule in &active_set.active_set_rules {
+                    if !active_set_rule.satisfied {
+                        println!("Puzzle not solved, rule {}", active_set_rule.active_id.get_id());
+                        solved = false;
+                    }
+                }
+                for active_connected_set_rule in &active_set.active_connected_set_rules {
+                    if !active_connected_set_rule.satisfied {
+                        println!(
+                            "Puzzle not solved, connected rule {}",
+                            active_connected_set_rule.active_id.get_id()
+                        );
+                        solved = false;
+                    }
+                }
+            }
+
+            println!("Solved: {}", solved);
+        }
     }
 
     fn ui_action(
@@ -751,10 +750,8 @@ pub mod puzzle {
                             &active_nodes.active_nodes,
                             &active_sets.active_sets,
                         )));
-                        println!("Clear lines button pressed");
                     }
                     PuzzleButtonAction::ReturnToPreviousPage => {
-                        println!("Go back button pressed");
                         // TODO track previous state before entering puzzle (campaign vs public level select)
                         app_state.set(AppState::Campaign);
                     }
