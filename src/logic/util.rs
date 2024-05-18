@@ -10,11 +10,14 @@ use bevy::{
 use crate::{
     objects::{
         active::{
+            self,
+            active_connected_node_condition::active_connected_node_condition::ActiveConnectedNodeCondition,
             active_identifier::active_identifier::ActiveIdentifier,
             active_node::active_node::ActiveNode, active_set::active_set::ActiveSet,
         },
         immutable::{
-            game_set::game_set::GameSet, puzzle::puzzle::Puzzle,
+            connected_node_condition::connected_node_condition::ConnectedNodeCondition,
+            game_node::game_node::GameNode, game_set::game_set::GameSet, puzzle::puzzle::Puzzle,
             solution::solution::active_nodes_to_solution,
         },
     },
@@ -917,6 +920,12 @@ pub fn get_all_satisfied_states(
     let mut satisfied_states: SatisfiedStatesMap = SatisfiedStatesMap::new();
     let solution = active_nodes_to_solution(&active_nodes);
 
+    // We must update all nodes in puzzle since creating a new network will impact all satisfied states on nodes
+    for node in active_nodes.iter() {
+        let sat = node.check_satisfied(&solution);
+        satisfied_states.insert(node.active_id, sat);
+    }
+
     for node in active_nodes.iter() {
         satisfied_states.insert(node.active_id, node.check_satisfied(&solution));
         for condition in node.active_conditions.iter() {
@@ -925,14 +934,37 @@ pub fn get_all_satisfied_states(
                 condition.check_satisfied(&node, &solution),
             );
         }
-        // TODO track which ones have been checked to not duplicate, this is reflexive
-        for connected_condition in node.active_connected_conditions.iter() {
-            satisfied_states.insert(
-                connected_condition.active_id,
-                connected_condition.check_satisfied(),
-            );
+    }
+
+    // Create map of connected node condition to active id of connected node condition
+    let mut con_cdtn_map: HashMap<ConnectedNodeCondition, Vec<&ActiveIdentifier>> = HashMap::new();
+
+    // Create groups mapping connected condition (and class) to game nodes
+    let mut con_cdtn_groups: HashMap<ConnectedNodeCondition, Vec<&GameNode>> = HashMap::new();
+    for node in active_nodes.iter() {
+        for con_cdtn in node.active_connected_conditions.iter() {
+            // Update groups
+            if let Some(nodes) = con_cdtn_groups.get_mut(&con_cdtn.condition) {
+                nodes.push(&node.node);
+            } else {
+                con_cdtn_groups.insert(con_cdtn.condition, Vec::from([&node.node]));
+            }
+            // Update map to active ids
+            if let Some(active_ids) = con_cdtn_map.get_mut(&con_cdtn.condition) {
+                active_ids.push(&con_cdtn.active_id);
+            } else {
+                con_cdtn_map.insert(con_cdtn.condition, Vec::from([&con_cdtn.active_id]));
+            }
         }
     }
+
+    // Now update all connected conditions based on their grouping
+    con_cdtn_groups.iter().for_each(|(con_cdtn, nodes)| {
+        let sat = con_cdtn.is_satisfied(nodes.to_vec(), &solution);
+        for active_id in con_cdtn_map.get(con_cdtn).unwrap() {
+            satisfied_states.insert(**active_id, sat);
+        }
+    });
 
     for set in active_sets.iter() {
         for rule in set.active_set_rules.iter() {
@@ -947,63 +979,87 @@ pub fn get_all_satisfied_states(
     satisfied_states
 }
 
-/// Returns SatisfiedStatesMap containing relevant nodes, conditions, and set rules.
-/// Uses the start and end nodes as a heuristic to avoid visiting all nodes to update their satisfied state.
-pub fn get_filtered_satisfied_states(
-    active_nodes: &Vec<ActiveNode>,
-    active_sets: &Vec<ActiveSet>,
-    start_node: &ActiveNode,
-    end_node: &ActiveNode,
-) -> SatisfiedStatesMap {
-    // Getting networks starting from specific nodes
-    let mut network_start_node = get_active_nodes_in_network(start_node, &active_nodes);
+// TODO it's stupid to manage both of these right now... rather I'll just check the full puzzle state every time,
+// then optimize with this function if it starts having issues.
+//
+// /// Returns SatisfiedStatesMap containing relevant nodes, conditions, and set rules.
+// /// Uses the start and end nodes as a heuristic to avoid visiting all nodes to update their satisfied state.
+// pub fn get_filtered_satisfied_states(
+//     active_nodes: &Vec<ActiveNode>,
+//     active_sets: &Vec<ActiveSet>,
+//     start_node: &ActiveNode,
+//     end_node: &ActiveNode,
+// ) -> SatisfiedStatesMap {
+//     // Getting networks starting from specific nodes
+//     let mut network_start_node = get_active_nodes_in_network(start_node, &active_nodes);
 
-    // If end_node not in network, extend it
-    if !network_start_node.contains(&end_node) {
-        network_start_node.extend(get_active_nodes_in_network(end_node, &active_nodes));
-    }
+//     // If end_node not in network, extend it
+//     if !network_start_node.contains(&end_node) {
+//         network_start_node.extend(get_active_nodes_in_network(end_node, &active_nodes));
+//     }
 
-    let mut satisfied_states: SatisfiedStatesMap = SatisfiedStatesMap::new();
-    let solution = active_nodes_to_solution(&active_nodes);
+//     let mut satisfied_states: SatisfiedStatesMap = SatisfiedStatesMap::new();
+//     let solution = active_nodes_to_solution(&active_nodes);
 
-    // We must update all nodes in puzzle since creating a new network will impact all satisfied states on nodes
-    for node in active_nodes.iter() {
-        let sat = node.check_satisfied(&solution);
-        satisfied_states.insert(node.active_id, sat);
-    }
+//     // We must update all nodes in puzzle since creating a new network will impact all satisfied states on nodes
+//     for node in active_nodes.iter() {
+//         let sat = node.check_satisfied(&solution);
+//         satisfied_states.insert(node.active_id, sat);
+//     }
 
-    for node in network_start_node.clone().into_iter() {
-        for condition in node.active_conditions.iter() {
-            satisfied_states.insert(
-                condition.active_id,
-                condition.check_satisfied(&node, &solution),
-            );
-        }
-        // TODO track which ones have been checked to not duplicate, this is reflexive
-        for connected_condition in node.active_connected_conditions.iter() {
-            satisfied_states.insert(
-                connected_condition.active_id,
-                connected_condition.check_satisfied(),
-            );
-        }
-    }
+//     for node in network_start_node.clone().into_iter() {
+//         for condition in node.active_conditions.iter() {
+//             satisfied_states.insert(
+//                 condition.active_id,
+//                 condition.check_satisfied(&node, &solution),
+//             );
+//         }
+//     }
 
-    let network_sets = get_sets_in_network(active_sets, &network_start_node);
+//     // Create map of connected node condition to active id of connected node condition
+//     let mut con_cdtn_map: HashMap<ConnectedNodeCondition, Vec<&ActiveIdentifier>> = HashMap::new();
 
-    for set in network_sets.into_iter() {
-        for rule in set.active_set_rules.iter() {
-            satisfied_states.insert(rule.active_id, rule.check_satisfied());
-        }
-        // TODO track which ones have been checked to not duplicate, this is reflexive
-        for connected_rule in set.active_connected_set_rules.iter() {
-            satisfied_states.insert(connected_rule.active_id, connected_rule.check_satisfied());
-        }
-    }
+//     // Create groups mapping connected condition (and class) to game nodes
+//     let mut con_cdtn_groups: HashMap<ConnectedNodeCondition, Vec<&GameNode>> = HashMap::new();
+//     for node in active_nodes.iter() {
+//         for con_cdtn in node.active_connected_conditions.iter() {
+//             // Update groups
+//             if let Some(nodes) = con_cdtn_groups.get_mut(&con_cdtn.condition) {
+//                 nodes.push(&node.node);
+//             } else {
+//                 con_cdtn_groups.insert(con_cdtn.condition, Vec::from([&node.node]));
+//             }
+//             // Update map to active ids
+//             if let Some(active_ids) = con_cdtn_map.get_mut(&con_cdtn.condition) {
+//                 active_ids.push(&con_cdtn.active_id);
+//             } else {
+//                 con_cdtn_map.insert(con_cdtn.condition, Vec::from([&con_cdtn.active_id]));
+//             }
+//         }
+//     }
 
-    satisfied_states
+//     // Now update all connected conditions based on their grouping
+//     con_cdtn_groups.iter().for_each(|(con_cdtn, nodes)| {
+//         let sat = con_cdtn.is_satisfied(nodes.to_vec(), &solution);
+//         for active_id in con_cdtn_map.get(con_cdtn).unwrap() {
+//             satisfied_states.insert(**active_id, sat);
+//         }
+//     });
 
-    // TODO for each set which encompasses at least one node in the network, check its satisfied states
-}
+//     let network_sets = get_sets_in_network(active_sets, &network_start_node);
+
+//     for set in network_sets.into_iter() {
+//         for rule in set.active_set_rules.iter() {
+//             satisfied_states.insert(rule.active_id, rule.check_satisfied());
+//         }
+//         // TODO track which ones have been checked to not duplicate, this is reflexive
+//         for connected_rule in set.active_connected_set_rules.iter() {
+//             satisfied_states.insert(connected_rule.active_id, connected_rule.check_satisfied());
+//         }
+//     }
+
+//     satisfied_states
+// }
 
 fn get_sets_in_network<'a>(
     active_sets: &Vec<ActiveSet>,

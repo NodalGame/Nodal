@@ -1,4 +1,4 @@
-pub mod node_condition_checks {
+pub mod condition_checks {
     use std::collections::VecDeque;
 
     use bevy::utils::hashbrown::HashSet;
@@ -68,16 +68,12 @@ pub mod node_condition_checks {
 #[cfg(test)]
 mod tests {
     use crate::{
-        logic::node_condition_checks::node_condition_checks::is_leaf,
+        logic::condition_checks::condition_checks::{is_branch_equal, is_leaf},
         objects::immutable::{
-            game_line::game_line::GameLine,
-            game_node::game_node::GameNode,
-            node_condition::node_condition::NodeCondition,
-            solution::{self, solution::Solution},
+            game_line::game_line::GameLine, game_node::game_node::GameNode,
+            node_condition::node_condition::NodeCondition, solution::solution::Solution,
         },
     };
-
-    use super::node_condition_checks::is_branch_equal;
 
     fn get_test_node(conditions: Vec<NodeCondition>) -> GameNode {
         GameNode {

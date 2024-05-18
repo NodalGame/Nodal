@@ -4,7 +4,7 @@ pub mod node_condition {
     use serde::{Deserialize, Serialize};
 
     use crate::{
-        logic::node_condition_checks::node_condition_checks::{is_branch_equal, is_leaf},
+        logic::condition_checks::condition_checks::{is_branch_equal, is_leaf},
         objects::immutable::{
             game_node::game_node::GameNode,
             solution::solution::{solution_to_adjacency_list, Solution},

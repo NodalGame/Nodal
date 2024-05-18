@@ -31,9 +31,9 @@ pub mod puzzle {
 
     use crate::{
         buttons::icon_button_style,
-        check_answer, clicked_on_sprite, despawn_screen, get_all_satisfied_states, get_bg_tile,
-        get_cursor_world_position, get_filtered_satisfied_states, get_line_texture, get_set_tiles,
-        get_set_upper_left_node, node_to_position,
+        clicked_on_sprite, despawn_screen, get_all_satisfied_states, get_bg_tile,
+        get_cursor_world_position, get_line_texture, get_set_tiles, get_set_upper_left_node,
+        node_to_position,
         objects::{
             active::{
                 active_connected_node_condition::active_connected_node_condition::ActiveConnectedNodeCondition,
@@ -462,13 +462,12 @@ pub mod puzzle {
     fn line_system(
         mut commands: Commands,
         mut active_nodes: ResMut<ActiveNodes>,
-        mut active_sets: ResMut<ActiveSets>,
+        active_sets: Res<ActiveSets>,
         mut current_line: ResMut<CurrentLine>,
         mut lines: ResMut<ActiveLines>,
         mouse_button_input: Res<ButtonInput<MouseButton>>,
         q_window: Query<&Window, With<PrimaryWindow>>,
         q_camera: Query<(&Camera, &GlobalTransform), With<MainCamera>>,
-        mut q_sprites: Query<&mut Sprite>,
         mut event_writer: EventWriter<UpdateSatisfiedStates>,
         asset_server: Res<AssetServer>,
     ) {
@@ -563,21 +562,12 @@ pub mod puzzle {
             // Regardless if we ended on a node or not, clear the current line
             current_line.start_node_id = None;
 
-            // Create immutable references
-            let immut_start_node = start_node.clone();
-            let immut_end_node = end_node.clone();
-
             // Update satisfied states given the current start and end node
-            let satisfied_states = get_filtered_satisfied_states(
-                &active_nodes.active_nodes,
-                &active_sets.active_sets,
-                &immut_start_node,
-                &immut_end_node,
-            );
+            let satisfied_states =
+                get_all_satisfied_states(&active_nodes.active_nodes, &active_sets.active_sets);
 
             // Send an event to update all the relevant states visually
             event_writer.send(UpdateSatisfiedStates(satisfied_states));
-
         }
     }
 
@@ -667,7 +657,8 @@ pub mod puzzle {
         }
 
         // If we processed any updates, then check if puzzle was solved
-        if processed_update { 
+        // TODO move this to another function
+        if processed_update {
             let mut solved = true;
             for active_node in active_nodes.active_nodes.iter() {
                 if !active_node.satisfied {
@@ -676,7 +667,10 @@ pub mod puzzle {
                 }
                 for condition in &active_node.active_conditions {
                     if !condition.satisfied {
-                        println!("Puzzle not solved, condition {}", condition.active_id.get_id());
+                        println!(
+                            "Puzzle not solved, condition {}",
+                            condition.active_id.get_id()
+                        );
                         solved = false;
                     }
                 }
@@ -693,7 +687,10 @@ pub mod puzzle {
             for active_set in active_sets.active_sets.iter() {
                 for active_set_rule in &active_set.active_set_rules {
                     if !active_set_rule.satisfied {
-                        println!("Puzzle not solved, rule {}", active_set_rule.active_id.get_id());
+                        println!(
+                            "Puzzle not solved, rule {}",
+                            active_set_rule.active_id.get_id()
+                        );
                         solved = false;
                     }
                 }

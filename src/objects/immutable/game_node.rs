@@ -24,7 +24,7 @@ pub mod game_node {
     impl GameNode {
         /// Returns true if node is part of a network and there exists only one network in the puzzle.
         /// TODO This is highly inefficient to call for every node, rather we can do one call for all
-        /// nodes in the puzzle and update them at once: 
+        /// nodes in the puzzle and update them at once:
         /// - get network(s)
         /// - if >1 network, all nodes false
         /// - else if node in network, set true, else false
@@ -85,10 +85,7 @@ pub mod game_node {
 
 #[cfg(test)]
 mod tests {
-    use crate::objects::immutable::{
-        game_line::game_line::GameLine,
-        solution::solution::Solution,
-    };
+    use crate::objects::immutable::{game_line::game_line::GameLine, solution::solution::Solution};
 
     use super::game_node::GameNode;
 
