@@ -5,7 +5,7 @@ pub mod active_node_condition {
     };
 
     use crate::{
-        objects::{
+        structs::{
             active::{
                 active_identifier::active_identifier::ActiveIdentifier,
                 active_node::active_node::ActiveNode, traits::traits::Satisfiable,

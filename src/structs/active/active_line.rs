@@ -1,7 +1,7 @@
 pub mod active_line {
     use bevy::{ecs::entity::Entity, sprite::SpriteBundle};
 
-    use crate::objects::active::{
+    use crate::structs::active::{
         active_identifier::active_identifier::ActiveIdentifier,
         active_node::active_node::ActiveNode,
     };

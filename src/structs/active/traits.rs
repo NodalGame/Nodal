@@ -1,6 +1,6 @@
 pub mod traits {
 
-    use crate::objects::active::active_identifier::active_identifier::ActiveIdentifier;
+    use crate::structs::active::active_identifier::active_identifier::ActiveIdentifier;
 
     pub trait Satisfiable {
         /// Globally unique identifier among "active" objects in the game

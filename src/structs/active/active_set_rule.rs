@@ -5,11 +5,11 @@ pub mod active_set_rule {
     };
 
     use crate::{
-        objects::{
+        structs::{
             active::{
-                active_identifier::active_identifier::ActiveIdentifier, traits::traits::Satisfiable,
+                active_identifier::active_identifier::ActiveIdentifier, active_set::active_set::ActiveSet, traits::traits::Satisfiable
             },
-            immutable::set_rule::set_rule::SetRule,
+            immutable::{set_rule::set_rule::SetRule, solution::solution::Solution},
         },
         COLOR_RULE_SAT, COLOR_RULE_UNSAT,
     };
@@ -24,9 +24,8 @@ pub mod active_set_rule {
     }
 
     impl ActiveSetRule {
-        pub fn check_satisfied(&self) -> bool {
-            // TODO check if rule is satisfied
-            true
+        pub fn check_satisfied(&self, set: &ActiveSet, solution: &Solution) -> bool {
+            return self.rule.is_satisfied(&set.set, solution);
         }
 
         pub fn update_sprite(&mut self, sprite: &mut Sprite) {

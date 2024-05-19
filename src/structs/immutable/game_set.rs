@@ -1,7 +1,7 @@
 pub mod game_set {
     use serde::{Deserialize, Serialize};
 
-    use crate::objects::immutable::{
+    use crate::structs::immutable::{
         connected_set_rule::connected_set_rule::ConnectedSetRule, set_rule::set_rule::SetRule,
     };
 

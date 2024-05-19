@@ -11,7 +11,7 @@ pub mod puzzle_manager {
     use uuid::Uuid;
     use walkdir::WalkDir;
 
-    use crate::objects::immutable::puzzle::puzzle::Puzzle;
+    use crate::structs::immutable::puzzle::puzzle::Puzzle;
 
     #[derive(Resource, Debug)]
     pub struct PuzzleManager {

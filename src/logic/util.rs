@@ -8,7 +8,7 @@ use bevy::{
 };
 
 use crate::{
-    objects::{
+    structs::{
         active::{
             self,
             active_connected_node_condition::active_connected_node_condition::ActiveConnectedNodeCondition,
@@ -17,7 +17,7 @@ use crate::{
         },
         immutable::{
             connected_node_condition::connected_node_condition::ConnectedNodeCondition,
-            game_node::game_node::GameNode, game_set::game_set::GameSet, puzzle::puzzle::Puzzle,
+            game_node::game_node::{GameNode, GameNodeId}, game_set::game_set::GameSet, puzzle::puzzle::Puzzle,
             solution::solution::active_nodes_to_solution,
         },
     },
@@ -831,7 +831,7 @@ pub fn get_set_upper_left_node(set: &GameSet, puzzle: &Puzzle) -> u16 {
     let mut upper_left_most_node = u16::MAX;
     let mut upper_most_row = u8::MIN;
     set.nodes.iter().for_each(|node| {
-        if node % puzzle.height as u16 > upper_most_row.into() && *node < upper_left_most_node {
+        if node % puzzle.height as u16 >= upper_most_row.into() && *node <= upper_left_most_node {
             upper_most_row = (node % puzzle.height as u16) as u8;
             upper_left_most_node = *node;
         }
@@ -859,57 +859,6 @@ pub fn get_cursor_world_position(
         .and_then(|cursor| camera.viewport_to_world(camera_transform, cursor))
         .map(|ray| ray.origin.truncate())
         .unwrap_or(Vec2::MIN);
-}
-
-/// Checks if the puzzle is solved. Verifies a few things:
-/// - Is the connectivity of each node class spanning all nodes in the puzzle of that class?
-/// - Is each node's set of conditions satisfied?  
-/// - Is each set rule satisfied?
-pub fn check_answer(active_nodes: Vec<&ActiveNode>, active_sets: Vec<&ActiveSet>) -> bool {
-    // First verify that all nodes are connected to each other
-    let mut visited: HashSet<u16> = HashSet::new();
-    let mut queue: VecDeque<u16> = VecDeque::new();
-
-    queue.push_back(active_nodes.get(0).unwrap().node.id);
-    visited.insert(active_nodes.get(0).unwrap().node.id);
-
-    while queue.len() > 0 {
-        let curr_node_id = queue.pop_front().unwrap();
-        let curr_node = active_nodes
-            .iter()
-            .find(|node| node.node.id == curr_node_id)
-            .unwrap();
-        for connection in curr_node.connections.iter() {
-            if !visited.contains(connection) {
-                visited.insert(*connection);
-                queue.push_back(*connection);
-            }
-        }
-    }
-
-    // Check that all nodes in the class are connected to each other
-    for node in active_nodes {
-        if !visited
-            .iter()
-            .any(|visited_node| *visited_node == node.node.id)
-        {
-            return false;
-        }
-    }
-
-    let mut succeeds = true;
-    // active_nodes.clone().into_iter().for_each(|node| {
-    //     // Check failed node conditions
-    //     let failed_conditions = node.get_failed_conditions(active_nodes.clone());
-    //     if !failed_conditions.is_empty() {
-    //         println!("Node failed conditions: {:?}", failed_conditions);
-    //         succeeds = false;
-    //     }
-    // });
-
-    // TODO check all sets for failed rules
-
-    return succeeds;
 }
 
 /// Returns SatisfiedStatesMap containing all nodes, conditions, and set rules.
@@ -968,7 +917,7 @@ pub fn get_all_satisfied_states(
 
     for set in active_sets.iter() {
         for rule in set.active_set_rules.iter() {
-            satisfied_states.insert(rule.active_id, rule.check_satisfied());
+            satisfied_states.insert(rule.active_id, rule.check_satisfied(&set, &solution));
         }
         // TODO track which ones have been checked to not duplicate, this is reflexive
         for connected_rule in set.active_connected_set_rules.iter() {
@@ -1061,62 +1010,62 @@ pub fn get_all_satisfied_states(
 //     satisfied_states
 // }
 
-fn get_sets_in_network<'a>(
-    active_sets: &Vec<ActiveSet>,
-    network: &Vec<ActiveNode>,
-) -> Vec<ActiveSet> {
-    let mut network_sets: Vec<ActiveSet> = Vec::new();
+// fn get_sets_in_network<'a>(
+//     active_sets: &Vec<ActiveSet>,
+//     network: &Vec<ActiveNode>,
+// ) -> Vec<ActiveSet> {
+//     let mut network_sets: Vec<ActiveSet> = Vec::new();
 
-    // Convert network to list of node ids
-    let network_ids: Vec<u16> = network.iter().map(|node| node.node.id).collect();
+//     // Convert network to list of node ids
+//     let network_ids: Vec<u16> = network.iter().map(|node| node.node.id).collect();
 
-    for set in active_sets.iter() {
-        if set.set.nodes.iter().any(|node| network_ids.contains(node)) {
-            network_sets.push(set.clone());
-        }
-    }
+//     for set in active_sets.iter() {
+//         if set.set.nodes.iter().any(|node| network_ids.contains(node)) {
+//             network_sets.push(set.clone());
+//         }
+//     }
 
-    network_sets
-}
+//     network_sets
+// }
 
-fn get_active_node_from_id(id: u16, active_nodes: Vec<ActiveNode>) -> ActiveNode {
-    active_nodes
-        .iter()
-        .find(|node| node.node.id == id)
-        .unwrap()
-        .clone()
-}
+// fn get_active_node_from_id(id: u16, active_nodes: Vec<ActiveNode>) -> ActiveNode {
+//     active_nodes
+//         .iter()
+//         .find(|node| node.node.id == id)
+//         .unwrap()
+//         .clone()
+// }
 
-fn get_active_nodes_in_network<'a>(
-    start_node: &ActiveNode,
-    active_nodes: &Vec<ActiveNode>,
-) -> Vec<ActiveNode> {
-    // Traverse the active_nodes from start_node and add them to network as discovered through connections.
-    let mut visited: HashSet<u16> = HashSet::new();
-    let mut queue: VecDeque<u16> = VecDeque::new();
-    let mut network: Vec<ActiveNode> = Vec::new();
+// fn get_active_nodes_in_network<'a>(
+//     start_node: &ActiveNode,
+//     active_nodes: &Vec<ActiveNode>,
+// ) -> Vec<ActiveNode> {
+//     // Traverse the active_nodes from start_node and add them to network as discovered through connections.
+//     let mut visited: HashSet<u16> = HashSet::new();
+//     let mut queue: VecDeque<u16> = VecDeque::new();
+//     let mut network: Vec<ActiveNode> = Vec::new();
 
-    queue.push_back(start_node.node.id);
-    visited.insert(start_node.node.id);
-    network.push(get_active_node_from_id(
-        start_node.node.id,
-        active_nodes.to_vec(),
-    ));
+//     queue.push_back(start_node.node.id);
+//     visited.insert(start_node.node.id);
+//     network.push(get_active_node_from_id(
+//         start_node.node.id,
+//         active_nodes.to_vec(),
+//     ));
 
-    while queue.len() > 0 {
-        let curr_node_id = queue.pop_front().unwrap();
-        let curr_node = active_nodes
-            .iter()
-            .find(|node| node.node.id == curr_node_id)
-            .unwrap();
-        for connection in curr_node.connections.iter() {
-            if !visited.contains(connection) {
-                visited.insert(*connection);
-                queue.push_back(*connection);
-                network.push(get_active_node_from_id(*connection, active_nodes.to_vec()));
-            }
-        }
-    }
+//     while queue.len() > 0 {
+//         let curr_node_id = queue.pop_front().unwrap();
+//         let curr_node = active_nodes
+//             .iter()
+//             .find(|node| node.node.id == curr_node_id)
+//             .unwrap();
+//         for connection in curr_node.connections.iter() {
+//             if !visited.contains(connection) {
+//                 visited.insert(*connection);
+//                 queue.push_back(*connection);
+//                 network.push(get_active_node_from_id(*connection, active_nodes.to_vec()));
+//             }
+//         }
+//     }
 
-    network
-}
+//     network
+// }

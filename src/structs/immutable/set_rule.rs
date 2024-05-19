@@ -2,22 +2,14 @@ pub mod set_rule {
     use bevy::{math::Vec2, sprite::Sprite};
     use serde::{Deserialize, Serialize};
 
-    use crate::{CDTN_RULE_SPRITE_SIZE, COLOR_RULE_UNSAT};
+    use crate::{logic::rule_checks::rule_checks::is_disconnected, structs::immutable::{game_set::game_set::GameSet, solution::solution::Solution}, CDTN_RULE_SPRITE_SIZE, COLOR_RULE_UNSAT};
 
     /// SetRule applies rules to a set of nodes which it wraps in a puzzle, possibly also impacting
     /// their conditions (e.g. Scope).
     #[derive(Serialize, Deserialize, Clone, Debug)]
     pub enum SetRule {
-        /// All nodes in this set must have a path to every other node in the set.
-        Connected,
-        /// There must be two nodes in the set for which there is no path between them.
-        Unconnected,
-        /// No nodes in this set may have a path to each other.
+        /// None of the nodes in the set may directly connect to any node also in the set. 
         Disconnected,
-        /// There must be a cycle present in the set.
-        Cycle,
-        /// There must be no cycles present in the set.
-        NoCycle,
         /// Only one connection may be made between a node within the set and any node outside the set.
         Leaf,
         /// Limits the scope of the condition of all nodes in the set to just the set.
@@ -33,6 +25,14 @@ pub mod set_rule {
                 custom_size: Some(Vec2::new(CDTN_RULE_SPRITE_SIZE, CDTN_RULE_SPRITE_SIZE)),
                 color: COLOR_RULE_UNSAT,
                 ..Default::default()
+            }
+        }
+
+        pub fn is_satisfied(&self, set: &GameSet, solution: &Solution) -> bool {
+            match self {
+                SetRule::Disconnected => is_disconnected(set, solution),
+                SetRule::Leaf => true,
+                SetRule::Scope => true,
             }
         }
     }

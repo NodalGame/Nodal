@@ -4,7 +4,7 @@ pub mod connected_node_condition {
 
     use crate::{
         logic::connected_condition_checks::connected_condition_checks::is_degree_equal,
-        objects::immutable::{
+        structs::immutable::{
             game_node::game_node::GameNode,
             solution::{self, solution::Solution},
         },

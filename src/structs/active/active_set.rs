@@ -5,7 +5,7 @@ pub mod active_set {
         sprite::{Sprite, SpriteBundle},
     };
 
-    use crate::objects::{
+    use crate::structs::{
         active::{
             active_connected_set_rule::active_connected_set_rule::ActiveConnectedSetRule,
             active_identifier::active_identifier::ActiveIdentifier,

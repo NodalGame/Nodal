@@ -3,16 +3,16 @@ pub mod condition_checks {
 
     use bevy::utils::hashbrown::HashSet;
 
-    use crate::objects::immutable::{
-        game_node::game_node::GameNode,
-        solution::solution::{solution_to_adjacency_list, Solution},
+    use crate::structs::immutable::{
+        game_node::game_node::{GameNode, GameNodeId},
+        solution::solution::{solution_to_adjacency_matrix, Solution},
     };
 
     /// Checks if all nodes connected to the start node are of equal distance.
     ///
     /// NOTE: Currently does NOT consider Scope.
     pub fn is_branch_equal(node: &GameNode, solution: &Solution) -> bool {
-        let adj_matrix = solution_to_adjacency_list(solution);
+        let adj_matrix = solution_to_adjacency_matrix(solution);
 
         // Check if the node has no neighbors
         if adj_matrix.get(&node.id).unwrap_or(&Vec::new()).is_empty() {
@@ -21,8 +21,8 @@ pub mod condition_checks {
 
         // Perform DFS and keep track of the deepest, returning false if depth is ever
         // different at the lowest node in a branch (no neighbors besides its parent).
-        let mut visited: HashSet<u16> = HashSet::new();
-        let mut stack: VecDeque<(u16, u16, u16)> = VecDeque::new(); // Store (node, parent, depth).
+        let mut visited: HashSet<GameNodeId> = HashSet::new();
+        let mut stack: VecDeque<(GameNodeId, GameNodeId, u16)> = VecDeque::new(); // Store (node, parent, depth).
         let mut deepest: u16 = 0;
 
         stack.push_back((node.id, node.id, 0));
@@ -57,7 +57,7 @@ pub mod condition_checks {
     }
 
     pub fn is_leaf(node: &GameNode, solution: &Solution) -> bool {
-        solution_to_adjacency_list(solution)
+        solution_to_adjacency_matrix(solution)
             .get(&node.id)
             .unwrap_or(&Vec::new())
             .len()
@@ -69,7 +69,7 @@ pub mod condition_checks {
 mod tests {
     use crate::{
         logic::condition_checks::condition_checks::{is_branch_equal, is_leaf},
-        objects::immutable::{
+        structs::immutable::{
             game_line::game_line::GameLine, game_node::game_node::GameNode,
             node_condition::node_condition::NodeCondition, solution::solution::Solution,
         },

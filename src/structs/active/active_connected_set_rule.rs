@@ -5,7 +5,7 @@ pub mod active_connected_set_rule {
     };
 
     use crate::{
-        objects::{
+        structs::{
             active::{
                 active_identifier::active_identifier::ActiveIdentifier, traits::traits::Satisfiable,
             },

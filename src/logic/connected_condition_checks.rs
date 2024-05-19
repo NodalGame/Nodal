@@ -1,7 +1,7 @@
 pub mod connected_condition_checks {
-    use crate::objects::immutable::{
+    use crate::structs::immutable::{
         game_node::game_node::GameNode,
-        solution::solution::{solution_to_adjacency_list, Solution},
+        solution::solution::{solution_to_adjacency_matrix, Solution},
     };
 
     /// Checks if all other nodes with the same condition and class have the same
@@ -9,7 +9,7 @@ pub mod connected_condition_checks {
     ///
     /// NOTE: Currently does NOT consider Scope.
     pub fn is_degree_equal(nodes: Vec<&GameNode>, solution: &Solution) -> bool {
-        let adj_matrix = solution_to_adjacency_list(solution);
+        let adj_matrix = solution_to_adjacency_matrix(solution);
 
         // This is safe since max degree is 8 in this game
         let mut degree: u8 = u8::MAX;
@@ -35,7 +35,7 @@ pub mod connected_condition_checks {
 mod tests {
     use crate::{
         logic::connected_condition_checks::connected_condition_checks::is_degree_equal,
-        objects::immutable::{
+        structs::immutable::{
             connected_node_condition::connected_node_condition::{
                 ConditionClass, ConnectedNodeCondition,
             },

@@ -5,9 +5,9 @@ pub mod node_condition {
 
     use crate::{
         logic::condition_checks::condition_checks::{is_branch_equal, is_leaf},
-        objects::immutable::{
+        structs::immutable::{
             game_node::game_node::GameNode,
-            solution::solution::{solution_to_adjacency_list, Solution},
+            solution::solution::{solution_to_adjacency_matrix, Solution},
         },
         CDTN_RULE_SPRITE_SIZE, COLOR_CDTN_UNSAT,
     };

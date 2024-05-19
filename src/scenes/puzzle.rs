@@ -34,7 +34,7 @@ pub mod puzzle {
         clicked_on_sprite, despawn_screen, get_all_satisfied_states, get_bg_tile,
         get_cursor_world_position, get_line_texture, get_set_tiles, get_set_upper_left_node,
         node_to_position,
-        objects::{
+        structs::{
             active::{
                 active_connected_node_condition::active_connected_node_condition::ActiveConnectedNodeCondition,
                 active_connected_set_rule::active_connected_set_rule::ActiveConnectedSetRule,
@@ -147,7 +147,7 @@ pub mod puzzle {
         let tex_cdtn_degree_equal = asset_server.load(Texture::CdtnDegreeEqual.path());
 
         // Load set rule textures
-        let tex_rule_connected = asset_server.load(Texture::SetRuleConnected.path());
+        let tex_rule_disconnected = asset_server.load(Texture::SetRuleDisconnected.path());
         let tex_rule_homomorphism = asset_server.load(Texture::SetRuleHomomorphism.path());
 
         // Create a width x height grid of nodes as sprite bundles, accounting for background tiles
@@ -197,9 +197,6 @@ pub mod puzzle {
                     let condition_texture = match condition {
                         NodeCondition::BranchEqual => tex_cdtn_branch_equal.clone(),
                         NodeCondition::Leaf => tex_cdtn_leaf.clone(),
-                        _ => {
-                            exit(1);
-                        }
                     };
 
                     let condition_sprite = SpriteBundle {
@@ -352,19 +349,20 @@ pub mod puzzle {
             // Add the set rule sprites in the upper left-most corner of the set
             let upper_left_node = get_set_upper_left_node(set, &puzzle);
 
+            println!("got upper left node {:?}", upper_left_node);
+
             let (node_x, node_y) = node_to_position(&upper_left_node, &puzzle);
+            println!("got position for rule {:?} {:?}", node_x, node_y);
 
             let mut active_set_rules: Vec<ActiveSetRule> = vec![];
 
             let mut total_rule_idx = 0;
             for rule in set.rules.iter() {
+                println!("adding rule {:?}", rule);
+
                 // TODO get textures via either set_rule.rs or texture.rs
                 let rule_texture = match rule {
-                    SetRule::Connected => tex_rule_connected.clone(),
-                    SetRule::Unconnected => todo!(),
-                    SetRule::Disconnected => todo!(),
-                    SetRule::Cycle => todo!(),
-                    SetRule::NoCycle => todo!(),
+                    SetRule::Disconnected => tex_rule_disconnected.clone(),
                     SetRule::Leaf => todo!(),
                     SetRule::Scope => todo!(),
                 };
@@ -725,13 +723,6 @@ pub mod puzzle {
         for (interaction, ui_button_action) in &interaction_query {
             if *interaction == Interaction::Pressed {
                 match ui_button_action {
-                    // PuzzleButtonAction::CheckAnswer => {
-                    //     let solved = check_answer(
-                    //         active_nodes.active_nodes.iter().collect(),
-                    //         active_sets.active_sets.iter().collect(),
-                    //     );
-                    //     println!("Puzzle solved: {}", solved);
-                    // }
                     PuzzleButtonAction::Reset => {
                         active_nodes.active_nodes.iter_mut().for_each(|node| {
                             node.connections.clear();

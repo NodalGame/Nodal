@@ -1,7 +1,7 @@
 pub mod game_line {
     use std::hash::{Hash, Hasher};
 
-    use crate::objects::active::active_node::active_node::ActiveNode;
+    use crate::structs::active::active_node::active_node::ActiveNode;
 
     #[derive(Clone, Copy, Debug)]
     pub struct GameLine {

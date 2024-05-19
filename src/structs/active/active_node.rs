@@ -7,7 +7,7 @@ pub mod active_node {
     };
 
     use crate::{
-        objects::{
+        structs::{
             active::{
                 active_connected_node_condition::active_connected_node_condition::ActiveConnectedNodeCondition,
                 active_identifier::active_identifier::ActiveIdentifier,

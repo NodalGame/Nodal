@@ -3,10 +3,10 @@ pub mod game_node {
 
     use serde::{Deserialize, Serialize};
 
-    use crate::objects::immutable::{
+    use crate::structs::immutable::{
         connected_node_condition::connected_node_condition::ConnectedNodeCondition,
         node_condition::node_condition::NodeCondition,
-        solution::solution::{solution_to_adjacency_list, AdjacencyList, Solution},
+        solution::solution::{solution_to_adjacency_matrix, AdjacencyMatrix, Solution},
     };
 
     /// Id of a game node.
@@ -29,7 +29,7 @@ pub mod game_node {
         /// - if >1 network, all nodes false
         /// - else if node in network, set true, else false
         pub fn is_satisfied(&self, solution: &Solution) -> bool {
-            let adj_matrix = solution_to_adjacency_list(solution);
+            let adj_matrix = solution_to_adjacency_matrix(solution);
 
             if !adj_matrix.contains_key(&self.id) {
                 return false;
@@ -38,7 +38,7 @@ pub mod game_node {
             let mut visited = HashSet::new();
 
             // Function to perform BFS and mark visited nodes
-            fn bfs(start_node: GameNodeId, adj_matrix: &AdjacencyList, visited: &mut HashSet<u16>) {
+            fn bfs(start_node: GameNodeId, adj_matrix: &AdjacencyMatrix, visited: &mut HashSet<u16>) {
                 let mut queue = VecDeque::new();
                 queue.push_back(start_node);
 
@@ -85,7 +85,7 @@ pub mod game_node {
 
 #[cfg(test)]
 mod tests {
-    use crate::objects::immutable::{game_line::game_line::GameLine, solution::solution::Solution};
+    use crate::structs::immutable::{game_line::game_line::GameLine, solution::solution::Solution};
 
     use super::game_node::GameNode;
 

@@ -2,7 +2,7 @@ pub mod puzzle {
     use serde::Deserialize;
     use uuid::Uuid;
 
-    use crate::objects::immutable::{game_node::game_node::GameNode, game_set::game_set::GameSet};
+    use crate::structs::immutable::{game_node::game_node::GameNode, game_set::game_set::GameSet};
 
     #[derive(Clone, Deserialize, Debug)]
     pub struct Puzzle {

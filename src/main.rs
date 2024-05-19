@@ -8,7 +8,7 @@ pub mod logic;
 use logic::puzzle_manager::*;
 use logic::util::*;
 
-pub mod objects;
+pub mod structs;
 
 pub mod scenes;
 use scenes::campaign::campaign::*;

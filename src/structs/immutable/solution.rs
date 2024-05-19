@@ -1,7 +1,7 @@
 pub mod solution {
     use std::collections::{HashMap, HashSet};
 
-    use crate::objects::{
+    use crate::structs::{
         active::active_node::active_node::ActiveNode,
         immutable::{
             game_line::game_line::{connections_to_lines, GameLine},
@@ -13,7 +13,7 @@ pub mod solution {
     pub type Solution = Vec<GameLine>;
 
     /// A hash of node ids to connecting nodes.
-    pub type AdjacencyList = HashMap<GameNodeId, Vec<GameNodeId>>;
+    pub type AdjacencyMatrix = HashMap<GameNodeId, Vec<GameNodeId>>;
 
     pub fn active_nodes_to_solution(active_nodes: &Vec<ActiveNode>) -> Solution {
         let mut lines_set = HashSet::new();
@@ -36,7 +36,7 @@ pub mod solution {
     /// {0: [1], 1: [0]} in the hash.
     ///
     /// TODO solution should be struct, impl Solution .to_adjacency_list fn
-    pub fn solution_to_adjacency_list(solution: &Solution) -> AdjacencyList {
+    pub fn solution_to_adjacency_matrix(solution: &Solution) -> AdjacencyMatrix {
         let mut graph = HashMap::new();
         for line in solution {
             graph

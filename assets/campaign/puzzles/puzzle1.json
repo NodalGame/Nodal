@@ -33,5 +33,12 @@
 			]
 		}
 	],
-	"sets": []
+	"sets": [
+		{
+			"id": 0,
+			"nodes": [0, 2],
+			"rules": ["Disconnected"],
+			"connected_rules": []
+		}
+	]
 }
