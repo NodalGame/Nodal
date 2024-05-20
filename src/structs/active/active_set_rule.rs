@@ -7,7 +7,8 @@ pub mod active_set_rule {
     use crate::{
         structs::{
             active::{
-                active_identifier::active_identifier::ActiveIdentifier, active_set::active_set::ActiveSet, traits::traits::Satisfiable
+                active_identifier::active_identifier::ActiveIdentifier,
+                active_set::active_set::ActiveSet, traits::traits::Satisfiable,
             },
             immutable::{set_rule::set_rule::SetRule, solution::solution::Solution},
         },

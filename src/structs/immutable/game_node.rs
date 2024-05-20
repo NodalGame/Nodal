@@ -38,7 +38,11 @@ pub mod game_node {
             let mut visited = HashSet::new();
 
             // Function to perform BFS and mark visited nodes
-            fn bfs(start_node: GameNodeId, adj_matrix: &AdjacencyMatrix, visited: &mut HashSet<u16>) {
+            fn bfs(
+                start_node: GameNodeId,
+                adj_matrix: &AdjacencyMatrix,
+                visited: &mut HashSet<u16>,
+            ) {
                 let mut queue = VecDeque::new();
                 queue.push_back(start_node);
 

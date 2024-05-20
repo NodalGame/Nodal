@@ -37,7 +37,7 @@
 		{
 			"id": 0,
 			"nodes": [0, 2],
-			"rules": ["Disconnected"],
+			"rules": ["Disconnected", "Leaf"],
 			"connected_rules": []
 		}
 	]

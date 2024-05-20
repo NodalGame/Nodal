@@ -9,14 +9,13 @@ pub mod texture {
 
         CdtnDegreeEqual,
 
-        SetRuleConnected,
-        SetRuleUnconnected,
         SetRuleDisconnected,
-        SetRuleCycle,
-        SetRuleNoCycle,
+        SetRuleLeaf,
+
+        SetRuleHomomorphism,
+
         SetRuleXor,
         SetRuleScope,
-        SetRuleHomomorphism,
 
         LineHorizontal,
         LineVertical,
@@ -66,19 +65,17 @@ pub mod texture {
 
                 Texture::CdtnDegreeEqual => "../assets/textures/sprites/CDTN_DEGREE_EQUAL.png",
 
-                Texture::SetRuleConnected => "../assets/textures/sprites/SETRULE_CONNECTED.png",
-                Texture::SetRuleUnconnected => "../assets/textures/sprites/SETRULE_UNCONNECTED.png",
                 Texture::SetRuleDisconnected => {
                     "../assets/textures/sprites/SETRULE_DISCONNECTED.png"
                 }
-                Texture::SetRuleCycle => "../assets/textures/sprites/SETRULE_CYCLE.png",
-                Texture::SetRuleNoCycle => "../assets/textures/sprites/SETRULE_NO_CYCLE.png",
-                Texture::SetRuleXor => "../assets/textures/sprites/SETRULE_XOR.png",
-                Texture::SetRuleScope => "../assets/textures/sprites/SETRULE_SCOPE.png",
+                Texture::SetRuleLeaf => "../assets/textures/sprites/SETRULE_LEAF.png",
 
                 Texture::SetRuleHomomorphism => {
                     "../assets/textures/sprites/SETRULE_HOMOMORPHISM.png"
                 }
+
+                Texture::SetRuleXor => "../assets/textures/sprites/SETRULE_XOR.png",
+                Texture::SetRuleScope => "../assets/textures/sprites/SETRULE_SCOPE.png",
 
                 Texture::LineHorizontal => "../assets/textures/sprites/LINE_HORIZONTAL.png",
                 Texture::LineVertical => "../assets/textures/sprites/LINE_VERTICAL.png",

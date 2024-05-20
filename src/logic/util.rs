@@ -17,7 +17,9 @@ use crate::{
         },
         immutable::{
             connected_node_condition::connected_node_condition::ConnectedNodeCondition,
-            game_node::game_node::{GameNode, GameNodeId}, game_set::game_set::GameSet, puzzle::puzzle::Puzzle,
+            game_node::game_node::{GameNode, GameNodeId},
+            game_set::game_set::GameSet,
+            puzzle::puzzle::Puzzle,
             solution::solution::active_nodes_to_solution,
         },
     },
