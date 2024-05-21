@@ -1,7 +1,7 @@
 {
 	"uuid": "e820699a-6e12-48db-b7b4-e8663cfba7b4",
 	"name": "Puzzle1",
-	"width": 2,
+	"width": 3,
 	"height": 2,
 	"nodes": [
 		{
@@ -31,6 +31,16 @@
 			"connected_conditions": [
 				{"DegreeEqual": "Green"}
 			]
+		},
+		{
+			"id": 4,
+			"conditions": ["Leaf"],
+			"connected_conditions": []
+		},
+		{
+			"id": 5,
+			"conditions": ["BranchEqual"],
+			"connected_conditions": []
 		}
 	],
 	"sets": [
