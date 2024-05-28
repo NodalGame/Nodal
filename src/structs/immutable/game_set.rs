@@ -12,7 +12,7 @@ pub mod game_set {
         pub nodes: Vec<u16>,
         pub rules: Vec<SetRule>,
         pub connected_rules: Vec<ConnectedSetRule>,
-        /// TBD -- determine what this means or just remove if can't find purpose
-        pub bounded: bool,
+        // TODO determine what "bounded set" means or just remove if can't find purpose
+        pub bounded: bool
     }
 }

@@ -19,19 +19,19 @@ pub mod node_condition {
     #[derive(Serialize, Deserialize, Clone, Debug, Eq, PartialEq, Hash)]
     pub enum NodeCondition {
         /// Every branching path connecting to this node must be of equal length (cycles disallowed).
-        BranchEqual(Bounded),
+        BranchEqual,//(Bounded),
         /// This node has only one line connected to it.
-        Leaf(Bounded),
+        Leaf,//(Bounded),
     }
 
     impl NodeCondition {
         // TODO implement bounded on each condition check (if keeping this way of doing it). 
-        pub fn bounded(&self) -> &Bounded {
-            match self {
-                NodeCondition::BranchEqual(bounded) => bounded,
-                NodeCondition::Leaf(bounded) => bounded,
-            }
-        }
+        // pub fn bounded(&self) -> &Bounded {
+        //     match self {
+        //         NodeCondition::BranchEqual(bounded) => bounded,
+        //         NodeCondition::Leaf(bounded) => bounded,
+        //     }
+        // }
 
         pub fn sprite(&self) -> Sprite {
             Sprite {
@@ -43,10 +43,12 @@ pub mod node_condition {
 
         // This takes static instead of active objects since this logic has to be re-used
         // to validate puzzle answers which aren't being actively displayed.
-        pub fn is_satisfied(&self, node: &GameNode, sets: Vec<&GameSet>, solution: &Solution) -> bool {
+        pub fn is_satisfied(&self, node: &GameNode, solution: &Solution) -> bool {
             match self {
-                NodeCondition::BranchEqual(bounded) => is_branch_equal(node, solution),
-                NodeCondition::Leaf(bounded) => is_leaf(node, solution),
+                // NodeCondition::BranchEqual(bounded) => is_branch_equal(node, solution),
+                // NodeCondition::Leaf(bounded) => is_leaf(node, solution),
+                NodeCondition::BranchEqual => is_branch_equal(node, solution),
+                NodeCondition::Leaf => is_leaf(node, solution),
             }
         }
     }

@@ -63,6 +63,7 @@ mod tests {
             id: 0,
             rules: rules,
             connected_rules: Vec::new(),
+            bounded: false,
         }
     }
 

@@ -950,7 +950,7 @@ pub fn get_all_satisfied_states(
             if let Some(sets) = con_rule_groups.get_mut(&con_rule.rule) {
                 sets.push(&set.set);
             } else {
-                con_cdtn_groups.insert(con_rule.rule, Vec::from([&con_rule.active_id]));
+                con_rule_map.insert(con_rule.rule, Vec::from([&con_rule.active_id]));
             }
         }
     }
