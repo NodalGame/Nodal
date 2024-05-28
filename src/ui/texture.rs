@@ -29,6 +29,13 @@ pub mod texture {
         SetTileTopLeft,
         SetTileTopRight,
 
+        SetTileBoundedVertical,
+        SetTileBoundedHorizontal,
+        SetTileBoundedBottomLeft,
+        SetTileBoundedBottomRight,
+        SetTileBoundedTopLeft,
+        SetTileBoundedTopRight,
+
         BgTileNode,
         BgTileSideLeft,
         BgTileSideRight,
@@ -98,6 +105,25 @@ pub mod texture {
                 }
                 Texture::SetTileTopLeft => "../assets/textures/background/SET_TILE_TOP_LEFT.png",
                 Texture::SetTileTopRight => "../assets/textures/background/SET_TILE_TOP_RIGHT.png",
+
+                Texture::SetTileBoundedVertical => {
+                    "../assets/textures/background/SET_TILE_BOUNDED_VERTICAL.png"
+                }
+                Texture::SetTileBoundedHorizontal => {
+                    "../assets/textures/background/SET_TILE_BOUNDED_HORIZONTAL.png"
+                }
+                Texture::SetTileBoundedBottomLeft => {
+                    "../assets/textures/background/SET_TILE_BOUNDED_BOTTOM_LEFT.png"
+                }
+                Texture::SetTileBoundedBottomRight => {
+                    "../assets/textures/background/SET_TILE_BOUNDED_BOTTOM_RIGHT.png"
+                }
+                Texture::SetTileBoundedTopLeft => {
+                    "../assets/textures/background/SET_TILE_BOUNDED_TOP_LEFT.png"
+                }
+                Texture::SetTileBoundedTopRight => {
+                    "../assets/textures/background/SET_TILE_BOUNDED_TOP_RIGHT.png"
+                }
 
                 Texture::BgTileNode => "../assets/textures/background/BG_TILE_NODE.png",
                 Texture::BgTileSideLeft => "../assets/textures/background/BG_TILE_SIDE_LEFT.png",

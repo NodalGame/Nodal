@@ -3,8 +3,7 @@ pub mod connected_set_rule {
     use serde::{Deserialize, Serialize};
 
     use crate::{
-        CDTN_RULE_SPRITE_SIZE, COLOR_RULE_ORANGE_UNSAT, COLOR_RULE_RED_UNSAT,
-        COLOR_RULE_YELLOW_UNSAT,
+        structs::immutable::{game_set::game_set::GameSet, solution::{self, solution::Solution}}, CDTN_RULE_SPRITE_SIZE, COLOR_RULE_ORANGE_UNSAT, COLOR_RULE_RED_UNSAT, COLOR_RULE_YELLOW_UNSAT
     };
 
     /// ConnectedSetRule implies connectivity between rules across
@@ -31,6 +30,14 @@ pub mod connected_set_rule {
                 custom_size: Some(Vec2::new(CDTN_RULE_SPRITE_SIZE, CDTN_RULE_SPRITE_SIZE)),
                 color: self.rule_class().color().clone(),
                 ..Default::default()
+            }
+        }
+
+        pub fn is_satisfied(&self, sets: Vec<&GameSet>, solution: &Solution) -> bool {
+            match self {
+                ConnectedSetRule::Homomorphism(rule_class) => {
+                    is_homomorphism(sets, solution)
+                }
             }
         }
     }

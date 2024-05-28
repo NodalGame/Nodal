@@ -16,11 +16,7 @@ use crate::{
             active_node::active_node::ActiveNode, active_set::active_set::ActiveSet,
         },
         immutable::{
-            connected_node_condition::connected_node_condition::ConnectedNodeCondition,
-            game_node::game_node::{GameNode, GameNodeId},
-            game_set::game_set::GameSet,
-            puzzle::puzzle::Puzzle,
-            solution::solution::active_nodes_to_solution,
+            connected_node_condition::connected_node_condition::ConnectedNodeCondition, connected_set_rule::connected_set_rule::ConnectedSetRule, game_node::game_node::{GameNode, GameNodeId}, game_set::game_set::GameSet, puzzle::puzzle::Puzzle, solution::solution::active_nodes_to_solution
         },
     },
     texture::Texture,
@@ -324,7 +320,11 @@ fn get_set_tiles_vertical(
     asset_server: AssetServer,
 ) -> Vec<SpriteBundle> {
     let mut vertical_tiles = Vec::new();
-    let tex_set_tile_vertical = asset_server.load(Texture::SetTileVertical.path());
+    let tex_set_tile_vertical = asset_server.load(if set.bounded {
+        Texture::SetTileBoundedVertical.path()
+    } else {
+        Texture::SetTileVertical.path()
+    });
 
     let node_left = get_node_left(node, puzzle).unwrap_or(u16::MAX);
     if is_left_edge(node, puzzle) || !set.nodes.contains(&node_left) {
@@ -453,7 +453,11 @@ fn get_set_tiles_horizontal(
     asset_server: AssetServer,
 ) -> Vec<SpriteBundle> {
     let mut horizontal_tiles = Vec::new();
-    let tex_set_tile_horizontal = asset_server.load(Texture::SetTileHorizontal.path());
+    let tex_set_tile_horizontal = asset_server.load(if set.bounded {
+        Texture::SetTileBoundedHorizontal.path()
+    } else {
+        Texture::SetTileHorizontal.path()
+    });
 
     // Directly above
     let node_up = get_node_up(node, puzzle).unwrap_or(u16::MAX);
@@ -584,7 +588,11 @@ fn get_set_tiles_bottom_right(
     asset_server: AssetServer,
 ) -> Vec<SpriteBundle> {
     let mut bottom_right_tiles = Vec::new();
-    let tex_set_tile_bottom_right = asset_server.load(Texture::SetTileBottomRight.path());
+    let tex_set_tile_bottom_right = asset_server.load(if set.bounded {
+        Texture::SetTileBoundedBottomRight.path()
+    } else {
+        Texture::SetTileBottomRight.path()
+    });
 
     let node_down = get_node_down(node, puzzle).unwrap_or(u16::MAX);
     let node_right = get_node_right(node, puzzle).unwrap_or(u16::MAX);
@@ -632,7 +640,11 @@ fn get_set_tiles_bottom_left(
     asset_server: AssetServer,
 ) -> Vec<SpriteBundle> {
     let mut bottom_left_tiles = Vec::new();
-    let tex_set_tile_bottom_left = asset_server.load(Texture::SetTileBottomLeft.path());
+    let tex_set_tile_bottom_left = asset_server.load(if set.bounded {
+        Texture::SetTileBoundedBottomLeft.path()
+    } else {
+        Texture::SetTileBottomLeft.path()
+    });
 
     let node_down = get_node_down(node, puzzle).unwrap_or(u16::MAX);
     let node_left = get_node_left(node, puzzle).unwrap_or(u16::MAX);
@@ -680,7 +692,11 @@ fn get_set_tiles_top_right(
     asset_server: AssetServer,
 ) -> Vec<SpriteBundle> {
     let mut top_right_tiles = Vec::new();
-    let tex_set_tile_top_right = asset_server.load(Texture::SetTileTopRight.path());
+    let tex_set_tile_top_right = asset_server.load(if set.bounded {
+        Texture::SetTileBoundedTopRight.path()
+    } else {
+        Texture::SetTileTopRight.path()
+    });
 
     let node_up = get_node_up(node, puzzle).unwrap_or(u16::MAX);
     let node_right = get_node_right(node, puzzle).unwrap_or(u16::MAX);
@@ -728,7 +744,11 @@ fn get_set_tiles_top_left(
     asset_server: AssetServer,
 ) -> Vec<SpriteBundle> {
     let mut top_left_tiles = Vec::new();
-    let tex_set_tile_top_left = asset_server.load(Texture::SetTileTopLeft.path());
+    let tex_set_tile_top_left = asset_server.load(if set.bounded {
+        Texture::SetTileBoundedTopLeft.path()
+    } else {
+        Texture::SetTileTopLeft.path()
+    });
 
     let node_up = get_node_up(node, puzzle).unwrap_or(u16::MAX);
     let node_left = get_node_left(node, puzzle).unwrap_or(u16::MAX);
@@ -871,12 +891,7 @@ pub fn get_all_satisfied_states(
     let mut satisfied_states: SatisfiedStatesMap = SatisfiedStatesMap::new();
     let solution = active_nodes_to_solution(&active_nodes);
 
-    // We must update all nodes in puzzle since creating a new network will impact all satisfied states on nodes
-    for node in active_nodes.iter() {
-        let sat = node.check_satisfied(&solution);
-        satisfied_states.insert(node.active_id, sat);
-    }
-
+    // Check all nodes and their conditions 
     for node in active_nodes.iter() {
         satisfied_states.insert(node.active_id, node.check_satisfied(&solution));
         for condition in node.active_conditions.iter() {
@@ -917,15 +932,36 @@ pub fn get_all_satisfied_states(
         }
     });
 
+    // Check all set rules
     for set in active_sets.iter() {
         for rule in set.active_set_rules.iter() {
             satisfied_states.insert(rule.active_id, rule.check_satisfied(&set, &solution));
         }
-        // TODO track which ones have been checked to not duplicate, this is reflexive
-        for connected_rule in set.active_connected_set_rules.iter() {
-            satisfied_states.insert(connected_rule.active_id, connected_rule.check_satisfied());
+    }
+
+    // Create map of connected set rule to active id of connected set rule
+    let mut con_rule_map: HashMap<ConnectedSetRule, Vec<&ActiveIdentifier>> = HashMap::new();
+
+    // Create groups mapping connected rules (and class) to game sets
+    let mut con_rule_groups: HashMap<ConnectedSetRule, Vec<&GameSet>> = HashMap::new();
+    for set in active_sets.iter() {
+        for con_rule in set.active_connected_set_rules.iter() {
+            // Update groups
+            if let Some(sets) = con_rule_groups.get_mut(&con_rule.rule) {
+                sets.push(&set.set);
+            } else {
+                con_cdtn_groups.insert(con_rule.rule, Vec::from([&con_rule.active_id]));
+            }
         }
     }
+
+    // Now update all connected rules based on their grouping
+    con_rule_groups.iter().for_each(|(con_rule, sets)| {
+        let sat = con_rule.is_satisfied(sets.to_vec(), &solution);
+        for active_id in con_rule_map.get(con_rule).unwrap() {
+            satisfied_states.insert(**active_id, sat);
+        }
+    });
 
     satisfied_states
 }

@@ -7,34 +7,26 @@
 		{
 			"id": 0,
 			"conditions": [],
-			"connected_conditions": [
-				{"DegreeEqual": "Blue"}
-			]
+			"connected_conditions": []
 		},
 		{
 			"id": 1,
 			"conditions": [],
-			"connected_conditions": [
-				{"DegreeEqual": "Green"}
-			]
+			"connected_conditions": []
 		},
 		{
 			"id": 2,
-			"conditions": [],
-			"connected_conditions": [
-				{"DegreeEqual": "Blue"}
-			]
+			"conditions": ["Leaf"],
+			"connected_conditions": []
 		},
 		{
 			"id": 3,
 			"conditions": [],
-			"connected_conditions": [
-				{"DegreeEqual": "Green"}
-			]
+			"connected_conditions": []
 		},
 		{
 			"id": 4,
-			"conditions": ["Leaf"],
+			"conditions": [],
 			"connected_conditions": []
 		},
 		{
@@ -46,9 +38,17 @@
 	"sets": [
 		{
 			"id": 0,
-			"nodes": [0, 2],
-			"rules": ["Disconnected", "Leaf"],
-			"connected_rules": []
+			"nodes": [0, 1],
+			"rules": ["Disconnected"],
+			"connected_rules": [],
+			"bounded": false
+		},
+		{
+			"id": 1,
+			"nodes": [2, 3, 4, 5],
+			"rules": [],
+			"connected_rules": [],
+			"bounded": true
 		}
 	]
 }

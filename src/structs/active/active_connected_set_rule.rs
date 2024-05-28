@@ -25,11 +25,6 @@ pub mod active_connected_set_rule {
     }
 
     impl ActiveConnectedSetRule {
-        pub fn check_satisfied(&self) -> bool {
-            // TODO check if satisfied against other rules of same class
-            true
-        }
-
         pub fn update_sprite(&mut self, sprite: &mut Sprite) {
             sprite.color = match self.rule.rule_class() {
                 RuleClass::Yellow => {
