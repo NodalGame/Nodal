@@ -13,6 +13,7 @@ pub mod connected_rule_checks {
         collections::{HashMap, HashSet},
         hash::Hash,
     };
+    use itertools::Itertools;
 
     /// Checks if all sets with the same rule and class are homomorphic.
     ///
@@ -48,6 +49,7 @@ pub mod connected_rule_checks {
             let mut homomorphism = false;
             for mapping in mappings {
                 if is_homomorphism(&mapping, &set_i_sol, &set_j_sol) {
+                    println!("Homomorphism found {:?} with set_i {:?} and set_j {:?}", mapping, set_i_sol, set_j_sol);
                     homomorphism = true;
                     break;
                 }
@@ -67,28 +69,16 @@ pub mod connected_rule_checks {
         set_j: &Vec<GameNodeId>,
     ) -> Vec<HashMap<GameNodeId, GameNodeId>> {
         let mut all_mappings = Vec::new();
-        let mut mapping = HashMap::new();
-        generate_mappings_helper(set_i, set_j, &mut mapping, &mut all_mappings, 0);
+        let set_j_perms = set_j.iter().cloned().permutations(set_i.len());
+        for perm in set_j_perms {
+            let mut mapping: HashMap<GameNodeId, GameNodeId> = HashMap::new();
+            for (i, j) in set_i.iter().enumerate() {
+                mapping.insert(*j, perm[i]);
+            }
+            all_mappings.push(mapping);
+        }
+        println!("All mappings: {:?}", all_mappings);
         all_mappings
-    }
-
-    fn generate_mappings_helper(
-        set_i: &Vec<GameNodeId>,
-        set_j: &Vec<GameNodeId>,
-        mapping: &mut HashMap<GameNodeId, GameNodeId>,
-        all_mappings: &mut Vec<HashMap<GameNodeId, GameNodeId>>,
-        index: usize,
-    ) {
-        if index == set_i.len() {
-            all_mappings.push(mapping.clone());
-            return;
-        }
-
-        for &node in set_j {
-            mapping.insert(set_i[index], node);
-            generate_mappings_helper(set_i, set_j, mapping, all_mappings, index + 1);
-            mapping.remove(&set_i[index]);
-        }
     }
 
     fn is_homomorphism(
