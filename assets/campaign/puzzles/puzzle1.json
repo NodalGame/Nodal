@@ -16,7 +16,7 @@
 		},
 		{
 			"id": 2,
-			"conditions": ["Leaf"],
+			"conditions": [],
 			"connected_conditions": []
 		},
 		{
@@ -31,24 +31,24 @@
 		},
 		{
 			"id": 5,
-			"conditions": ["BranchEqual"],
+			"conditions": [],
 			"connected_conditions": []
 		}
 	],
 	"sets": [
 		{
 			"id": 0,
-			"nodes": [0, 1],
-			"rules": ["Disconnected"],
-			"connected_rules": [],
+			"nodes": [0, 1, 2, 3],
+			"rules": [],
+			"connected_rules": [{"Homomorphic": "Red"}],
 			"bounded": false
 		},
 		{
 			"id": 1,
 			"nodes": [2, 3, 4, 5],
 			"rules": [],
-			"connected_rules": [],
-			"bounded": true
+			"connected_rules": [{"Homomorphic": "Red"}],
+			"bounded": false
 		}
 	]
 }

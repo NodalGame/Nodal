@@ -8,12 +8,12 @@ pub mod connected_condition_checks {
     /// number of connected edges.
     ///
     /// # Parameters
-    /// 
-    /// - `nodes`: Nodes of the same condition and class in the puzzle. 
-    /// - `solution`: Proposed solution in the puzzle to check against. 
-    /// 
+    ///
+    /// - `nodes`: Nodes of the same condition and class in the puzzle.
+    /// - `solution`: Proposed solution in the puzzle to check against.
+    ///
     /// # Returns
-    /// 
+    ///
     /// Returns true if all nodes have equal degree, otherwise false.  
     pub fn is_degree_equal(nodes: Vec<&GameNode>, solution: &Solution) -> bool {
         let adj_matrix = solution_to_adjacency_matrix(solution);

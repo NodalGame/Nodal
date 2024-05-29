@@ -401,7 +401,7 @@ pub mod puzzle {
             for crule in set.connected_rules.iter() {
                 // TODO get textures via either connected_set_rule.rs or texture.rs
                 let crule_texture = match crule {
-                    ConnectedSetRule::Homomorphism(crule) => tex_rule_homomorphism.clone(),
+                    ConnectedSetRule::Homomorphic(crule) => tex_rule_homomorphism.clone(),
                 };
 
                 let crule_sprite = SpriteBundle {

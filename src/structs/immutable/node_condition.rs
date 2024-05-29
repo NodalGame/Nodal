@@ -6,12 +6,14 @@ pub mod node_condition {
     use crate::{
         logic::condition_checks::condition_checks::{is_branch_equal, is_leaf},
         structs::immutable::{
-            game_node::game_node::GameNode, game_set::game_set::GameSet, solution::solution::{solution_to_adjacency_matrix, Solution}
+            game_node::game_node::GameNode,
+            game_set::game_set::GameSet,
+            solution::solution::{solution_to_adjacency_matrix, Solution},
         },
         CDTN_RULE_SPRITE_SIZE, COLOR_CDTN_UNSAT,
     };
 
-    /// Boolean indicating if condition is bounded by its encompassing set(s). 
+    /// Boolean indicating if condition is bounded by its encompassing set(s).
     pub type Bounded = bool;
 
     /// NodeCondition applies a condition to a single node in a puzzle, affecting its
@@ -19,13 +21,13 @@ pub mod node_condition {
     #[derive(Serialize, Deserialize, Clone, Debug, Eq, PartialEq, Hash)]
     pub enum NodeCondition {
         /// Every branching path connecting to this node must be of equal length (cycles disallowed).
-        BranchEqual,//(Bounded),
+        BranchEqual, //(Bounded),
         /// This node has only one line connected to it.
-        Leaf,//(Bounded),
+        Leaf, //(Bounded),
     }
 
     impl NodeCondition {
-        // TODO implement bounded on each condition check (if keeping this way of doing it). 
+        // TODO implement bounded on each condition check (if keeping this way of doing it).
         // pub fn bounded(&self) -> &Bounded {
         //     match self {
         //         NodeCondition::BranchEqual(bounded) => bounded,

@@ -6,6 +6,7 @@ pub mod solution {
         immutable::{
             game_line::game_line::{connections_to_lines, GameLine},
             game_node::game_node::{GameNode, GameNodeId},
+            game_set::game_set::GameSet,
         },
     };
 
@@ -49,5 +50,16 @@ pub mod solution {
                 .push(line.node_a_id);
         }
         graph
+    }
+
+    /// Filters a solution to remove any lines which aren't connecting nodes within the set.
+    pub fn filter_solution_to_set(set: &GameSet, solution: &Solution) -> Solution {
+        solution
+            .iter()
+            .cloned()
+            .filter(|line| {
+                set.nodes.contains(&line.node_a_id) && set.nodes.contains(&line.node_b_id)
+            })
+            .collect()
     }
 }

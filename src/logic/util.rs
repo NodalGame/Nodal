@@ -16,7 +16,12 @@ use crate::{
             active_node::active_node::ActiveNode, active_set::active_set::ActiveSet,
         },
         immutable::{
-            connected_node_condition::connected_node_condition::ConnectedNodeCondition, connected_set_rule::connected_set_rule::ConnectedSetRule, game_node::game_node::{GameNode, GameNodeId}, game_set::game_set::GameSet, puzzle::puzzle::Puzzle, solution::solution::active_nodes_to_solution
+            connected_node_condition::connected_node_condition::ConnectedNodeCondition,
+            connected_set_rule::connected_set_rule::ConnectedSetRule,
+            game_node::game_node::{GameNode, GameNodeId},
+            game_set::game_set::GameSet,
+            puzzle::puzzle::Puzzle,
+            solution::solution::active_nodes_to_solution,
         },
     },
     texture::Texture,
@@ -891,7 +896,7 @@ pub fn get_all_satisfied_states(
     let mut satisfied_states: SatisfiedStatesMap = SatisfiedStatesMap::new();
     let solution = active_nodes_to_solution(&active_nodes);
 
-    // Check all nodes and their conditions 
+    // Check all nodes and their conditions
     for node in active_nodes.iter() {
         satisfied_states.insert(node.active_id, node.check_satisfied(&solution));
         for condition in node.active_conditions.iter() {
@@ -903,9 +908,11 @@ pub fn get_all_satisfied_states(
     }
 
     // Create map of connected node condition to active id of connected node condition
+    // TODO do this once upon loading puzzle 
     let mut con_cdtn_map: HashMap<ConnectedNodeCondition, Vec<&ActiveIdentifier>> = HashMap::new();
 
     // Create groups mapping connected condition (and class) to game nodes
+    // TODO do this once upon loading puzzle 
     let mut con_cdtn_groups: HashMap<ConnectedNodeCondition, Vec<&GameNode>> = HashMap::new();
     for node in active_nodes.iter() {
         for con_cdtn in node.active_connected_conditions.iter() {
@@ -940,9 +947,11 @@ pub fn get_all_satisfied_states(
     }
 
     // Create map of connected set rule to active id of connected set rule
+    // TODO do this once upon loading puzzle 
     let mut con_rule_map: HashMap<ConnectedSetRule, Vec<&ActiveIdentifier>> = HashMap::new();
 
     // Create groups mapping connected rules (and class) to game sets
+    // TODO do this once upon loading puzzle 
     let mut con_rule_groups: HashMap<ConnectedSetRule, Vec<&GameSet>> = HashMap::new();
     for set in active_sets.iter() {
         for con_rule in set.active_connected_set_rules.iter() {
@@ -950,10 +959,18 @@ pub fn get_all_satisfied_states(
             if let Some(sets) = con_rule_groups.get_mut(&con_rule.rule) {
                 sets.push(&set.set);
             } else {
+                con_rule_groups.insert(con_rule.rule, Vec::from([&set.set]));
+            }
+            // Update map to active ids
+            if let Some(active_ids) = con_rule_map.get_mut(&con_rule.rule) {
+                active_ids.push(&con_rule.active_id);
+            } else {
                 con_rule_map.insert(con_rule.rule, Vec::from([&con_rule.active_id]));
             }
         }
     }
+
+    println!("con rule groups {:?}", con_rule_groups);
 
     // Now update all connected rules based on their grouping
     con_rule_groups.iter().for_each(|(con_rule, sets)| {
