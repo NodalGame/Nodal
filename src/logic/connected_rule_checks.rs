@@ -77,7 +77,6 @@ pub mod connected_rule_checks {
             }
             all_mappings.push(mapping);
         }
-        println!("All mappings: {:?}", all_mappings);
         all_mappings
     }
 

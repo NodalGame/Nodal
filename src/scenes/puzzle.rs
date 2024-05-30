@@ -30,12 +30,7 @@ pub mod puzzle {
     };
 
     use crate::{
-        buttons::icon_button_style,
-        clicked_on_sprite, despawn_screen, get_all_satisfied_states, get_bg_tile,
-        get_cursor_world_position, get_line_texture, get_set_tiles, get_set_upper_left_node,
-        node_to_position,
-        puzzle_manager::PuzzleManager,
-        structs::{
+        buttons::icon_button_style, clicked_on_sprite, despawn_screen, get_all_satisfied_states, get_bg_tile, get_cursor_world_position, get_line_texture, get_set_tiles, logic::puzzle::tile_placement::tile_placement::get_set_upper_left_node, node_to_position, puzzle_manager::PuzzleManager, structs::{
             active::{
                 active_connected_node_condition::active_connected_node_condition::ActiveConnectedNodeCondition,
                 active_connected_set_rule::active_connected_set_rule::ActiveConnectedSetRule,
@@ -46,14 +41,9 @@ pub mod puzzle {
                 traits::traits::Satisfiable,
             },
             immutable::{
-                connected_node_condition::connected_node_condition::ConnectedNodeCondition,
-                connected_set_rule::connected_set_rule::ConnectedSetRule,
-                node_condition::node_condition::NodeCondition, set_rule::set_rule::SetRule,
+                connected_node_condition::connected_node_condition::ConnectedNodeCondition, connected_set_rule::connected_set_rule::ConnectedSetRule, game_node::game_node::GameNodeId, node_condition::node_condition::NodeCondition, set_rule::set_rule::SetRule
             },
-        },
-        texture::Texture,
-        AppState, MainCamera, SelectedPuzzle, CDTN_RULE_SPRITE_SIZE, INTERNAL_SPACING_X,
-        INTERNAL_SPACING_Y, SPRITE_SPACING, STACK_CDTN_RULE_SPACING, TILE_NODE_SPRITE_SIZE,
+        }, texture::Texture, AppState, MainCamera, SelectedPuzzle, CDTN_RULE_SPRITE_SIZE, INTERNAL_SPACING_X, INTERNAL_SPACING_Y, SPRITE_SPACING, STACK_CDTN_RULE_SPACING, TILE_NODE_SPRITE_SIZE
     };
 
     // This plugin will contain a playable puzzle.
@@ -338,6 +328,9 @@ pub mod puzzle {
                 ));
             });
 
+        // Create map of nodes by id to the total rules using that node as reference, in case of overlapping sets by top left corner
+        let mut node_to_rule_count_map: HashMap<GameNodeId, u8> = HashMap::new();
+
         // Map tile spaces to sets to generate
         for set_idx in 0..puzzle.sets.len() {
             let set = &puzzle.sets[set_idx];
@@ -350,17 +343,15 @@ pub mod puzzle {
             // Add the set rule sprites in the upper left-most corner of the set
             let upper_left_node = get_set_upper_left_node(set, &puzzle);
 
-            println!("got upper left node {:?}", upper_left_node);
-
             let (node_x, node_y) = node_to_position(&upper_left_node, &puzzle);
-            println!("got position for rule {:?} {:?}", node_x, node_y);
 
             let mut active_set_rules: Vec<ActiveSetRule> = vec![];
 
-            let mut total_rule_idx = 0;
+            let mut total_rule_idx: u8 = 0;
+            if let Some(existing_offset) = node_to_rule_count_map.get(&upper_left_node) {
+                total_rule_idx += existing_offset;
+            }
             for rule in set.rules.iter() {
-                println!("adding rule {:?}", rule);
-
                 // TODO get textures via either set_rule.rs or texture.rs
                 let rule_texture = match rule {
                     SetRule::Disconnected => tex_rule_disconnected.clone(),
@@ -432,6 +423,9 @@ pub mod puzzle {
 
                 total_rule_idx += 1;
             }
+
+            // Update total rules using this upper left node as reference 
+            node_to_rule_count_map.insert(upper_left_node, total_rule_idx);
 
             active_sets.active_sets.push(ActiveSet {
                 set: puzzle.sets[set_idx].clone(),

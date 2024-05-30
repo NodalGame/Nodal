@@ -854,18 +854,6 @@ pub fn get_set_tiles(
     tiles
 }
 
-pub fn get_set_upper_left_node(set: &GameSet, puzzle: &Puzzle) -> u16 {
-    let mut upper_left_most_node = u16::MAX;
-    let mut upper_most_row = u8::MIN;
-    set.nodes.iter().for_each(|node| {
-        if node % puzzle.height as u16 >= upper_most_row.into() && *node <= upper_left_most_node {
-            upper_most_row = (node % puzzle.height as u16) as u8;
-            upper_left_most_node = *node;
-        }
-    });
-    upper_left_most_node
-}
-
 pub fn clicked_on_sprite(sprite: &SpriteBundle, cursor: Vec2) -> bool {
     let node_pos = sprite.transform.translation.truncate();
     let distance = cursor.distance(node_pos);
@@ -969,8 +957,6 @@ pub fn get_all_satisfied_states(
             }
         }
     }
-
-    println!("con rule groups {:?}", con_rule_groups);
 
     // Now update all connected rules based on their grouping
     con_rule_groups.iter().for_each(|(con_rule, sets)| {

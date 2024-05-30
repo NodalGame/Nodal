@@ -1,12 +1,12 @@
 {
 	"uuid": "e820699a-6e12-48db-b7b4-e8663cfba7b4",
 	"name": "Puzzle1",
-	"width": 3,
-	"height": 2,
+	"width": 2,
+	"height": 3,
 	"nodes": [
 		{
 			"id": 0,
-			"conditions": [],
+			"conditions": ["BranchEqual"],
 			"connected_conditions": []
 		},
 		{
@@ -38,14 +38,14 @@
 	"sets": [
 		{
 			"id": 0,
-			"nodes": [0, 1, 2, 3],
-			"rules": [],
+			"nodes": [2, 3, 4, 5],
+			"rules": ["Leaf"],
 			"connected_rules": [{"Homomorphic": "Red"}],
 			"bounded": false
 		},
 		{
 			"id": 1,
-			"nodes": [2, 3, 4, 5],
+			"nodes": [1, 2, 4, 5],
 			"rules": [],
 			"connected_rules": [{"Homomorphic": "Red"}],
 			"bounded": false
