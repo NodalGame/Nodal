@@ -9,11 +9,11 @@ pub mod connected_rule_checks {
             },
         },
     };
+    use itertools::Itertools;
     use std::{
         collections::{HashMap, HashSet},
         hash::Hash,
     };
-    use itertools::Itertools;
 
     /// Checks if all sets with the same rule and class are homomorphic.
     ///
@@ -49,7 +49,10 @@ pub mod connected_rule_checks {
             let mut homomorphism = false;
             for mapping in mappings {
                 if is_homomorphism(&mapping, &set_i_sol, &set_j_sol) {
-                    println!("Homomorphism found {:?} with set_i {:?} and set_j {:?}", mapping, set_i_sol, set_j_sol);
+                    println!(
+                        "Homomorphism found {:?} with set_i {:?} and set_j {:?}",
+                        mapping, set_i_sol, set_j_sol
+                    );
                     homomorphism = true;
                     break;
                 }

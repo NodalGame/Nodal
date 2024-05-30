@@ -6,7 +6,9 @@ pub mod tile_placement {
         let mut upper_most_row = u8::MIN;
         let mut left_most_column = u8::MAX;
         set.nodes.iter().for_each(|node| {
-            if (node % puzzle.height as u16) > upper_most_row.into() || (node / puzzle.height as u16) < left_most_column.into() {
+            if (node % puzzle.height as u16) > upper_most_row.into()
+                || (node / puzzle.height as u16) < left_most_column.into()
+            {
                 upper_most_row = (node % puzzle.height as u16) as u8;
                 left_most_column = (node / puzzle.height as u16) as u8;
                 upper_left_most_node = *node;
@@ -21,18 +23,27 @@ mod tests {
     use itertools::Itertools;
     use uuid::Uuid;
 
-    use crate::{logic::puzzle::{self, tile_placement::tile_placement::get_set_upper_left_node}, structs::immutable::{game_node::game_node::{GameNode, GameNodeId}, game_set::game_set::GameSet, puzzle::puzzle::Puzzle}};
+    use crate::{
+        logic::puzzle::{self, tile_placement::tile_placement::get_set_upper_left_node},
+        structs::immutable::{
+            game_node::game_node::{GameNode, GameNodeId},
+            game_set::game_set::GameSet,
+            puzzle::puzzle::Puzzle,
+        },
+    };
 
     fn get_test_puzzle(sets: Vec<GameSet>) -> Puzzle {
         Puzzle {
             uuid: Uuid::new_v4(),
             width: 4,
             height: 4,
-            nodes: (0..15).map(|id| GameNode {
-                id: id,
-                conditions: Vec::new(),
-                connected_conditions: Vec::new(),
-            }).collect_vec(),
+            nodes: (0..15)
+                .map(|id| GameNode {
+                    id: id,
+                    conditions: Vec::new(),
+                    connected_conditions: Vec::new(),
+                })
+                .collect_vec(),
             sets: sets,
         }
     }

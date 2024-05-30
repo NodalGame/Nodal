@@ -30,7 +30,13 @@ pub mod puzzle {
     };
 
     use crate::{
-        buttons::icon_button_style, clicked_on_sprite, despawn_screen, get_all_satisfied_states, get_bg_tile, get_cursor_world_position, get_line_texture, get_set_tiles, logic::puzzle::tile_placement::tile_placement::get_set_upper_left_node, node_to_position, puzzle_manager::PuzzleManager, structs::{
+        buttons::icon_button_style,
+        clicked_on_sprite, despawn_screen, get_all_satisfied_states, get_bg_tile,
+        get_cursor_world_position, get_line_texture, get_set_tiles,
+        logic::puzzle::tile_placement::tile_placement::get_set_upper_left_node,
+        node_to_position,
+        puzzle_manager::PuzzleManager,
+        structs::{
             active::{
                 active_connected_node_condition::active_connected_node_condition::ActiveConnectedNodeCondition,
                 active_connected_set_rule::active_connected_set_rule::ActiveConnectedSetRule,
@@ -41,9 +47,16 @@ pub mod puzzle {
                 traits::traits::Satisfiable,
             },
             immutable::{
-                connected_node_condition::connected_node_condition::ConnectedNodeCondition, connected_set_rule::connected_set_rule::ConnectedSetRule, game_node::game_node::GameNodeId, node_condition::node_condition::NodeCondition, set_rule::set_rule::SetRule
+                connected_node_condition::connected_node_condition::ConnectedNodeCondition,
+                connected_set_rule::connected_set_rule::ConnectedSetRule,
+                game_node::game_node::GameNodeId, node_condition::node_condition::NodeCondition,
+                set_rule::set_rule::SetRule,
             },
-        }, texture::Texture, AppState, MainCamera, SelectedPuzzle, CDTN_RULE_SPRITE_SIZE, INTERNAL_SPACING_X, INTERNAL_SPACING_Y, SPRITE_SPACING, STACK_CDTN_RULE_SPACING, TILE_NODE_SPRITE_SIZE
+        },
+        texture::Texture,
+        AppState, MainCamera, SelectedPuzzle, CDTN_RULE_SPRITE_SIZE, INTERNAL_SPACING_X,
+        INTERNAL_SPACING_Y, SPRITE_SPACING, STACK_CDTN_RULE_SPACING, TILE_NODE_SPRITE_SIZE,
+        Z_RULE_CDTN_NODE, Z_SET_RULE_BOX,
     };
 
     // This plugin will contain a playable puzzle.
@@ -140,6 +153,9 @@ pub mod puzzle {
         let tex_rule_disconnected = asset_server.load(Texture::SetRuleDisconnected.path());
         let tex_rule_leaf = asset_server.load(Texture::SetRuleLeaf.path());
         let tex_rule_homomorphism = asset_server.load(Texture::SetRuleHomomorphism.path());
+
+        // Load set rule box texture
+        let tex_rule_box = asset_server.load(Texture::SetRuleBox.path());
 
         // Create a width x height grid of nodes as sprite bundles, accounting for background tiles
         for x in 0..puzzle.width * 2 + 1 {
@@ -347,10 +363,12 @@ pub mod puzzle {
 
             let mut active_set_rules: Vec<ActiveSetRule> = vec![];
 
+            // Update total rule count for sets using this as upper left node
             let mut total_rule_idx: u8 = 0;
             if let Some(existing_offset) = node_to_rule_count_map.get(&upper_left_node) {
                 total_rule_idx += existing_offset;
             }
+
             for rule in set.rules.iter() {
                 // TODO get textures via either set_rule.rs or texture.rs
                 let rule_texture = match rule {
@@ -358,17 +376,24 @@ pub mod puzzle {
                     SetRule::Leaf => tex_rule_leaf.clone(),
                 };
 
+                let transform_x = node_x - TILE_NODE_SPRITE_SIZE + INTERNAL_SPACING_X;
+                let transform_y = node_y + TILE_NODE_SPRITE_SIZE
+                    - INTERNAL_SPACING_Y
+                    - total_rule_idx as f32 * (CDTN_RULE_SPRITE_SIZE + STACK_CDTN_RULE_SPACING);
+                commands.spawn(SpriteBundle {
+                    texture: tex_rule_box.clone(),
+                    sprite: Sprite {
+                        custom_size: Some(Vec2::new(CDTN_RULE_SPRITE_SIZE, CDTN_RULE_SPRITE_SIZE)),
+                        color: Color::BLACK, // TODO assign colors to sets and match
+                        ..Default::default()
+                    },
+                    transform: Transform::from_xyz(transform_x, transform_y, Z_SET_RULE_BOX),
+                    ..Default::default()
+                });
                 let rule_sprite = SpriteBundle {
                     texture: rule_texture,
                     sprite: rule.sprite().clone(),
-                    transform: Transform::from_xyz(
-                        node_x - TILE_NODE_SPRITE_SIZE + INTERNAL_SPACING_X,
-                        node_y + TILE_NODE_SPRITE_SIZE
-                            - INTERNAL_SPACING_Y
-                            - total_rule_idx as f32
-                                * (CDTN_RULE_SPRITE_SIZE + STACK_CDTN_RULE_SPACING),
-                        0.0,
-                    ),
+                    transform: Transform::from_xyz(transform_x, transform_y, Z_RULE_CDTN_NODE),
                     ..Default::default()
                 };
                 let rule_sprite_id = commands
@@ -395,17 +420,24 @@ pub mod puzzle {
                     ConnectedSetRule::Homomorphic(crule) => tex_rule_homomorphism.clone(),
                 };
 
+                let transform_x = node_x - TILE_NODE_SPRITE_SIZE + INTERNAL_SPACING_X;
+                let transform_y = node_y + TILE_NODE_SPRITE_SIZE
+                    - INTERNAL_SPACING_Y
+                    - total_rule_idx as f32 * (CDTN_RULE_SPRITE_SIZE + STACK_CDTN_RULE_SPACING);
+                commands.spawn(SpriteBundle {
+                    texture: tex_rule_box.clone(),
+                    sprite: Sprite {
+                        custom_size: Some(Vec2::new(CDTN_RULE_SPRITE_SIZE, CDTN_RULE_SPRITE_SIZE)),
+                        color: Color::BLACK, // TODO assign colors to sets and match
+                        ..Default::default()
+                    },
+                    transform: Transform::from_xyz(transform_x, transform_y, Z_SET_RULE_BOX),
+                    ..Default::default()
+                });
                 let crule_sprite = SpriteBundle {
                     texture: crule_texture,
                     sprite: crule.sprite().clone(),
-                    transform: Transform::from_xyz(
-                        node_x - TILE_NODE_SPRITE_SIZE + INTERNAL_SPACING_X,
-                        node_y + TILE_NODE_SPRITE_SIZE
-                            - INTERNAL_SPACING_Y
-                            - total_rule_idx as f32
-                                * (CDTN_RULE_SPRITE_SIZE + STACK_CDTN_RULE_SPACING),
-                        0.0,
-                    ),
+                    transform: Transform::from_xyz(transform_x, transform_y, Z_RULE_CDTN_NODE),
                     ..Default::default()
                 };
                 let crule_sprite_id = commands
@@ -424,7 +456,7 @@ pub mod puzzle {
                 total_rule_idx += 1;
             }
 
-            // Update total rules using this upper left node as reference 
+            // Update total rules using this upper left node as reference
             node_to_rule_count_map.insert(upper_left_node, total_rule_idx);
 
             active_sets.active_sets.push(ActiveSet {

@@ -36,6 +36,8 @@ pub mod texture {
         SetTileBoundedTopLeft,
         SetTileBoundedTopRight,
 
+        SetRuleBox,
+
         BgTileNode,
         BgTileSideLeft,
         BgTileSideRight,
@@ -124,6 +126,8 @@ pub mod texture {
                 Texture::SetTileBoundedTopRight => {
                     "../assets/textures/background/SET_TILE_BOUNDED_TOP_RIGHT.png"
                 }
+
+                Texture::SetRuleBox => "../assets/textures/sprites/SET_RULE_BOX.png",
 
                 Texture::BgTileNode => "../assets/textures/background/BG_TILE_NODE.png",
                 Texture::BgTileSideLeft => "../assets/textures/background/BG_TILE_SIDE_LEFT.png",
