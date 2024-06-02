@@ -2,7 +2,10 @@
 //! change some settings or quit. There is no actual game, it will just display the current
 //! settings for 5 seconds before going back to the menu.
 
+use backend::api::api;
 use bevy::prelude::*;
+
+pub mod backend;
 
 pub mod logic;
 use logic::puzzle_manager::*;
@@ -17,6 +20,9 @@ use scenes::puzzle::puzzle::*;
 use scenes::splash::splash::*;
 
 pub mod ui;
+use tracing::subscriber::set_global_default;
+use tracing::Level;
+use tracing_subscriber::FmtSubscriber;
 use ui::buttons::*;
 use ui::constants::*;
 use ui::texture::*;
@@ -44,6 +50,12 @@ struct SelectedPuzzle {
 struct MainCamera;
 
 fn main() {
+    // Set up tracer logging
+    let subscriber = FmtSubscriber::builder()
+        .with_max_level(Level::INFO)
+        .finish();
+    set_global_default(subscriber).expect("Setting default subscriber failed.");
+
     App::new()
         // Share the SelectedPuzzle resource between menu and puzzle plugin
         .init_resource::<SelectedPuzzle>()
@@ -51,6 +63,8 @@ fn main() {
         .init_resource::<MainCamera>()
         // Create a new puzzle manager to store puzzles (do it here and allow other plugins to manage shared load/unload)
         .insert_resource(puzzle_manager::PuzzleManager::new())
+        // Create a new api caller to interface with backend
+        .insert_resource(api::NodalApi::new())
         .add_plugins(DefaultPlugins)
         // Declare the game state, whose starting value is determined by the `Default` trait
         .init_state::<AppState>()

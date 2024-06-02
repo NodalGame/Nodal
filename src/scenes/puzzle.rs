@@ -28,8 +28,11 @@ pub mod puzzle {
         utils::HashMap,
         window::{PrimaryWindow, Window},
     };
+    use tokio::runtime::Runtime;
+    use tracing::error;
 
     use crate::{
+        backend::api::api::NodalApi,
         buttons::icon_button_style,
         clicked_on_sprite, despawn_screen, get_all_satisfied_states, get_bg_tile,
         get_cursor_world_position, get_line_texture, get_set_tiles,
@@ -686,24 +689,15 @@ pub mod puzzle {
             let mut solved = true;
             for active_node in active_nodes.active_nodes.iter() {
                 if !active_node.satisfied {
-                    println!("Puzzle not solved, node {}", active_node.node.id);
                     solved = false;
                 }
                 for condition in &active_node.active_conditions {
                     if !condition.satisfied {
-                        println!(
-                            "Puzzle not solved, condition {}",
-                            condition.active_id.get_id()
-                        );
                         solved = false;
                     }
                 }
                 for connected_condition in &active_node.active_connected_conditions {
                     if !connected_condition.satisfied {
-                        println!(
-                            "Puzzle not solved, connected condition {}",
-                            connected_condition.active_id.get_id()
-                        );
                         solved = false;
                     }
                 }
@@ -711,19 +705,11 @@ pub mod puzzle {
             for active_set in active_sets.active_sets.iter() {
                 for active_set_rule in &active_set.active_set_rules {
                     if !active_set_rule.satisfied {
-                        println!(
-                            "Puzzle not solved, rule {}",
-                            active_set_rule.active_id.get_id()
-                        );
                         solved = false;
                     }
                 }
                 for active_connected_set_rule in &active_set.active_connected_set_rules {
                     if !active_connected_set_rule.satisfied {
-                        println!(
-                            "Puzzle not solved, connected rule {}",
-                            active_connected_set_rule.active_id.get_id()
-                        );
                         solved = false;
                     }
                 }
@@ -745,6 +731,7 @@ pub mod puzzle {
         mut q_sprites: Query<&mut Sprite>,
         mut app_state: ResMut<NextState<AppState>>,
         mut event_writer: EventWriter<UpdateSatisfiedStates>,
+        api: Res<NodalApi>,
     ) {
         for (interaction, ui_button_action) in &interaction_query {
             if *interaction == Interaction::Pressed {
@@ -764,6 +751,28 @@ pub mod puzzle {
                             &active_nodes.active_nodes,
                             &active_sets.active_sets,
                         )));
+
+                        // Do the api call tests (remove once done testing)
+                        let rt = Runtime::new().unwrap();
+                        rt.block_on(async {
+                            match api.call_test_async().await {
+                                Ok(response) => {
+                                    println!("async test api got response: {}", response.response);
+                                }
+                                Err(err) => {
+                                    error!("Error calling async test api: {}", err);
+                                }
+                            }
+                        });
+
+                        // match api.call_test_blocking() {
+                        //     Ok(response) => {
+                        //         println!("blocking test api got response: {}", response.response);
+                        //     }
+                        //     Err(err) => {
+                        //         error!("Error calling blocking test api: {}", err);
+                        //     }
+                        // }
                     }
                     PuzzleButtonAction::ReturnToPreviousPage => {
                         // TODO track previous state before entering puzzle (campaign vs public level select)

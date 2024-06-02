@@ -13,6 +13,10 @@ serde_json = { version = "1.0" }
 walkdir = { version = "2.3" }
 bevy_prototype_lyon = { version = "0.11.0" }
 itertools = { version = "0.13.0" }
+reqwest = { version = "0.12.4", features = ["blocking", "json"] }
+tokio = { version = "1" }
+tracing = { version = "0.1" }
+tracing-subscriber = { version = "0.3.18" }
 
 # Enable a small amount of optimization in debug mode
 [profile.dev]
@@ -21,3 +25,7 @@ opt-level = 1
 # Enable high optimizations for dependencies (incl. Bevy), but not for our code:
 [profile.dev.package."*"]
 opt-level = 3
+
+[features]
+default = []
+beta = []
