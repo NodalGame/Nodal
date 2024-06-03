@@ -42,6 +42,10 @@ pub mod api {
             }
         }
 
+        pub fn redirect_uri(&self) -> String {
+            Self::base_url() + "/auth/callback"
+        }
+
         pub fn call_test_blocking(&self) -> Result<TestApiResponse, Box<dyn Error>> {
             let res = self
                 .blocking_client

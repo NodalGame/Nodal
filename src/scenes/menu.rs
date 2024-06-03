@@ -1,8 +1,10 @@
 pub mod menu {
     use bevy::{app::AppExit, prelude::*};
+    use serde::Deserialize;
     use uuid::Uuid;
 
     use crate::{
+        backend::api::api::NodalApi,
         buttons::{
             button_icon_style, button_text_style, text_button_style, NORMAL_BUTTON, TEXT_COLOR,
         },
@@ -69,6 +71,7 @@ pub mod menu {
     enum MenuButtonAction {
         Campaign,
         SubMenu,
+        LogIn,
         PlayPuzzle,
         Quit,
     }
@@ -128,6 +131,7 @@ pub mod menu {
 
                         // Display buttons for each action available from the main menu:
                         // - new game
+                        // - sign in with itch
                         // - quit
                         parent
                             .spawn((
@@ -147,6 +151,27 @@ pub mod menu {
                                 });
                                 parent.spawn(TextBundle::from_section(
                                     "New Game",
+                                    button_text_style(),
+                                ));
+                            });
+                        parent
+                            .spawn((
+                                ButtonBundle {
+                                    style: text_button_style(),
+                                    background_color: NORMAL_BUTTON.into(),
+                                    ..default()
+                                },
+                                MenuButtonAction::LogIn,
+                            ))
+                            .with_children(|parent| {
+                                let icon = asset_server.load(Texture::BtnClearLines.path());
+                                parent.spawn(ImageBundle {
+                                    style: button_icon_style(),
+                                    image: UiImage::new(icon),
+                                    ..default()
+                                });
+                                parent.spawn(TextBundle::from_section(
+                                    "Sign In with Itch",
                                     button_text_style(),
                                 ));
                             });
@@ -284,6 +309,12 @@ pub mod menu {
             });
     }
 
+    // TODO this whole thing with oauth needs to go somewhere else
+    #[derive(Deserialize)]
+    struct TokenResponse {
+        access_token: String,
+    }
+
     fn menu_action(
         interaction_query: Query<
             (&Interaction, &MenuButtonAction, Option<&ButtonPuzzleId>),
@@ -293,6 +324,7 @@ pub mod menu {
         mut menu_state: ResMut<NextState<MenuState>>,
         mut app_state: ResMut<NextState<AppState>>,
         mut selected_puzzle: ResMut<SelectedPuzzle>,
+        api: Res<NodalApi>,
     ) {
         for (interaction, menu_button_action, button_puzzle_id) in &interaction_query {
             if *interaction == Interaction::Pressed {
@@ -303,6 +335,18 @@ pub mod menu {
                     }
                     MenuButtonAction::SubMenu => {
                         menu_state.set(MenuState::SubMenu);
+                    }
+                    MenuButtonAction::LogIn => {
+                        // let client_id = "46ee1bbfb2bc9058ece5ec164478596f"; // TODO obfuscate this and branch by dev, beta, prod
+                        // let redirect_uri = api.redirect_uri();
+                        // let auth_url = format!(
+                        //     "https://itch.io/user/oauth?client_id={}&scope=profile:me&redirect_uri={}",
+                        //     client_id, redirect_uri
+                        // );
+                        let auth_url = "https://itch.io/user/oauth?client_id=46ee1bbfb2bc9058ece5ec164478596f&scope=profile%3Ame&response_type=token&redirect_uri=https%3A%2F%2Fz6tumvffz1.execute-api.us-west-2.amazonaws.com%2Fprod%2Fauth%2Fcallback";
+                        if webbrowser::open(&auth_url).is_ok() {
+                            println!("Opened {} in web browser", auth_url);
+                        }
                     }
                     MenuButtonAction::Campaign => {
                         app_state.set(AppState::Campaign);
