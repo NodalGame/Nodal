@@ -48,7 +48,7 @@ pub mod scene {
                 game_node::game_node::GameNodeId, node_condition::node_condition::NodeCondition,
                 set_rule::set_rule::SetRule,
             },
-        }, texture::Texture, AppState, MainCamera, SelectedPuzzle, CDTN_RULE_SPRITE_SIZE, INTERNAL_SPACING_X, INTERNAL_SPACING_Y, SPRITE_SPACING, STACK_CDTN_RULE_SPACING, TILE_NODE_SPRITE_SIZE, Z_RULE_CDTN_NODE, Z_SET_RULE_BOX
+        }, texture::Texture, AppState, MainCamera, SelectedPuzzle, CDTN_RULE_SPRITE_SIZE, INTERNAL_SPACING_X, INTERNAL_SPACING_Y, SPRITE_SPACING, STACK_CDTN_RULE_SPACING, TILE_NODE_SPRITE_SIZE, Z_LINE, Z_RULE_CDTN_NODE, Z_SET_RULE_BOX
     };
 
     // This plugin will contain a playable puzzle.
@@ -233,7 +233,7 @@ pub mod scene {
                 for con_cdtn in node.connected_conditions.iter() {
                     // TODO get textures via either connected_node_condition.rs or texture.rs
                     let con_cdtn_texture = match con_cdtn {
-                        ConnectedNodeCondition::DegreeEqual(con_cdtn) => {
+                        ConnectedNodeCondition::DegreeEqual(_con_cdtn) => {
                             tex_cdtn_degree_equal.clone()
                         }
                     };
@@ -409,7 +409,7 @@ pub mod scene {
             for crule in set.connected_rules.iter() {
                 // TODO get textures via either connected_set_rule.rs or texture.rs
                 let crule_texture = match crule {
-                    ConnectedSetRule::Homomorphic(crule) => tex_rule_homomorphism.clone(),
+                    ConnectedSetRule::Homomorphic(_crule) => tex_rule_homomorphism.clone(),
                 };
 
                 let transform_x = node_x - TILE_NODE_SPRITE_SIZE + INTERNAL_SPACING_X;
@@ -551,7 +551,7 @@ pub mod scene {
                 transform: Transform::from_xyz(
                     (end_pos.x + start_pos.x) / 2.0,
                     (end_pos.y + start_pos.y) / 2.0,
-                    0.0,
+                    Z_LINE,
                 ),
                 ..Default::default()
             };
@@ -717,7 +717,7 @@ pub mod scene {
         mut active_nodes: ResMut<ActiveNodes>,
         active_sets: Res<ActiveSets>,
         mut active_lines: ResMut<ActiveLines>,
-        mut q_sprites: Query<&mut Sprite>,
+        _q_sprites: Query<&mut Sprite>,
         mut app_state: ResMut<NextState<AppState>>,
         mut event_writer: EventWriter<UpdateSatisfiedStates>,
         api: Res<NodalApi>,

@@ -7,8 +7,7 @@ pub mod node_condition {
         logic::condition_checks::condition_checks::{is_branch_equal, is_leaf},
         structs::immutable::{
             game_node::game_node::GameNode,
-            game_set::game_set::GameSet,
-            solution::solution::{solution_to_adjacency_matrix, Solution},
+            solution::solution::{Solution},
         },
         CDTN_RULE_SPRITE_SIZE, COLOR_CDTN_UNSAT,
     };

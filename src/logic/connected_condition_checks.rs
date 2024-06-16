@@ -48,7 +48,7 @@ mod tests {
             },
             game_line::game_line::GameLine,
             game_node::game_node::{GameNode, GameNodeId},
-            solution::{self, solution::Solution},
+            solution::{solution::Solution},
         },
     };
 

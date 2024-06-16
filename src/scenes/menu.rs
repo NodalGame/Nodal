@@ -1,6 +1,5 @@
 pub mod menu {
     use bevy::{app::AppExit, prelude::*};
-    use serde::Deserialize;
     use uuid::Uuid;
 
     use crate::{
@@ -197,7 +196,7 @@ pub mod menu {
             });
     }
 
-    fn submenu_setup(mut commands: Commands, asset_server: Res<AssetServer>) {
+    fn submenu_setup(mut commands: Commands, _asset_server: Res<AssetServer>) {
         commands
             .spawn((
                 NodeBundle {
@@ -309,12 +308,6 @@ pub mod menu {
             });
     }
 
-    // TODO this whole thing with oauth needs to go somewhere else
-    #[derive(Deserialize)]
-    struct TokenResponse {
-        access_token: String,
-    }
-
     fn menu_action(
         interaction_query: Query<
             (&Interaction, &MenuButtonAction, Option<&ButtonPuzzleId>),
@@ -324,7 +317,7 @@ pub mod menu {
         mut menu_state: ResMut<NextState<MenuState>>,
         mut app_state: ResMut<NextState<AppState>>,
         mut selected_puzzle: ResMut<SelectedPuzzle>,
-        api: Res<NodalApi>,
+        _api: Res<NodalApi>,
     ) {
         for (interaction, menu_button_action, button_puzzle_id) in &interaction_query {
             if *interaction == Interaction::Pressed {

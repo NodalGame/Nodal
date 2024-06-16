@@ -6,7 +6,7 @@ pub mod connected_node_condition {
         logic::connected_condition_checks::connected_condition_checks::is_degree_equal,
         structs::immutable::{
             game_node::game_node::GameNode,
-            solution::{self, solution::Solution},
+            solution::{solution::Solution},
         },
         CDTN_RULE_SPRITE_SIZE, COLOR_CDTN_BLUE_UNSAT, COLOR_CDTN_GREEN_UNSAT,
         COLOR_CDTN_PURPLE_UNSAT,
@@ -41,7 +41,7 @@ pub mod connected_node_condition {
         /// returns if it is satisfied or not for those nodes (reflexive).
         pub fn is_satisfied(&self, nodes: Vec<&GameNode>, solution: &Solution) -> bool {
             match self {
-                ConnectedNodeCondition::DegreeEqual(condition_class) => {
+                ConnectedNodeCondition::DegreeEqual(_condition_class) => {
                     is_degree_equal(nodes, solution)
                 }
             }

@@ -3,7 +3,6 @@ pub mod connected_rule_checks {
         game_node::game_node::GameNodeId,
         game_set::game_set::GameSet,
         solution::{
-            self,
             solution::{
                 filter_solution_to_set, solution_to_adjacency_matrix, AdjacencyMatrix, Solution,
             },
@@ -11,8 +10,7 @@ pub mod connected_rule_checks {
     };
     use itertools::Itertools;
     use std::{
-        collections::{HashMap, HashSet},
-        hash::Hash,
+        collections::{HashMap},
     };
 
     /// Checks if all sets with the same rule and class are homomorphic.
@@ -113,7 +111,7 @@ mod tests {
             connected_set_rule::connected_set_rule::{ConnectedSetRule, RuleClass},
             game_line::game_line::GameLine,
             game_set::game_set::GameSet,
-            solution::{self, solution::Solution},
+            solution::{solution::Solution},
         },
     };
 

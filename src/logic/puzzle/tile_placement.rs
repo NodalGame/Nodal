@@ -24,7 +24,7 @@ mod tests {
     use uuid::Uuid;
 
     use crate::{
-        logic::puzzle::{self, tile_placement::tile_placement::get_set_upper_left_node},
+        logic::puzzle::{tile_placement::tile_placement::get_set_upper_left_node},
         structs::immutable::{
             game_node::game_node::{GameNode, GameNodeId},
             game_set::game_set::GameSet,

@@ -1,10 +1,9 @@
 use std::{
-    collections::{HashMap, VecDeque},
-    f32::consts::PI,
+    collections::{HashMap},
 };
 
 use bevy::{
-    asset::Handle, prelude::*, render::texture::Image, sprite::SpriteBundle, utils::HashSet,
+    prelude::*, sprite::SpriteBundle,
 };
 
 use crate::{

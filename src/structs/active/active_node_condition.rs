@@ -12,7 +12,7 @@ pub mod active_node_condition {
             },
             immutable::{
                 node_condition::node_condition::NodeCondition,
-                solution::{self, solution::Solution},
+                solution::{solution::Solution},
             },
         },
         COLOR_CDTN_SAT, COLOR_CDTN_UNSAT,
