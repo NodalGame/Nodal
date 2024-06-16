@@ -1,4 +1,4 @@
-pub mod puzzle {
+pub mod scene {
     use std::process::exit;
 
     use bevy::{
@@ -32,14 +32,7 @@ pub mod puzzle {
     use tracing::error;
 
     use crate::{
-        backend::api::api::NodalApi,
-        buttons::icon_button_style,
-        clicked_on_sprite, despawn_screen, get_all_satisfied_states, get_bg_tile,
-        get_cursor_world_position, get_line_texture, get_set_tiles,
-        logic::puzzle::tile_placement::tile_placement::get_set_upper_left_node,
-        node_to_position,
-        puzzle_manager::PuzzleManager,
-        structs::{
+        backend::api::api::NodalApi, buttons::icon_button_style, clicked_on_sprite, despawn_screen, get_all_satisfied_states, get_cursor_world_position, logic::puzzle::tile_placement::tile_placement::get_set_upper_left_node, node_to_position, puzzle_manager::PuzzleManager, scenes::puzzle::util::{get_line_texture, get_puzzle_background_tile, get_set_tiles}, structs::{
             active::{
                 active_connected_node_condition::active_connected_node_condition::ActiveConnectedNodeCondition,
                 active_connected_set_rule::active_connected_set_rule::ActiveConnectedSetRule,
@@ -55,11 +48,7 @@ pub mod puzzle {
                 game_node::game_node::GameNodeId, node_condition::node_condition::NodeCondition,
                 set_rule::set_rule::SetRule,
             },
-        },
-        texture::Texture,
-        AppState, MainCamera, SelectedPuzzle, CDTN_RULE_SPRITE_SIZE, INTERNAL_SPACING_X,
-        INTERNAL_SPACING_Y, SPRITE_SPACING, STACK_CDTN_RULE_SPACING, TILE_NODE_SPRITE_SIZE,
-        Z_RULE_CDTN_NODE, Z_SET_RULE_BOX,
+        }, texture::Texture, AppState, MainCamera, SelectedPuzzle, CDTN_RULE_SPRITE_SIZE, INTERNAL_SPACING_X, INTERNAL_SPACING_Y, SPRITE_SPACING, STACK_CDTN_RULE_SPACING, TILE_NODE_SPRITE_SIZE, Z_RULE_CDTN_NODE, Z_SET_RULE_BOX
     };
 
     // This plugin will contain a playable puzzle.
@@ -166,7 +155,7 @@ pub mod puzzle {
                 // If background tile, spawn it and continue
                 if x % 2 == 0 || y % 2 == 0 {
                     commands.spawn((
-                        get_bg_tile(x, y, puzzle.width, puzzle.height, asset_server.clone()),
+                        get_puzzle_background_tile(x, y, puzzle.width, puzzle.height, asset_server.clone()),
                         OnPuzzleScene,
                     ));
                     continue;

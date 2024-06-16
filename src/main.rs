@@ -16,7 +16,7 @@ pub mod structs;
 pub mod scenes;
 use scenes::campaign::campaign::*;
 use scenes::menu::menu::*;
-use scenes::puzzle::puzzle::*;
+use scenes::puzzle::scene::scene::puzzle_plugin;
 use scenes::splash::splash::*;
 
 pub mod ui;
