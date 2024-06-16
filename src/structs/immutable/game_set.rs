@@ -1,9 +1,10 @@
 pub mod game_set {
+    use bevy::render::color::Color;
     use serde::{Deserialize, Serialize};
 
-    use crate::structs::immutable::{
+    use crate::{structs::immutable::{
         connected_set_rule::connected_set_rule::ConnectedSetRule, set_rule::set_rule::SetRule,
-    };
+    }, COLOR_SET_0, COLOR_SET_1, COLOR_SET_2};
 
     /// Set contains nodes over which it applies SetRules.
     #[derive(Serialize, Deserialize, Clone, Debug)]

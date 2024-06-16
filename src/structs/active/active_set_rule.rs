@@ -28,14 +28,6 @@ pub mod active_set_rule {
         pub fn check_satisfied(&self, set: &ActiveSet, solution: &Solution) -> bool {
             return self.rule.is_satisfied(&set.set, solution);
         }
-
-        pub fn update_sprite(&mut self, sprite: &mut Sprite) {
-            sprite.color = if self.satisfied {
-                COLOR_RULE_SAT
-            } else {
-                COLOR_RULE_UNSAT
-            }
-        }
     }
 
     impl Satisfiable for ActiveSetRule {
@@ -45,6 +37,16 @@ pub mod active_set_rule {
 
         fn set_satisfied(&mut self, value: bool) {
             self.satisfied = value;
+        }
+        
+        fn update_sprites(&mut self, sprites: Vec<&mut Sprite>) {
+            for sprite in sprites {
+                sprite.color = if self.satisfied {
+                    COLOR_RULE_SAT
+                } else {
+                    COLOR_RULE_UNSAT
+                }
+            }
         }
     }
 }

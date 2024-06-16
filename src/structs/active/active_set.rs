@@ -1,7 +1,6 @@
 pub mod active_set {
     use bevy::{
         ecs::entity::Entity,
-        render::color::Color,
         sprite::{Sprite, SpriteBundle},
     };
 
@@ -25,18 +24,6 @@ pub mod active_set {
         pub satisfied: bool,
     }
 
-    impl ActiveSet {
-        pub fn update_sprites(&mut self, sprites: &mut Vec<Sprite>) {
-            sprites.iter_mut().for_each(|sprite| {
-                sprite.color = if self.satisfied {
-                    Color::WHITE
-                } else {
-                    Color::BLACK
-                }
-            })
-        }
-    }
-
     impl Satisfiable for ActiveSet {
         fn set_satisfied(&mut self, value: bool) {
             self.satisfied = value;
@@ -44,6 +31,10 @@ pub mod active_set {
 
         fn identifier(&self) -> &ActiveIdentifier {
             &self.active_id
+        }
+        
+        fn update_sprites(&mut self, _: Vec<&mut Sprite>) {
+            // Currently the active set sprites are static. 
         }
     }
 }

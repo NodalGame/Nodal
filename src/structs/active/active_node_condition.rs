@@ -31,14 +31,6 @@ pub mod active_node_condition {
         pub fn check_satisfied(&self, node: &ActiveNode, solution: &Solution) -> bool {
             return self.condition.is_satisfied(&node.node, solution);
         }
-
-        pub fn update_sprite(&mut self, sprite: &mut Sprite) {
-            sprite.color = if self.satisfied {
-                COLOR_CDTN_SAT
-            } else {
-                COLOR_CDTN_UNSAT
-            }
-        }
     }
 
     impl Satisfiable for ActiveNodeCondition {
@@ -48,6 +40,16 @@ pub mod active_node_condition {
 
         fn set_satisfied(&mut self, value: bool) {
             self.satisfied = value;
+        }
+        
+        fn update_sprites(&mut self, sprites: Vec<&mut Sprite>) {
+            for sprite in sprites {
+                sprite.color = if self.satisfied {
+                    COLOR_CDTN_SAT
+                } else {
+                    COLOR_CDTN_UNSAT
+                }
+            }
         }
     }
 }

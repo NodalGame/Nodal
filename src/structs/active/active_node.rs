@@ -36,14 +36,6 @@ pub mod active_node {
         pub fn check_satisfied(&self, solution: &Solution) -> bool {
             return self.node.is_satisfied(solution);
         }
-
-        pub fn update_sprite(&mut self, sprite: &mut Sprite) {
-            sprite.color = if self.satisfied {
-                COLOR_NODE_SAT
-            } else {
-                COLOR_NODE_UNSAT
-            };
-        }
     }
 
     impl Satisfiable for ActiveNode {
@@ -53,6 +45,16 @@ pub mod active_node {
 
         fn identifier(&self) -> &ActiveIdentifier {
             &self.active_id
+        }
+        
+        fn update_sprites(&mut self, sprites: Vec<&mut Sprite>) {
+            for sprite in sprites {
+                sprite.color = if self.satisfied {
+                    COLOR_NODE_SAT
+                } else {
+                    COLOR_NODE_UNSAT
+                }
+            }
         }
     }
 

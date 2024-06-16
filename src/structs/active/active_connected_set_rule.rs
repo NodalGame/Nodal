@@ -24,34 +24,6 @@ pub mod active_connected_set_rule {
         pub satisfied: bool,
     }
 
-    impl ActiveConnectedSetRule {
-        pub fn update_sprite(&mut self, sprite: &mut Sprite) {
-            sprite.color = match self.rule.rule_class() {
-                RuleClass::Yellow => {
-                    if self.satisfied {
-                        COLOR_RULE_YELLOW_SAT
-                    } else {
-                        COLOR_RULE_YELLOW_UNSAT
-                    }
-                }
-                RuleClass::Orange => {
-                    if self.satisfied {
-                        COLOR_RULE_ORANGE_SAT
-                    } else {
-                        COLOR_RULE_ORANGE_UNSAT
-                    }
-                }
-                RuleClass::Red => {
-                    if self.satisfied {
-                        COLOR_RULE_RED_SAT
-                    } else {
-                        COLOR_RULE_RED_UNSAT
-                    }
-                }
-            }
-        }
-    }
-
     impl Satisfiable for ActiveConnectedSetRule {
         fn identifier(&self) -> &ActiveIdentifier {
             &self.active_id
@@ -59,6 +31,34 @@ pub mod active_connected_set_rule {
 
         fn set_satisfied(&mut self, value: bool) {
             self.satisfied = value;
+        }
+        
+        fn update_sprites(&mut self, sprites: Vec<&mut Sprite>) {
+            for sprite in sprites {
+                sprite.color = match self.rule.rule_class() {
+                    RuleClass::Yellow => {
+                        if self.satisfied {
+                            COLOR_RULE_YELLOW_SAT
+                        } else {
+                            COLOR_RULE_YELLOW_UNSAT
+                        }
+                    }
+                    RuleClass::Orange => {
+                        if self.satisfied {
+                            COLOR_RULE_ORANGE_SAT
+                        } else {
+                            COLOR_RULE_ORANGE_UNSAT
+                        }
+                    }
+                    RuleClass::Red => {
+                        if self.satisfied {
+                            COLOR_RULE_RED_SAT
+                        } else {
+                            COLOR_RULE_RED_UNSAT
+                        }
+                    }
+                }
+            }
         }
     }
 }

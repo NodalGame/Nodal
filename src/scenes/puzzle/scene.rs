@@ -605,7 +605,7 @@ pub mod scene {
                     if satisfied_states.contains_key(&active_node.active_id) {
                         active_node.set_satisfied(satisfied_states[&active_node.active_id]);
                         if let Ok(mut sprite) = q_sprites.get_mut(active_node.sprite_entity_id) {
-                            active_node.update_sprite(sprite.as_mut());
+                            active_node.update_sprites(Vec::from([sprite.as_mut()]));
                         }
                     }
                     active_node
@@ -618,7 +618,7 @@ pub mod scene {
                                 if let Ok(mut sprite) =
                                     q_sprites.get_mut(active_condition.sprite_entity_id)
                                 {
-                                    active_condition.update_sprite(sprite.as_mut());
+                                    active_condition.update_sprites(Vec::from([sprite.as_mut()]));
                                 }
                             }
                         });
@@ -632,7 +632,7 @@ pub mod scene {
                                 if let Ok(mut sprite) =
                                     q_sprites.get_mut(active_connected_condition.sprite_entity_id)
                                 {
-                                    active_connected_condition.update_sprite(sprite.as_mut());
+                                    active_connected_condition.update_sprites(Vec::from([sprite.as_mut()]));
                                 }
                             }
                         },
@@ -651,7 +651,7 @@ pub mod scene {
                             if let Ok(mut sprite) =
                                 q_sprites.get_mut(active_set_rule.sprite_entity_id)
                             {
-                                active_set_rule.update_sprite(sprite.as_mut());
+                                active_set_rule.update_sprites(Vec::from([sprite.as_mut()]));
                             }
                         }
                     });
@@ -664,7 +664,7 @@ pub mod scene {
                             if let Ok(mut sprite) =
                                 q_sprites.get_mut(active_connected_set_rule.sprite_entity_id)
                             {
-                                active_connected_set_rule.update_sprite(sprite.as_mut());
+                                active_connected_set_rule.update_sprites(Vec::from([sprite.as_mut()]));
                             }
                         }
                     },

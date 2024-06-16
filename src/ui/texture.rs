@@ -38,6 +38,11 @@ pub mod texture {
 
         SetRuleBox,
 
+        BgSet0,
+        BgSet1,
+        BgSet2,
+        BgSet3,
+
         BgTileNode,
         BgTileSideLeft,
         BgTileSideRight,
@@ -128,6 +133,11 @@ pub mod texture {
                 }
 
                 Texture::SetRuleBox => "../assets/textures/sprites/SET_RULE_BOX.png",
+
+                Texture::BgSet0 => "../assets/textures/background/BG_SET_0.png",
+                Texture::BgSet1 => "../assets/textures/background/BG_SET_1.png",
+                Texture::BgSet2 => "../assets/textures/background/BG_SET_2.png",
+                Texture::BgSet3 => "../assets/textures/background/BG_SET_3.png",
 
                 Texture::BgTileNode => "../assets/textures/background/BG_TILE_NODE.png",
                 Texture::BgTileSideLeft => "../assets/textures/background/BG_TILE_SIDE_LEFT.png",

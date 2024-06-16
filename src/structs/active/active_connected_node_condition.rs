@@ -26,34 +26,6 @@ pub mod active_connected_node_condition {
         pub satisfied: bool,
     }
 
-    impl ActiveConnectedNodeCondition {
-        pub fn update_sprite(&mut self, sprite: &mut Sprite) {
-            sprite.color = match self.condition.condition_class() {
-                ConditionClass::Blue => {
-                    if self.satisfied {
-                        COLOR_CDTN_BLUE_SAT
-                    } else {
-                        COLOR_CDTN_BLUE_UNSAT
-                    }
-                }
-                ConditionClass::Purple => {
-                    if self.satisfied {
-                        COLOR_CDTN_PURPLE_SAT
-                    } else {
-                        COLOR_CDTN_PURPLE_UNSAT
-                    }
-                }
-                ConditionClass::Green => {
-                    if self.satisfied {
-                        COLOR_CDTN_GREEN_SAT
-                    } else {
-                        COLOR_CDTN_GREEN_UNSAT
-                    }
-                }
-            }
-        }
-    }
-
     impl Satisfiable for ActiveConnectedNodeCondition {
         fn identifier(&self) -> &ActiveIdentifier {
             &self.active_id
@@ -61,6 +33,34 @@ pub mod active_connected_node_condition {
 
         fn set_satisfied(&mut self, value: bool) {
             self.satisfied = value;
+        }
+        
+        fn update_sprites(&mut self, sprites: Vec<&mut Sprite>) {
+            for sprite in sprites {
+                sprite.color = match self.condition.condition_class() {
+                    ConditionClass::Blue => {
+                        if self.satisfied {
+                            COLOR_CDTN_BLUE_SAT
+                        } else {
+                            COLOR_CDTN_BLUE_UNSAT
+                        }
+                    }
+                    ConditionClass::Purple => {
+                        if self.satisfied {
+                            COLOR_CDTN_PURPLE_SAT
+                        } else {
+                            COLOR_CDTN_PURPLE_UNSAT
+                        }
+                    }
+                    ConditionClass::Green => {
+                        if self.satisfied {
+                            COLOR_CDTN_GREEN_SAT
+                        } else {
+                            COLOR_CDTN_GREEN_UNSAT
+                        }
+                    }
+                }
+            }
         }
     }
 }

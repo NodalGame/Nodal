@@ -2,7 +2,7 @@ use std::f32::consts::PI;
 
 use bevy::{asset::{AssetServer, Handle}, math::Vec2, prelude::default, render::{color::Color, texture::Image}, sprite::{Sprite, SpriteBundle}, transform::components::Transform};
 
-use crate::{get_node_down, get_node_down_left, get_node_down_right, get_node_left, get_node_right, get_node_up, get_node_up_left, get_node_up_right, is_bottom_edge, is_left_edge, is_right_edge, is_top_edge, node_to_position, structs::{active::active_node::active_node::ActiveNode, immutable::{game_set::game_set::GameSet, puzzle::puzzle::Puzzle}}, texture::Texture, SPRITE_SPACING, TILE_NODE_SPRITE_SIZE};
+use crate::{get_node_down, get_node_down_left, get_node_down_right, get_node_left, get_node_right, get_node_up, get_node_up_left, get_node_up_right, is_bottom_edge, is_left_edge, is_right_edge, is_top_edge, node_to_position, structs::{active::active_node::active_node::ActiveNode, immutable::{game_set::game_set::GameSet, puzzle::puzzle::Puzzle}}, texture::Texture, BG_SET_SPRITE_SIZE, COLOR_SET_0, COLOR_SET_1, COLOR_SET_2, SPRITE_SPACING, TILE_NODE_SPRITE_SIZE, Z_BACKGROUND, Z_SET_FILL};
 
 /// Returns a background tile as a sprite bundle.
 ///
@@ -34,7 +34,7 @@ pub fn get_puzzle_background_tile(x: u8, y: u8, width: u8, height: u8, asset_ser
         asset_server.load(Texture::BgTileBetweenVertical.path());
     let bg_between_cross: Handle<Image> = asset_server.load(Texture::BgTileBetweenCross.path());
 
-    let transform = Transform::from_xyz(x as f32 * SPRITE_SPACING, y as f32 * SPRITE_SPACING, -1.0);
+    let transform = Transform::from_xyz(x as f32 * SPRITE_SPACING, y as f32 * SPRITE_SPACING, Z_BACKGROUND);
     let sprite = Sprite {
         custom_size: Some(Vec2::new(TILE_NODE_SPRITE_SIZE, TILE_NODE_SPRITE_SIZE)),
         ..Default::default()
@@ -672,6 +672,41 @@ fn get_set_tiles_top_left(
     top_left_tiles
 }
 
+fn get_set_bg_tiles(
+    set: &GameSet,
+    puzzle: &Puzzle,
+    asset_server: AssetServer,
+) -> Vec<SpriteBundle> {
+    // TODO count number of overlapping sets to determine if background tiles need different color/orientation
+
+    let mut bg_tiles: Vec<SpriteBundle> = Vec::new();
+    let tex = match set.id {
+        0 => asset_server.load(Texture::BgSet0.path()),
+        1 => asset_server.load(Texture::BgSet1.path()),
+        2 => asset_server.load(Texture::BgSet2.path()),
+        _ => asset_server.load(Texture::BgSet3.path()),
+    };
+    set.nodes.iter().for_each(|node| {
+        let (node_x, node_y) = node_to_position(node, puzzle);
+        bg_tiles.push(SpriteBundle {
+            texture: tex.clone(),
+            sprite: Sprite {
+                custom_size: Some(Vec2::new(BG_SET_SPRITE_SIZE, BG_SET_SPRITE_SIZE)),
+                color: match set.id {
+                    0 => COLOR_SET_0,
+                    1 => COLOR_SET_1,
+                    2 => COLOR_SET_2,
+                    _ => Color::BLACK // TODO error
+                },
+                ..Default::default()
+            },
+            transform: Transform::from_xyz(node_x, node_y, Z_SET_FILL),
+            ..Default::default()
+        })
+    });
+    bg_tiles
+}
+
 /// Returns a vector of sprite bundles for all of the tiles for a set. 
 /// This includes both the backgrounds and the edges of each set. 
 /// 
@@ -741,8 +776,9 @@ pub fn get_set_tiles(
             puzzle,
             asset_server.clone(),
         ));
-        // TODO background tiles
     }
+
+    tiles.append(&mut get_set_bg_tiles(set, puzzle, asset_server));
 
     tiles
 }
