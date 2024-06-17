@@ -8,9 +8,13 @@ use bevy::prelude::*;
 pub mod backend;
 
 pub mod logic;
+use bevy::window::WindowMode;
+use bevy::window::WindowResolution;
+use bevy_steamworks::SteamworksPlugin;
 use logic::puzzle_manager::*;
 use logic::util::*;
 
+pub mod steam;
 pub mod structs;
 
 pub mod scenes;
@@ -65,7 +69,21 @@ fn main() {
         .insert_resource(puzzle_manager::PuzzleManager::new())
         // Create a new api caller to interface with backend
         .insert_resource(api::NodalApi::new())
-        .add_plugins(DefaultPlugins)
+        // Adds the steamworks plugin (needs to be before Default for RenderPlugin)
+        // .add_plugins(SteamworksPlugin::init_app( /* TODO */ ).unwrap())
+        .add_plugins(DefaultPlugins.set(
+            WindowPlugin {
+                primary_window: Option::from(Window {
+                    title: "Nodal".to_string(),
+                    focused: true,
+                    mode: WindowMode::Fullscreen,
+                    ..Default::default()
+                }),
+                ..Default::default()
+            }
+        ))
+        // Set the background color
+        .insert_resource(ClearColor(Color::BLACK))
         // Declare the game state, whose starting value is determined by the `Default` trait
         .init_state::<AppState>()
         .add_systems(Startup, setup)
