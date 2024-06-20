@@ -38,10 +38,12 @@ pub mod texture {
 
         SetRuleBox,
 
-        BgSet0,
-        BgSet1,
-        BgSet2,
-        BgSet3,
+        BgSetOne,
+        BgSetTwoA,
+        BgSetTwoB,
+        BgSetThreeA,
+        BgSetThreeB,
+        BgSetThreeC,
 
         BgTileNode,
         BgTileSideLeft,
@@ -134,10 +136,12 @@ pub mod texture {
 
                 Texture::SetRuleBox => "../assets/textures/sprites/SET_RULE_BOX.png",
 
-                Texture::BgSet0 => "../assets/textures/background/BG_SET_0.png",
-                Texture::BgSet1 => "../assets/textures/background/BG_SET_1.png",
-                Texture::BgSet2 => "../assets/textures/background/BG_SET_2.png",
-                Texture::BgSet3 => "../assets/textures/background/BG_SET_3.png",
+                Texture::BgSetOne => "../assets/textures/background/BG_SET_ONE.png",
+                Texture::BgSetTwoA => "../assets/textures/background/BG_SET_TWO_A.png",
+                Texture::BgSetTwoB => "../assets/textures/background/BG_SET_TWO_B.png",
+                Texture::BgSetThreeA => "../assets/textures/background/BG_SET_THREE_A.png",
+                Texture::BgSetThreeB => "../assets/textures/background/BG_SET_THREE_B.png",
+                Texture::BgSetThreeC => "../assets/textures/background/BG_SET_THREE_C.png",
 
                 Texture::BgTileNode => "../assets/textures/background/BG_TILE_NODE.png",
                 Texture::BgTileSideLeft => "../assets/textures/background/BG_TILE_SIDE_LEFT.png",

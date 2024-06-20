@@ -15,7 +15,7 @@ use crate::{
         immutable::{
             connected_node_condition::connected_node_condition::ConnectedNodeCondition,
             connected_set_rule::connected_set_rule::ConnectedSetRule,
-            game_node::game_node::GameNode,
+            game_node::game_node::{GameNode, GameNodeId},
             game_set::game_set::GameSet,
             puzzle::puzzle::Puzzle,
             solution::solution::active_nodes_to_solution,
@@ -261,6 +261,34 @@ pub fn get_all_satisfied_states(
     });
 
     satisfied_states
+}
+
+pub fn get_sets_containing_node(
+    sets: Vec<GameSet>,
+    node_id: GameNodeId,
+) -> Vec<GameSet> {
+    let mut containing_sets: Vec<GameSet> = Vec::new();
+    for set in sets.iter() {
+        if set.nodes.contains(&node_id) {
+            containing_sets.push(set.clone());
+        }
+    }
+    containing_sets
+}
+
+/// Given N sets with IDs and a given set, return its order
+/// relative to the other sets sorted by increasing ID. 
+pub fn get_set_order(
+    set: GameSet,
+    sets: Vec<GameSet>,
+) -> u8 {
+    let mut order = 0;
+    for other_set in sets.iter() {
+        if set.id > other_set.id {
+            order += 1;
+        }
+    }
+    order
 }
 
 // TODO it's stupid to manage both of these right now... rather I'll just check the full puzzle state every time,

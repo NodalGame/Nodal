@@ -33,6 +33,6 @@ pub(crate) const COLOR_RULE_ORANGE_UNSAT: Color = Color::BEIGE;
 pub(crate) const COLOR_RULE_RED_SAT: Color = Color::RED;
 pub(crate) const COLOR_RULE_RED_UNSAT: Color = Color::CRIMSON;
 
-pub(crate) const COLOR_SET_0: Color = Color::rgba(1.0, 0.0, 0.0, 0.1);
-pub(crate) const COLOR_SET_1: Color = Color::rgba(0.0, 1.0, 0.0, 0.1);
-pub(crate) const COLOR_SET_2: Color = Color::rgba(0.0, 0.0, 1.0, 0.1);
+pub(crate) const COLOR_SET_0: Color = Color::rgba(1.0, 0.0, 0.0, 0.5);
+pub(crate) const COLOR_SET_1: Color = Color::rgba(0.0, 1.0, 0.0, 0.5);
+pub(crate) const COLOR_SET_2: Color = Color::rgba(0.0, 0.0, 1.0, 0.5);

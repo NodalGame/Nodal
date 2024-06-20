@@ -2,6 +2,8 @@
 //! change some settings or quit. There is no actual game, it will just display the current
 //! settings for 5 seconds before going back to the menu.
 
+use std::env;
+
 use backend::api::api;
 use bevy::prelude::*;
 
@@ -53,6 +55,10 @@ struct SelectedPuzzle {
 #[derive(Resource, Component, Default)]
 struct MainCamera;
 
+fn get_steam_app_id_env_var() -> Result<u32, Box<dyn std::error::Error>> {
+    Ok(env::var("STEAM_APP_ID")?.parse::<u32>()?)
+}
+
 fn main() {
     // Set up tracer logging
     let subscriber = FmtSubscriber::builder()
@@ -60,6 +66,11 @@ fn main() {
         .finish();
     set_global_default(subscriber).expect("Setting default subscriber failed.");
 
+    // Set up steam app
+    let steam_app_id = match get_steam_app_id_env_var() {
+        Ok(steam_app_id) => steam_app_id,
+        Err(_) => 1088652, // Developer Comp
+    };
     App::new()
         // Share the SelectedPuzzle resource between menu and puzzle plugin
         .init_resource::<SelectedPuzzle>()
@@ -70,7 +81,7 @@ fn main() {
         // Create a new api caller to interface with backend
         .insert_resource(api::NodalApi::new())
         // Adds the steamworks plugin (needs to be before Default for RenderPlugin)
-        // .add_plugins(SteamworksPlugin::init_app( /* TODO */ ).unwrap())
+        // .add_plugins(SteamworksPlugin::init_app(steam_app_id).unwrap())
         .add_plugins(DefaultPlugins.set(
             WindowPlugin {
                 primary_window: Option::from(Window {
@@ -83,7 +94,7 @@ fn main() {
             }
         ))
         // Set the background color
-        .insert_resource(ClearColor(Color::BLACK))
+        .insert_resource(ClearColor(Color::WHITE))
         // Declare the game state, whose starting value is determined by the `Default` trait
         .init_state::<AppState>()
         .add_systems(Startup, setup)

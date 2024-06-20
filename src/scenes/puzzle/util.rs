@@ -1,8 +1,9 @@
 use std::f32::consts::PI;
 
-use bevy::{asset::{AssetServer, Handle}, math::Vec2, prelude::default, render::{color::Color, texture::Image}, sprite::{Sprite, SpriteBundle}, transform::components::Transform};
+use bevy::{asset::{AssetServer, Handle}, ecs::world::error, math::Vec2, prelude::default, render::{color::Color, texture::Image}, sprite::{Sprite, SpriteBundle}, transform::components::Transform};
+use tracing::error;
 
-use crate::{get_node_down, get_node_down_left, get_node_down_right, get_node_left, get_node_right, get_node_up, get_node_up_left, get_node_up_right, is_bottom_edge, is_left_edge, is_right_edge, is_top_edge, node_to_position, structs::{active::active_node::active_node::ActiveNode, immutable::{game_set::game_set::GameSet, puzzle::puzzle::Puzzle}}, texture::Texture, BG_SET_SPRITE_SIZE, COLOR_SET_0, COLOR_SET_1, COLOR_SET_2, SPRITE_SPACING, TILE_NODE_SPRITE_SIZE, Z_BACKGROUND, Z_SET_FILL};
+use crate::{get_node_down, get_node_down_left, get_node_down_right, get_node_left, get_node_right, get_node_up, get_node_up_left, get_node_up_right, get_set_order, get_sets_containing_node, is_bottom_edge, is_left_edge, is_right_edge, is_top_edge, node_to_position, structs::{active::active_node::active_node::ActiveNode, immutable::{game_node::game_node::GameNodeId, game_set::game_set::GameSet, puzzle::puzzle::Puzzle}}, texture::Texture, BG_SET_SPRITE_SIZE, COLOR_SET_0, COLOR_SET_1, COLOR_SET_2, SPRITE_SPACING, TILE_NODE_SPRITE_SIZE, Z_BACKGROUND, Z_SET_FILL};
 
 /// Returns a background tile as a sprite bundle.
 ///
@@ -672,32 +673,66 @@ fn get_set_tiles_top_left(
     top_left_tiles
 }
 
+fn get_texture_for_set_tile_at_node(
+    set: GameSet,
+    node_id: GameNodeId,
+    sets: Vec<GameSet>,
+) -> Texture {
+    let sets_containing_node: Vec<GameSet> = get_sets_containing_node(sets, node_id);
+    let set_order = get_set_order(set, sets_containing_node.clone());
+    if sets_containing_node.len() == 1 {
+        Texture::BgSetOne
+    } else if sets_containing_node.len() == 2 {
+        match set_order {
+            0 => Texture::BgSetTwoA,
+            1 => Texture::BgSetTwoB,
+            _ => Texture::Missing
+        }
+    } else if sets_containing_node.len() == 3 {
+        match set_order {
+            0 => Texture::BgSetThreeA,
+            1 => Texture::BgSetThreeB,
+            2 => Texture::BgSetThreeC,
+            _ => Texture::Missing
+        }
+    } else {
+        error!("Error getting texture for set tile at node, need to support more set overlaps.");
+        Texture::Missing
+    }
+}
+
+pub fn get_color_for_set_tile(
+    set: GameSet,
+    sets: Vec<GameSet>
+) -> Color {
+    let set_order = get_set_order(set, sets);
+    match set_order {
+        0 => COLOR_SET_0,
+        1 => COLOR_SET_1,
+        2 => COLOR_SET_2, 
+        _ => {
+            error!("Error getting color for set tile, need to add more colors.");
+            Color::BLACK
+        }
+    }
+}
+
 fn get_set_bg_tiles(
     set: &GameSet,
     puzzle: &Puzzle,
     asset_server: AssetServer,
 ) -> Vec<SpriteBundle> {
-    // TODO count number of overlapping sets to determine if background tiles need different color/orientation
-
     let mut bg_tiles: Vec<SpriteBundle> = Vec::new();
-    let tex = match set.id {
-        0 => asset_server.load(Texture::BgSet0.path()),
-        1 => asset_server.load(Texture::BgSet1.path()),
-        2 => asset_server.load(Texture::BgSet2.path()),
-        _ => asset_server.load(Texture::BgSet3.path()),
-    };
+    let sets = &puzzle.sets;
     set.nodes.iter().for_each(|node| {
         let (node_x, node_y) = node_to_position(node, puzzle);
+        let tex = get_texture_for_set_tile_at_node(set.clone(), *node, sets.to_vec());
+        let tex_path = tex.path().to_string();
         bg_tiles.push(SpriteBundle {
-            texture: tex.clone(),
+            texture: asset_server.load(tex_path),
             sprite: Sprite {
                 custom_size: Some(Vec2::new(BG_SET_SPRITE_SIZE, BG_SET_SPRITE_SIZE)),
-                color: match set.id {
-                    0 => COLOR_SET_0,
-                    1 => COLOR_SET_1,
-                    2 => COLOR_SET_2,
-                    _ => Color::BLACK // TODO error
-                },
+                color: get_color_for_set_tile(set.clone(), sets.to_vec()),
                 ..Default::default()
             },
             transform: Transform::from_xyz(node_x, node_y, Z_SET_FILL),

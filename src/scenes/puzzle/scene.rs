@@ -32,7 +32,7 @@ pub mod scene {
     use tracing::error;
 
     use crate::{
-        backend::api::api::NodalApi, buttons::icon_button_style, clicked_on_sprite, despawn_screen, get_all_satisfied_states, get_cursor_world_position, logic::puzzle::tile_placement::tile_placement::get_set_upper_left_node, node_to_position, puzzle_manager::PuzzleManager, scenes::puzzle::util::{get_line_texture, get_puzzle_background_tile, get_set_tiles}, structs::{
+        backend::api::api::NodalApi, buttons::icon_button_style, clicked_on_sprite, despawn_screen, get_all_satisfied_states, get_cursor_world_position, logic::puzzle::tile_placement::tile_placement::get_set_upper_left_node, node_to_position, puzzle_manager::PuzzleManager, scenes::puzzle::util::{get_color_for_set_tile, get_line_texture, get_puzzle_background_tile, get_set_tiles}, structs::{
             active::{
                 active_connected_node_condition::active_connected_node_condition::ActiveConnectedNodeCondition,
                 active_connected_set_rule::active_connected_set_rule::ActiveConnectedSetRule,
@@ -340,8 +340,9 @@ pub mod scene {
         let mut node_to_rule_count_map: HashMap<GameNodeId, u8> = HashMap::new();
 
         // Map tile spaces to sets to generate
-        for set_idx in 0..puzzle.sets.len() {
-            let set = &puzzle.sets[set_idx];
+        let puzzle_sets = puzzle.clone().sets;
+        for set_idx in 0..puzzle_sets.len() {
+            let set = &puzzle_sets[set_idx];
             let set_tiles = get_set_tiles(set, &puzzle, asset_server.clone());
             let mut set_sprite_entity_ids: Vec<Entity> = vec![];
             for set_tile in set_tiles.clone() {
@@ -376,12 +377,12 @@ pub mod scene {
                     texture: tex_rule_box.clone(),
                     sprite: Sprite {
                         custom_size: Some(Vec2::new(CDTN_RULE_SPRITE_SIZE, CDTN_RULE_SPRITE_SIZE)),
-                        color: Color::BLACK, // TODO assign colors to sets and match
+                        color: get_color_for_set_tile(set.clone(), puzzle_sets.clone()), // TODO assign colors to sets and match
                         ..Default::default()
                     },
                     transform: Transform::from_xyz(transform_x, transform_y, Z_SET_RULE_BOX),
                     ..Default::default()
-                });
+                }).insert(OnPuzzleScene);
                 let rule_sprite = SpriteBundle {
                     texture: rule_texture,
                     sprite: rule.sprite().clone(),
@@ -452,7 +453,7 @@ pub mod scene {
             node_to_rule_count_map.insert(upper_left_node, total_rule_idx);
 
             active_sets.active_sets.push(ActiveSet {
-                set: puzzle.sets[set_idx].clone(),
+                set: puzzle_sets[set_idx].clone(),
                 satisfied: false,
                 active_id: ActiveIdentifier::new(),
                 active_set_rules: active_set_rules,
