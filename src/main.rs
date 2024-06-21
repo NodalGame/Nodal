@@ -26,6 +26,7 @@ use scenes::puzzle::scene::scene::puzzle_plugin;
 use scenes::splash::splash::*;
 
 pub mod ui;
+use steam::steam::steam::steam_system;
 use tracing::subscriber::set_global_default;
 use tracing::Level;
 use tracing_subscriber::FmtSubscriber;
@@ -66,11 +67,6 @@ fn main() {
         .finish();
     set_global_default(subscriber).expect("Setting default subscriber failed.");
 
-    // Set up steam app
-    let steam_app_id = match get_steam_app_id_env_var() {
-        Ok(steam_app_id) => steam_app_id,
-        Err(_) => 1088652, // Developer Comp
-    };
     App::new()
         // Share the SelectedPuzzle resource between menu and puzzle plugin
         .init_resource::<SelectedPuzzle>()
@@ -81,13 +77,13 @@ fn main() {
         // Create a new api caller to interface with backend
         .insert_resource(api::NodalApi::new())
         // Adds the steamworks plugin (needs to be before Default for RenderPlugin)
-        // .add_plugins(SteamworksPlugin::init_app(steam_app_id).unwrap())
+        .add_plugins(SteamworksPlugin::init_app(3063380).unwrap())
         .add_plugins(DefaultPlugins.set(
             WindowPlugin {
                 primary_window: Option::from(Window {
                     title: "Nodal".to_string(),
                     focused: true,
-                    mode: WindowMode::Fullscreen,
+                    mode: WindowMode::Windowed, // TODO fullscreen
                     ..Default::default()
                 }),
                 ..Default::default()
@@ -97,7 +93,7 @@ fn main() {
         .insert_resource(ClearColor(Color::WHITE))
         // Declare the game state, whose starting value is determined by the `Default` trait
         .init_state::<AppState>()
-        .add_systems(Startup, setup)
+        .add_systems(Startup, (setup, steam_system))
         .add_systems(Update, buttons::button_system)
         // Adds the plugins for each state
         .add_plugins((splash_plugin, menu_plugin, campaign_plugin, puzzle_plugin))

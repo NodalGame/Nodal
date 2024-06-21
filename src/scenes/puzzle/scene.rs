@@ -481,7 +481,7 @@ pub mod scene {
         mut active_nodes: ResMut<ActiveNodes>,
         active_sets: Res<ActiveSets>,
         mut current_line: ResMut<CurrentLine>,
-        mut lines: ResMut<ActiveLines>,
+        mut active_lines: ResMut<ActiveLines>,
         mouse_button_input: Res<ButtonInput<MouseButton>>,
         q_window: Query<&Window, With<PrimaryWindow>>,
         q_camera: Query<(&Camera, &GlobalTransform), With<MainCamera>>,
@@ -533,48 +533,72 @@ pub mod scene {
             let start_node = opt_start_node.unwrap();
             let end_node = opt_end_node.unwrap();
 
-            let start_pos = start_node.sprite.transform.translation.truncate();
-            let end_pos = end_node.sprite.transform.translation.truncate();
+            // If start node and end node both have each other as connection, remove the line. 
+            if start_node.connections.contains(&end_node.node.id) && end_node.connections.contains(&start_node.node.id) {
+                if let Some(pos) = start_node.connections.iter().position(|node_id| *node_id == end_node.node.id) {
+                    start_node.connections.remove(pos);
+                }
+                if let Some(pos) = end_node.connections.iter().position(|node_id| *node_id == start_node.node.id) {
+                    end_node.connections.remove(pos);
+                }
+                let first_node = if start_node.node.id < end_node.node.id { start_node.clone() } else { end_node.clone() };
+                let second_node = if start_node.node.id < end_node.node.id { end_node.clone() } else { start_node.clone() };
+                for idx in 0..active_lines.lines.len() {
+                    if active_lines.lines[idx].start_node.node.id == first_node.node.id &&
+                        active_lines.lines[idx].end_node.node.id == second_node.node.id {
+                            commands.entity(active_lines.lines[idx].sprite_entity_id).despawn();
+                            active_lines.lines.remove(idx);
+                            break;
+                        }
+                }
+                
+            // Otherwise, add a new line
+            } else {
+                let start_pos = start_node.sprite.transform.translation.truncate();
+                let end_pos = end_node.sprite.transform.translation.truncate();
 
-            // Get the appropriate line texture, if exists (otherwise invalid node pair)
-            let line_texture = get_line_texture(start_node, end_node).unwrap_or(&Texture::Missing);
+                // Get the appropriate line texture, if exists (otherwise invalid node pair)
+                let line_texture = get_line_texture(start_node, end_node).unwrap_or(&Texture::Missing);
 
-            if *line_texture == Texture::Missing {
-                return;
-            }
+                if *line_texture == Texture::Missing {
+                    return;
+                }
 
-            let line_sprite = SpriteBundle {
-                texture: asset_server.load(line_texture.path()),
-                sprite: Sprite {
-                    custom_size: Some(Vec2::new(TILE_NODE_SPRITE_SIZE, TILE_NODE_SPRITE_SIZE)),
+                let line_sprite = SpriteBundle {
+                    texture: asset_server.load(line_texture.path()),
+                    sprite: Sprite {
+                        custom_size: Some(Vec2::new(TILE_NODE_SPRITE_SIZE, TILE_NODE_SPRITE_SIZE)),
+                        ..Default::default()
+                    },
+                    transform: Transform::from_xyz(
+                        (end_pos.x + start_pos.x) / 2.0,
+                        (end_pos.y + start_pos.y) / 2.0,
+                        Z_LINE,
+                    ),
                     ..Default::default()
-                },
-                transform: Transform::from_xyz(
-                    (end_pos.x + start_pos.x) / 2.0,
-                    (end_pos.y + start_pos.y) / 2.0,
-                    Z_LINE,
-                ),
-                ..Default::default()
-            };
+                };
 
-            // Update connections of both start and end node
-            start_node.connections.push(end_node.node.id);
-            end_node.connections.push(start_node.node.id);
+                // Update connections of both start and end node
+                start_node.connections.push(end_node.node.id);
+                end_node.connections.push(start_node.node.id);
 
-            // Add line to the screen
-            let line_entity_id = commands
-                .spawn(line_sprite.clone())
-                .insert(OnPuzzleScene)
-                .id();
+                // Add line to the screen
+                let line_entity_id = commands
+                    .spawn(line_sprite.clone())
+                    .insert(OnPuzzleScene)
+                    .id();
 
-            // Update list of lines
-            lines.lines.push(ActiveLine {
-                start_node: start_node.clone(),
-                end_node: end_node.clone(),
-                sprite: line_sprite.clone(),
-                active_id: ActiveIdentifier::new(),
-                sprite_entity_id: line_entity_id,
-            });
+                // Update list of lines, putting the smallest ID first.
+                let first_node = if start_node.node.id < end_node.node.id { start_node.clone() } else { end_node.clone() };
+                let second_node = if start_node.node.id < end_node.node.id { end_node.clone() } else { start_node.clone() };
+                active_lines.lines.push(ActiveLine {
+                    start_node: first_node.clone(),
+                    end_node: second_node.clone(),
+                    sprite: line_sprite.clone(),
+                    active_id: ActiveIdentifier::new(),
+                    sprite_entity_id: line_entity_id,
+                });
+            }
 
             // Regardless if we ended on a node or not, clear the current line
             current_line.start_node_id = None;
@@ -732,9 +756,6 @@ pub mod scene {
                         });
                         active_lines.lines.iter_mut().for_each(|active_line| {
                             commands.entity(active_line.sprite_entity_id).despawn();
-                            // if let Ok(mut sprite) = q_sprites.get_mut(active_line.sprite_entity_id) {
-                            //     commands.entity(sprite.as_mut()).despawn();
-                            // }
                         });
                         active_lines.lines.clear();
                         event_writer.send(UpdateSatisfiedStates(get_all_satisfied_states(
@@ -742,7 +763,7 @@ pub mod scene {
                             &active_sets.active_sets,
                         )));
 
-                        // Do the api call tests (remove once done testing)
+                        // TODO remove this once not needed as a reference 
                         let rt = Runtime::new().unwrap();
                         rt.block_on(async {
                             match api.call_test_async().await {

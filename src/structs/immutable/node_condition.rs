@@ -20,9 +20,9 @@ pub mod node_condition {
     #[derive(Serialize, Deserialize, Clone, Debug, Eq, PartialEq, Hash)]
     pub enum NodeCondition {
         /// Every branching path connecting to this node must be of equal length (cycles disallowed).
-        BranchEqual, //(Bounded),
+        BranchEqual, 
         /// This node has only one line connected to it.
-        Leaf, //(Bounded),
+        Leaf, 
     }
 
     impl NodeCondition {

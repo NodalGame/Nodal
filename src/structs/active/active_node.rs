@@ -14,7 +14,7 @@ pub mod active_node {
                 active_node_condition::active_node_condition::ActiveNodeCondition,
                 traits::traits::Satisfiable,
             },
-            immutable::{game_node::game_node::GameNode, solution::solution::Solution},
+            immutable::{game_node::game_node::{GameNode, GameNodeId}, solution::solution::Solution},
         },
         COLOR_NODE_SAT, COLOR_NODE_UNSAT,
     };
@@ -24,7 +24,7 @@ pub mod active_node {
         // TODO this should not be pub
         pub active_id: ActiveIdentifier,
         pub node: GameNode,
-        pub connections: Vec<u16>,
+        pub connections: Vec<GameNodeId>,
         pub sprite: SpriteBundle,
         pub sprite_entity_id: Entity,
         pub active_conditions: Vec<ActiveNodeCondition>,

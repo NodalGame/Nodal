@@ -1,0 +1,54 @@
+{
+	"uuid": "e820699a-6e12-48db-b7b4-e8663cfba7b5",
+	"name": "Puzzle2",
+	"width": 3,
+	"height": 3,
+	"nodes": [
+		{
+			"id": 0,
+			"conditions": [],
+			"connected_conditions": []
+		},
+		{
+			"id": 1,
+			"conditions": [],
+			"connected_conditions": []
+		},
+		{
+			"id": 2,
+			"conditions": [],
+			"connected_conditions": []
+		},
+		{
+			"id": 3,
+			"conditions": [],
+			"connected_conditions": []
+		},
+		{
+			"id": 4,
+			"conditions": [],
+			"connected_conditions": []
+		},
+		{
+			"id": 5,
+			"conditions": [],
+			"connected_conditions": []
+		},
+        {
+			"id": 6,
+			"conditions": [],
+			"connected_conditions": []
+		},
+        {
+			"id": 7,
+			"conditions": [],
+			"connected_conditions": []
+		},
+        {
+			"id": 8,
+			"conditions": [],
+			"connected_conditions": []
+		}
+	],
+	"sets": []
+}
