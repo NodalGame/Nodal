@@ -14,12 +14,12 @@ pub(crate) const Z_LINE: f32 = -1.0;
 pub(crate) const Z_SET_RULE_BOX: f32 = 0.0;
 pub(crate) const Z_RULE_CDTN_NODE: f32 = 1.0;
 
-pub(crate) const COLOR_NODE_SAT: Color = Color::WHITE;
-pub(crate) const COLOR_NODE_UNSAT: Color = Color::BLACK;
+pub(crate) const COLOR_NODE_SAT: Color = Color::BLACK;
+pub(crate) const COLOR_NODE_UNSAT: Color = Color::WHITE;
 pub(crate) const COLOR_RULE_SAT: Color = Color::WHITE;
 pub(crate) const COLOR_RULE_UNSAT: Color = Color::BLACK;
-pub(crate) const COLOR_CDTN_SAT: Color = Color::WHITE;
-pub(crate) const COLOR_CDTN_UNSAT: Color = Color::BLACK;
+pub(crate) const COLOR_CDTN_SAT: Color = Color::BLACK;
+pub(crate) const COLOR_CDTN_UNSAT: Color = Color::WHITE;
 pub(crate) const COLOR_CDTN_BLUE_SAT: Color = Color::ALICE_BLUE;
 pub(crate) const COLOR_CDTN_BLUE_UNSAT: Color = Color::MIDNIGHT_BLUE;
 pub(crate) const COLOR_CDTN_PURPLE_SAT: Color = Color::PINK;

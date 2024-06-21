@@ -48,7 +48,7 @@ pub mod scene {
                 game_node::game_node::GameNodeId, node_condition::node_condition::NodeCondition,
                 set_rule::set_rule::SetRule,
             },
-        }, texture::Texture, AppState, MainCamera, SelectedPuzzle, CDTN_RULE_SPRITE_SIZE, INTERNAL_SPACING_X, INTERNAL_SPACING_Y, SPRITE_SPACING, STACK_CDTN_RULE_SPACING, TILE_NODE_SPRITE_SIZE, Z_LINE, Z_RULE_CDTN_NODE, Z_SET_RULE_BOX
+        }, texture::Texture, AppState, MainCamera, SelectedPuzzle, CDTN_RULE_SPRITE_SIZE, COLOR_NODE_UNSAT, INTERNAL_SPACING_X, INTERNAL_SPACING_Y, SPRITE_SPACING, STACK_CDTN_RULE_SPACING, TILE_NODE_SPRITE_SIZE, Z_LINE, Z_RULE_CDTN_NODE, Z_SET_RULE_BOX
     };
 
     // This plugin will contain a playable puzzle.
@@ -154,10 +154,11 @@ pub mod scene {
             for y in 0..puzzle.height * 2 + 1 {
                 // If background tile, spawn it and continue
                 if x % 2 == 0 || y % 2 == 0 {
-                    commands.spawn((
-                        get_puzzle_background_tile(x, y, puzzle.width, puzzle.height, asset_server.clone()),
-                        OnPuzzleScene,
-                    ));
+                    // TODO add back the bg tiles if necessary
+                    // commands.spawn((
+                    //     get_puzzle_background_tile(x, y, puzzle.width, puzzle.height, asset_server.clone()),
+                    //     OnPuzzleScene,
+                    // ));
                     continue;
                 }
 
@@ -177,7 +178,7 @@ pub mod scene {
                     // TODO move getting the sprite to somewhere else so it's not duplicated
                     sprite: Sprite {
                         custom_size: Some(Vec2::new(TILE_NODE_SPRITE_SIZE, TILE_NODE_SPRITE_SIZE)),
-                        color: Color::BLACK,
+                        color: COLOR_NODE_UNSAT,
                         ..Default::default()
                     },
                     transform: Transform::from_xyz(node_x, node_y, 0.0),
