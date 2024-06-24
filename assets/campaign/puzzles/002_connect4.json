@@ -1,0 +1,29 @@
+{
+    "uuid": "5bc2e2e5-43dd-4f96-977e-e686ff35ed52",
+    "name": "Connect4",
+    "width": 2,
+    "height": 2,
+    "nodes": [
+        {
+            "id": 0,
+            "conditions": [],
+            "connected_conditions": []
+        },
+        {
+            "id": 1,
+            "conditions": [],
+            "connected_conditions": []
+        },
+        {
+            "id": 2,
+            "conditions": [],
+            "connected_conditions": []
+        },
+        {
+            "id": 3,
+            "conditions": [],
+            "connected_conditions": []
+        }
+    ],
+    "sets": []
+}

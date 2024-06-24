@@ -1,0 +1,24 @@
+{
+    "uuid": "45eade1d-b765-4e12-9c62-d2f7a19726fa",
+    "name": "Connect3",
+    "width": 3,
+    "height": 1,
+    "nodes": [
+        {
+            "id": 0,
+            "conditions": [],
+            "connected_conditions": []
+        },
+        {
+            "id": 1,
+            "conditions": [],
+            "connected_conditions": []
+        },
+        {
+            "id": 2,
+            "conditions": [],
+            "connected_conditions": []
+        }
+    ],
+    "sets": []
+}
