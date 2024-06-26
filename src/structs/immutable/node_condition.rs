@@ -26,14 +26,6 @@ pub mod node_condition {
     }
 
     impl NodeCondition {
-        // TODO implement bounded on each condition check (if keeping this way of doing it).
-        // pub fn bounded(&self) -> &Bounded {
-        //     match self {
-        //         NodeCondition::BranchEqual(bounded) => bounded,
-        //         NodeCondition::Leaf(bounded) => bounded,
-        //     }
-        // }
-
         pub fn sprite(&self) -> Sprite {
             Sprite {
                 custom_size: Some(Vec2::new(CDTN_RULE_SPRITE_SIZE, CDTN_RULE_SPRITE_SIZE)),
