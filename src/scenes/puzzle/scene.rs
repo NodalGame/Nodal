@@ -32,7 +32,7 @@ pub mod scene {
     use tracing::error;
 
     use crate::{
-        backend::api::api::NodalApi, buttons::icon_button_style, clicked_on_sprite, despawn_screen, get_all_satisfied_states, get_cursor_world_position, logic::puzzle::tile_placement::tile_placement::get_set_upper_left_node, node_to_position, puzzle_manager::PuzzleManager, scenes::puzzle::util::{get_color_for_set_tile, get_line_texture, get_puzzle_background_tile, get_set_tiles}, structs::{
+        backend::api::api::NodalApi, buttons::icon_button_style, clicked_on_sprite, despawn_screen, get_all_satisfied_states, get_cursor_world_position, logic::puzzle::tile_placement::tile_placement::get_set_upper_left_node, node_to_position, puzzle_manager::PuzzleManager, scenes::puzzle::util::{get_color_for_set_tile, get_line_texture, get_set_tiles}, structs::{
             active::{
                 active_connected_node_condition::active_connected_node_condition::ActiveConnectedNodeCondition,
                 active_connected_set_rule::active_connected_set_rule::ActiveConnectedSetRule,

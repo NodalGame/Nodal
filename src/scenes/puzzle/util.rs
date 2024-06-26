@@ -1,6 +1,6 @@
 use std::f32::consts::PI;
 
-use bevy::{asset::{AssetServer, Handle}, ecs::world::error, math::Vec2, prelude::default, render::{color::Color, texture::Image}, sprite::{Sprite, SpriteBundle}, transform::components::Transform};
+use bevy::{asset::{AssetServer, Handle}, math::Vec2, prelude::default, render::{color::Color, texture::Image}, sprite::{Sprite, SpriteBundle}, transform::components::Transform};
 use tracing::error;
 
 use crate::{get_node_down, get_node_down_left, get_node_down_right, get_node_left, get_node_right, get_node_up, get_node_up_left, get_node_up_right, get_set_order, get_sets_containing_node, is_bottom_edge, is_left_edge, is_right_edge, is_top_edge, node_to_position, structs::{active::active_node::active_node::ActiveNode, immutable::{game_node::game_node::GameNodeId, game_set::game_set::GameSet, puzzle::puzzle::Puzzle}}, texture::Texture, BG_SET_SPRITE_SIZE, COLOR_SET_0, COLOR_SET_1, COLOR_SET_2, SPRITE_SPACING, TILE_NODE_SPRITE_SIZE, Z_BACKGROUND, Z_SET_FILL};

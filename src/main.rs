@@ -11,7 +11,7 @@ pub mod backend;
 
 pub mod logic;
 use bevy::window::WindowMode;
-use bevy::window::WindowResolution;
+
 use bevy_steamworks::SteamworksPlugin;
 use logic::puzzle_manager::*;
 use logic::util::*;
