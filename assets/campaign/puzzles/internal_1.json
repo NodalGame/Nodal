@@ -1,0 +1,29 @@
+{
+    "uuid": "ca3299e4-bf71-4cf6-8b9c-cb6a6d8e5792",
+    "name": "Internal 1",
+    "width": 2,
+    "height": 2,
+    "nodes": [
+        {
+            "id": 0,
+            "conditions": ["Internal"],
+            "connected_conditions": []
+        },
+        {
+            "id": 1,
+            "conditions": ["Internal"],
+            "connected_conditions": []
+        },
+        {
+            "id": 2,
+            "conditions": ["Internal"],
+            "connected_conditions": []
+        },
+        {
+            "id": 3,
+            "conditions": ["Internal"],
+            "connected_conditions": []
+        }
+    ],
+    "sets": []
+}

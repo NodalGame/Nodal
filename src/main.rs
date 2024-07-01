@@ -2,8 +2,6 @@
 //! change some settings or quit. There is no actual game, it will just display the current
 //! settings for 5 seconds before going back to the menu.
 
-use std::env;
-
 use backend::api::api;
 use bevy::prelude::*;
 
@@ -55,10 +53,6 @@ struct SelectedPuzzle {
 // Main camera, shared resource in the app
 #[derive(Resource, Component, Default)]
 struct MainCamera;
-
-fn get_steam_app_id_env_var() -> Result<u32, Box<dyn std::error::Error>> {
-    Ok(env::var("STEAM_APP_ID")?.parse::<u32>()?)
-}
 
 fn main() {
     // Set up tracer logging
