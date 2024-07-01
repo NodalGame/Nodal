@@ -1,7 +1,7 @@
 {
-    "uuid": "37911a8a-41f7-4b4e-b23d-fd4f55e85fef",
-    "name": "Intro",
-    "width": 2,
+    "uuid": "45eade1d-b765-4e12-9c62-d2f7a19726fa",
+    "name": "Intro 2",
+    "width": 3,
     "height": 1,
     "nodes": [
         {
@@ -11,6 +11,11 @@
         },
         {
             "id": 1,
+            "conditions": [],
+            "connected_conditions": []
+        },
+        {
+            "id": 2,
             "conditions": [],
             "connected_conditions": []
         }

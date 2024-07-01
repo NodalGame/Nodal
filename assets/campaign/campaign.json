@@ -1,20 +1,59 @@
 {
     "uuid": "620392de-9a5b-4cbe-a390-7f93ad2f2bab",
-    "name": "Test Campaign",
+    "name": "Nodal Campaign",
     "puzzle_layout": [
         {
-            "id": 0,
-            "puzzle_uuid": "e820699a-6e12-48db-b7b4-e8663cfba7b4",
+            "puzzle_uuid": "37911a8a-41f7-4b4e-b23d-fd4f55e85fef",
             "pos_x": 0,
-            "pos_y": 0,
-            "unlocks": [1]
+            "pos_y": 0
         },
         {
-            "id": 1,
-            "puzzle_uuid": "e820699a-6e12-48db-b7b4-e8663cfba7b5",
+            "puzzle_uuid": "45eade1d-b765-4e12-9c62-d2f7a19726fa",
             "pos_x": 1,
-            "pos_y": 0,
-            "unlocks": []
+            "pos_y": 0
+        },
+        {
+            "puzzle_uuid": "5bc2e2e5-43dd-4f96-977e-e686ff35ed52",
+            "pos_x": 0,
+            "pos_y": 1
+        },
+        {
+            "puzzle_uuid": "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+            "pos_x": 2,
+            "pos_y": 0
+        },
+        {
+            "puzzle_uuid": "4a335d95-00cf-4d3a-85c5-f44e7c4ef65b",
+            "pos_x": 1,
+            "pos_y": 1
+        },
+        {
+            "puzzle_uuid": "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+            "pos_x": 0,
+            "pos_y": 2
+        },
+        {
+            "puzzle_uuid": "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+            "pos_x": 3,
+            "pos_y": 0
+        },
+        {
+            "puzzle_uuid": "6e0c1e91-7258-4058-9a2b-a4ed202bf925",
+            "pos_x": 2,
+            "pos_y": 1
+        },
+        {
+            "puzzle_uuid": "ca3299e4-bf71-4cf6-8b9c-cb6a6d8e5792",
+            "pos_x": 1,
+            "pos_y": 2 
+        },
+        {
+            "puzzle_uuid": "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+            "pos_x": 0,
+            "pos_y": 3
+        },
+        {
+            
         }
     ]
 }
