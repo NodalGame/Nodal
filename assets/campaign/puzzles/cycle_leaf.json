@@ -1,0 +1,29 @@
+{
+    "uuid": "0cac6c54-ff61-4eb2-b766-722c920db47c",
+    "name": "Cycle & Leaf",
+    "width": 2,
+    "height": 2,
+    "nodes": [
+        {
+            "id": 0,
+            "conditions": [],
+            "connected_conditions": []
+        },
+        {
+            "id": 1,
+            "conditions": ["Cycle"],
+            "connected_conditions": []
+        },
+        {
+            "id": 2,
+            "conditions": ["Leaf"],
+            "connected_conditions": []
+        },
+        {
+            "id": 3,
+            "conditions": [],
+            "connected_conditions": []
+        }
+    ],
+    "sets": []
+}
