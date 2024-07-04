@@ -53,7 +53,24 @@
             "pos_y": 3
         },
         {
-            
+            "puzzle_uuid": "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+            "pos_x": 4,
+            "pos_y": 0
+        },
+        {
+            "puzzle_uuid": "0cac6c54-ff61-4eb2-b766-722c920db47c",
+            "pos_x": 3,
+            "pos_y": 1
+        },
+        {
+            "puzzle_uuid": "7a06d4bf-1548-444a-b46b-042bc693512b",
+            "pos_x": 2,
+            "pos_y": 2
+        },
+        {
+            "puzzle_uuid": "746afa9b-3e89-49a3-993d-79a4f681fc5c",
+            "pos_x": 1,
+            "pos_y": 3
         }
     ]
 }
