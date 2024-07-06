@@ -111,7 +111,7 @@ mod tests {
             connected_set_rule::connected_set_rule::{ConnectedSetRule, RuleClass},
             game_line::game_line::GameLine,
             game_set::game_set::GameSet,
-            solution::{solution::Solution},
+            solution::solution::Solution,
         },
     };
 

@@ -7,7 +7,7 @@ pub mod node_condition {
         logic::condition_checks::condition_checks::{is_branch_equal, is_leaf},
         structs::immutable::{
             game_node::game_node::GameNode,
-            solution::solution::{Solution},
+            solution::solution::Solution,
         },
         CDTN_RULE_SPRITE_SIZE, COLOR_CDTN_UNSAT,
     };
@@ -23,6 +23,10 @@ pub mod node_condition {
         BranchEqual, 
         /// This node has only one line connected to it.
         Leaf, 
+        /// This node must have at least two lines connected to it.
+        Internal,
+        /// This node must be contained within a cycle. 
+        Cycle,
     }
 
     impl NodeCondition {
@@ -42,6 +46,8 @@ pub mod node_condition {
                 // NodeCondition::Leaf(bounded) => is_leaf(node, solution),
                 NodeCondition::BranchEqual => is_branch_equal(node, solution),
                 NodeCondition::Leaf => is_leaf(node, solution),
+                NodeCondition::Internal => todo!(),
+                NodeCondition::Cycle => todo!(),
             }
         }
     }

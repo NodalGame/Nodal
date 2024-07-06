@@ -6,6 +6,8 @@ pub mod texture {
 
         CdtnBranchEqual,
         CdtnLeaf,
+        CdtnInternal,
+        CdtnCycle,
 
         CdtnDegreeEqual,
 
@@ -78,6 +80,8 @@ pub mod texture {
 
                 Texture::CdtnBranchEqual => "../assets/textures/sprites/CDTN_BRANCH_EQUAL.png",
                 Texture::CdtnLeaf => "../assets/textures/sprites/CDTN_LEAF.png",
+                Texture::CdtnInternal => "../assets/textures/sprites/CDTN_INTERNAL.png",
+                Texture::CdtnCycle => "../assets/textures/sprites/CDTN_CYCLE.png",
 
                 Texture::CdtnDegreeEqual => "../assets/textures/sprites/CDTN_DEGREE_EQUAL.png",
 

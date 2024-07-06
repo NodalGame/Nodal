@@ -108,7 +108,7 @@ pub mod menu {
                             align_items: AlignItems::Center,
                             ..default()
                         },
-                        background_color: Color::CRIMSON.into(),
+                        background_color: Color::BLACK.into(),
                         ..default()
                     })
                     .with_children(|parent| {
@@ -219,7 +219,7 @@ pub mod menu {
                             align_items: AlignItems::Center,
                             ..default()
                         },
-                        background_color: Color::CYAN.into(),
+                        background_color: Color::BLACK.into(),
                         ..default()
                     })
                     .with_children(|parent| {
@@ -274,7 +274,7 @@ pub mod menu {
                             align_items: AlignItems::Center,
                             ..default()
                         },
-                        background_color: Color::CRIMSON.into(),
+                        background_color: Color::BLACK.into(),
                         ..default()
                     })
                     .with_children(|parent| {
@@ -324,7 +324,7 @@ pub mod menu {
                 match menu_button_action {
                     // TODO remove this if it is going to be webapp
                     MenuButtonAction::Quit => {
-                        app_exit_events.send(AppExit);
+                        app_exit_events.send(AppExit::Success);
                     }
                     MenuButtonAction::SubMenu => {
                         menu_state.set(MenuState::SubMenu);

@@ -18,7 +18,7 @@
             "pos_y": 1
         },
         {
-            "puzzle_uuid": "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+            "puzzle_uuid": "ffffffffffffffffffffffffffffffff",
             "pos_x": 2,
             "pos_y": 0
         },
@@ -28,12 +28,12 @@
             "pos_y": 1
         },
         {
-            "puzzle_uuid": "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+            "puzzle_uuid": "ffffffffffffffffffffffffffffffff",
             "pos_x": 0,
             "pos_y": 2
         },
         {
-            "puzzle_uuid": "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+            "puzzle_uuid": "ffffffffffffffffffffffffffffffff",
             "pos_x": 3,
             "pos_y": 0
         },
@@ -48,12 +48,12 @@
             "pos_y": 2 
         },
         {
-            "puzzle_uuid": "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+            "puzzle_uuid": "ffffffffffffffffffffffffffffffff",
             "pos_x": 0,
             "pos_y": 3
         },
         {
-            "puzzle_uuid": "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+            "puzzle_uuid": "ffffffffffffffffffffffffffffffff",
             "pos_x": 4,
             "pos_y": 0
         },

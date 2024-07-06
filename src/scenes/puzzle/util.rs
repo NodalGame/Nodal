@@ -1,9 +1,9 @@
 use std::f32::consts::PI;
 
-use bevy::{asset::{AssetServer, Handle}, math::Vec2, prelude::default, render::{color::Color, texture::Image}, sprite::{Sprite, SpriteBundle}, transform::components::Transform};
+use bevy::{asset::{AssetServer, Handle}, math::Vec2, prelude::default, color::Color, render::texture::Image, sprite::{Sprite, SpriteBundle}, transform::components::Transform};
 use tracing::error;
 
-use crate::{get_node_down, get_node_down_left, get_node_down_right, get_node_left, get_node_right, get_node_up, get_node_up_left, get_node_up_right, get_set_order, get_sets_containing_node, is_bottom_edge, is_left_edge, is_right_edge, is_top_edge, node_to_position, structs::{active::active_node::active_node::ActiveNode, immutable::{game_node::game_node::GameNodeId, game_set::game_set::GameSet, puzzle::puzzle::Puzzle}}, texture::Texture, BG_SET_SPRITE_SIZE, COLOR_SET_0, COLOR_SET_1, COLOR_SET_2, SPRITE_SPACING, TILE_NODE_SPRITE_SIZE, Z_BACKGROUND, Z_SET_FILL};
+use crate::{get_node_down, get_node_down_left, get_node_down_right, get_node_left, get_node_right, get_node_up, get_node_up_left, get_node_up_right, get_set_order, get_sets_containing_node, is_bottom_edge, is_left_edge, is_right_edge, is_top_edge, node_to_position, structs::{active::active_node::active_node::ActiveNode, immutable::{game_node::game_node::GameNodeId, game_set::game_set::GameSet, puzzle::puzzle::Puzzle}}, texture::Texture, BG_SET_SPRITE_SIZE, COLOR_SET_0, COLOR_SET_1, COLOR_SET_2, COLOR_SET_BORDER, SPRITE_SPACING, TILE_NODE_SPRITE_SIZE, Z_BACKGROUND, Z_SET_FILL};
 
 /// Returns a background tile as a sprite bundle.
 ///
@@ -179,6 +179,15 @@ pub fn get_line_texture(
     }
 }
 
+/// Returns the set border sprite (not the texture). 
+fn set_border_sprite() -> Sprite {
+    Sprite {
+        custom_size: Some(Vec2::new(TILE_NODE_SPRITE_SIZE, TILE_NODE_SPRITE_SIZE)),
+        color: COLOR_SET_BORDER,
+        ..Default::default()
+    }
+}
+
 /// Returns a vector of sprite bundles for vertical edge set tiles using one node
 /// as the focal point. It is responsible for generating appropriate set tiles to
 /// the immediate left, right, up left, and up right of the node.
@@ -214,11 +223,7 @@ fn get_set_tiles_vertical(
     if is_left_edge(node, puzzle) || !set.nodes.contains(&node_left) {
         vertical_tiles.push(SpriteBundle {
             texture: tex_set_tile_vertical.clone(),
-            sprite: Sprite {
-                custom_size: Some(Vec2::new(TILE_NODE_SPRITE_SIZE, TILE_NODE_SPRITE_SIZE)),
-                color: Color::GREEN,
-                ..Default::default()
-            },
+            sprite: set_border_sprite(),
             transform: Transform::from_xyz(node_x - SPRITE_SPACING, node_y, 0.0),
             ..default()
         })
@@ -228,11 +233,7 @@ fn get_set_tiles_vertical(
     if is_right_edge(node, puzzle) || !set.nodes.contains(&node_right) {
         vertical_tiles.push(SpriteBundle {
             texture: tex_set_tile_vertical.clone(),
-            sprite: Sprite {
-                custom_size: Some(Vec2::new(TILE_NODE_SPRITE_SIZE, TILE_NODE_SPRITE_SIZE)),
-                color: Color::GREEN,
-                ..Default::default()
-            },
+            sprite: set_border_sprite(),
             transform: Transform::from_xyz(node_x + SPRITE_SPACING, node_y, 0.0),
             ..default()
         });
@@ -249,11 +250,7 @@ fn get_set_tiles_vertical(
         {
             vertical_tiles.push(SpriteBundle {
                 texture: tex_set_tile_vertical.clone(),
-                sprite: Sprite {
-                    custom_size: Some(Vec2::new(TILE_NODE_SPRITE_SIZE, TILE_NODE_SPRITE_SIZE)),
-                    color: Color::GREEN,
-                    ..Default::default()
-                },
+                sprite: set_border_sprite(),
                 transform: Transform::from_xyz(
                     node_x - SPRITE_SPACING,
                     node_y + SPRITE_SPACING,
@@ -271,11 +268,7 @@ fn get_set_tiles_vertical(
         {
             vertical_tiles.push(SpriteBundle {
                 texture: tex_set_tile_vertical.clone(),
-                sprite: Sprite {
-                    custom_size: Some(Vec2::new(TILE_NODE_SPRITE_SIZE, TILE_NODE_SPRITE_SIZE)),
-                    color: Color::GREEN,
-                    ..Default::default()
-                },
+                sprite: set_border_sprite(),
                 transform: Transform::from_xyz(
                     node_x + SPRITE_SPACING,
                     node_y + SPRITE_SPACING,
@@ -325,11 +318,7 @@ fn get_set_tiles_horizontal(
     if is_top_edge(node, &puzzle) || !set.nodes.contains(&node_up) {
         horizontal_tiles.push(SpriteBundle {
             texture: tex_set_tile_horizontal.clone(),
-            sprite: Sprite {
-                custom_size: Some(Vec2::new(TILE_NODE_SPRITE_SIZE, TILE_NODE_SPRITE_SIZE)),
-                color: Color::GREEN,
-                ..Default::default()
-            },
+            sprite: set_border_sprite(),
             transform: Transform::from_xyz(node_x, node_y + SPRITE_SPACING, 0.0),
             ..default()
         });
@@ -340,11 +329,7 @@ fn get_set_tiles_horizontal(
     if is_bottom_edge(node, &puzzle) || !set.nodes.contains(&node_down) {
         horizontal_tiles.push(SpriteBundle {
             texture: tex_set_tile_horizontal.clone(),
-            sprite: Sprite {
-                custom_size: Some(Vec2::new(TILE_NODE_SPRITE_SIZE, TILE_NODE_SPRITE_SIZE)),
-                color: Color::GREEN,
-                ..Default::default()
-            },
+            sprite: set_border_sprite(),
             transform: Transform::from_xyz(node_x, node_y - SPRITE_SPACING, 0.0),
             ..default()
         });
@@ -361,11 +346,7 @@ fn get_set_tiles_horizontal(
         {
             horizontal_tiles.push(SpriteBundle {
                 texture: tex_set_tile_horizontal.clone(),
-                sprite: Sprite {
-                    custom_size: Some(Vec2::new(TILE_NODE_SPRITE_SIZE, TILE_NODE_SPRITE_SIZE)),
-                    color: Color::GREEN,
-                    ..Default::default()
-                },
+                sprite: set_border_sprite(),
                 transform: Transform::from_xyz(
                     node_x + SPRITE_SPACING,
                     node_y + SPRITE_SPACING,
@@ -383,11 +364,7 @@ fn get_set_tiles_horizontal(
         {
             horizontal_tiles.push(SpriteBundle {
                 texture: tex_set_tile_horizontal.clone(),
-                sprite: Sprite {
-                    custom_size: Some(Vec2::new(TILE_NODE_SPRITE_SIZE, TILE_NODE_SPRITE_SIZE)),
-                    color: Color::GREEN,
-                    ..Default::default()
-                },
+                sprite: set_border_sprite(),
                 transform: Transform::from_xyz(
                     node_x + SPRITE_SPACING,
                     node_y - SPRITE_SPACING,
@@ -437,11 +414,7 @@ fn get_set_tiles_bottom_right(
     if !set.nodes.contains(&node_down) && !set.nodes.contains(&node_right) {
         bottom_right_tiles.push(SpriteBundle {
             texture: tex_set_tile_bottom_right.clone(),
-            sprite: Sprite {
-                custom_size: Some(Vec2::new(TILE_NODE_SPRITE_SIZE, TILE_NODE_SPRITE_SIZE)),
-                color: Color::GREEN,
-                ..Default::default()
-            },
+            sprite: set_border_sprite(),
             transform: Transform::from_xyz(node_x + SPRITE_SPACING, node_y - SPRITE_SPACING, 0.0),
             ..default()
         });
@@ -456,11 +429,7 @@ fn get_set_tiles_bottom_right(
     {
         bottom_right_tiles.push(SpriteBundle {
             texture: tex_set_tile_bottom_right.clone(),
-            sprite: Sprite {
-                custom_size: Some(Vec2::new(TILE_NODE_SPRITE_SIZE, TILE_NODE_SPRITE_SIZE)),
-                color: Color::GREEN,
-                ..Default::default()
-            },
+            sprite: set_border_sprite(),
             transform: Transform::from_xyz(node_x - SPRITE_SPACING, node_y + SPRITE_SPACING, 0.0),
             ..default()
         });
@@ -505,11 +474,7 @@ fn get_set_tiles_bottom_left(
     if !set.nodes.contains(&node_down) && !set.nodes.contains(&node_left) {
         bottom_left_tiles.push(SpriteBundle {
             texture: tex_set_tile_bottom_left.clone(),
-            sprite: Sprite {
-                custom_size: Some(Vec2::new(TILE_NODE_SPRITE_SIZE, TILE_NODE_SPRITE_SIZE)),
-                color: Color::GREEN,
-                ..Default::default()
-            },
+            sprite: set_border_sprite(),
             transform: Transform::from_xyz(node_x - SPRITE_SPACING, node_y - SPRITE_SPACING, 0.0),
             ..default()
         });
@@ -524,11 +489,7 @@ fn get_set_tiles_bottom_left(
     {
         bottom_left_tiles.push(SpriteBundle {
             texture: tex_set_tile_bottom_left.clone(),
-            sprite: Sprite {
-                custom_size: Some(Vec2::new(TILE_NODE_SPRITE_SIZE, TILE_NODE_SPRITE_SIZE)),
-                color: Color::GREEN,
-                ..Default::default()
-            },
+            sprite: set_border_sprite(),
             transform: Transform::from_xyz(node_x + SPRITE_SPACING, node_y + SPRITE_SPACING, 0.0),
             ..default()
         });
@@ -573,11 +534,7 @@ fn get_set_tiles_top_right(
     if !set.nodes.contains(&node_up) && !set.nodes.contains(&node_right) {
         top_right_tiles.push(SpriteBundle {
             texture: tex_set_tile_top_right.clone(),
-            sprite: Sprite {
-                custom_size: Some(Vec2::new(TILE_NODE_SPRITE_SIZE, TILE_NODE_SPRITE_SIZE)),
-                color: Color::GREEN,
-                ..Default::default()
-            },
+            sprite: set_border_sprite(),
             transform: Transform::from_xyz(node_x + SPRITE_SPACING, node_y + SPRITE_SPACING, 0.0),
             ..default()
         });
@@ -592,11 +549,7 @@ fn get_set_tiles_top_right(
     {
         top_right_tiles.push(SpriteBundle {
             texture: tex_set_tile_top_right.clone(),
-            sprite: Sprite {
-                custom_size: Some(Vec2::new(TILE_NODE_SPRITE_SIZE, TILE_NODE_SPRITE_SIZE)),
-                color: Color::GREEN,
-                ..Default::default()
-            },
+            sprite: set_border_sprite(),
             transform: Transform::from_xyz(node_x - SPRITE_SPACING, node_y - SPRITE_SPACING, 0.0),
             ..default()
         });
@@ -643,7 +596,7 @@ fn get_set_tiles_top_left(
             texture: tex_set_tile_top_left.clone(),
             sprite: Sprite {
                 custom_size: Some(Vec2::new(TILE_NODE_SPRITE_SIZE, TILE_NODE_SPRITE_SIZE)),
-                color: Color::GREEN,
+                color: COLOR_SET_BORDER,
                 ..Default::default()
             },
             transform: Transform::from_xyz(node_x - SPRITE_SPACING, node_y + SPRITE_SPACING, 0.0),
@@ -660,11 +613,7 @@ fn get_set_tiles_top_left(
     {
         top_left_tiles.push(SpriteBundle {
             texture: tex_set_tile_top_left.clone(),
-            sprite: Sprite {
-                custom_size: Some(Vec2::new(TILE_NODE_SPRITE_SIZE, TILE_NODE_SPRITE_SIZE)),
-                color: Color::GREEN,
-                ..Default::default()
-            },
+            sprite: set_border_sprite(),
             transform: Transform::from_xyz(node_x + SPRITE_SPACING, node_y - SPRITE_SPACING, 0.0),
             ..default()
         });
@@ -673,6 +622,18 @@ fn get_set_tiles_top_left(
     top_left_tiles
 }
 
+/// Returns the appropriate texture for a set tile behind a given node. The reason for this is that overlapping
+/// sets need to be distinguished by interlaced colors with sprites that match that offset. 
+/// 
+/// # Parameters
+/// 
+/// `set`: The game set to which the texture belongs. 
+/// `node_id`: The id of the game node which the texture will live behind.
+/// `sets`: The other overlapping game sets at this node. 
+/// 
+/// # Returns
+/// 
+/// A Texture for the set tile. 
 fn get_texture_for_set_tile_at_node(
     set: GameSet,
     node_id: GameNodeId,
@@ -701,6 +662,16 @@ fn get_texture_for_set_tile_at_node(
     }
 }
 
+/// Returns the appropriate color for a set tile. The color is determined in order by its ID. 
+/// 
+/// # Parameters
+/// 
+/// - `set`: The game set to which the returned color belongs. 
+/// - `sets`: All sets in the puzzle. 
+/// 
+/// # Returns
+/// 
+/// The Color for the set tiles. 
 pub fn get_color_for_set_tile(
     set: GameSet,
     sets: Vec<GameSet>
@@ -717,6 +688,17 @@ pub fn get_color_for_set_tile(
     }
 }
 
+/// Returns the colored background tiles for a set. 
+/// 
+/// # Parameters
+/// 
+/// - `set`: The game set for the tiles. 
+/// - `puzzle`: The puzzle in which the set lives. 
+/// - `asset_server`: The asset server used to load textures.
+/// 
+/// # Returns
+/// 
+/// A vector of SpriteBundles. 
 fn get_set_bg_tiles(
     set: &GameSet,
     puzzle: &Puzzle,

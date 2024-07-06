@@ -2,31 +2,17 @@ pub mod scene {
     use std::process::exit;
 
     use bevy::{
-        app::{App, Update},
-        asset::AssetServer,
-        ecs::{
+        app::{App, Update}, asset::AssetServer, ecs::{
             component::Component,
             entity::Entity,
             event::{Event, EventReader, EventWriter},
             query::{Changed, With},
-            schedule::{
-                common_conditions::in_state, IntoSystemConfigs, NextState, OnEnter, OnExit,
-            },
             system::{Commands, Query, Res, ResMut, Resource},
-        },
-        hierarchy::BuildChildren,
-        input::{mouse::MouseButton, ButtonInput},
-        math::{Vec2, Vec3},
-        render::{camera::Camera, color::Color},
-        sprite::{Sprite, SpriteBundle},
-        transform::components::{GlobalTransform, Transform},
-        ui::{
+        }, hierarchy::BuildChildren, input::{mouse::MouseButton, ButtonInput}, math::{Vec2, Vec3}, prelude::IntoSystemConfigs, render::camera::Camera, sprite::{Sprite, SpriteBundle}, state::{condition::in_state, state::{NextState, OnEnter, OnExit}}, transform::components::{GlobalTransform, Transform}, ui::{
             node_bundles::{ButtonBundle, NodeBundle},
             widget::Button,
             AlignItems, Interaction, JustifyContent, Style, UiImage, Val,
-        },
-        utils::HashMap,
-        window::{PrimaryWindow, Window},
+        }, utils::HashMap, window::{PrimaryWindow, Window}
     };
     use tokio::runtime::Runtime;
     use tracing::error;
@@ -139,6 +125,8 @@ pub mod scene {
         // Load condition textures
         let tex_cdtn_branch_equal = asset_server.load(Texture::CdtnBranchEqual.path());
         let tex_cdtn_leaf = asset_server.load(Texture::CdtnLeaf.path());
+        let tex_cdtn_internal = asset_server.load(Texture::CdtnInternal.path());
+        let tex_cdtn_cycle = asset_server.load(Texture::CdtnCycle.path());
         let tex_cdtn_degree_equal = asset_server.load(Texture::CdtnDegreeEqual.path());
 
         // Load set rule textures
@@ -197,6 +185,8 @@ pub mod scene {
                     let condition_texture = match condition {
                         NodeCondition::BranchEqual => tex_cdtn_branch_equal.clone(),
                         NodeCondition::Leaf => tex_cdtn_leaf.clone(),
+                        NodeCondition::Internal => tex_cdtn_internal.clone(),
+                        NodeCondition::Cycle => tex_cdtn_cycle.clone(),
                     };
 
                     let condition_sprite = SpriteBundle {
@@ -378,7 +368,7 @@ pub mod scene {
                     texture: tex_rule_box.clone(),
                     sprite: Sprite {
                         custom_size: Some(Vec2::new(CDTN_RULE_SPRITE_SIZE, CDTN_RULE_SPRITE_SIZE)),
-                        color: get_color_for_set_tile(set.clone(), puzzle_sets.clone()), // TODO assign colors to sets and match
+                        color: get_color_for_set_tile(set.clone(), puzzle_sets.clone()), 
                         ..Default::default()
                     },
                     transform: Transform::from_xyz(transform_x, transform_y, Z_SET_RULE_BOX),
@@ -422,7 +412,7 @@ pub mod scene {
                     texture: tex_rule_box.clone(),
                     sprite: Sprite {
                         custom_size: Some(Vec2::new(CDTN_RULE_SPRITE_SIZE, CDTN_RULE_SPRITE_SIZE)),
-                        color: Color::BLACK, // TODO assign colors to sets and match
+                        color: get_color_for_set_tile(set.clone(), puzzle_sets.clone()), 
                         ..Default::default()
                     },
                     transform: Transform::from_xyz(transform_x, transform_y, Z_SET_RULE_BOX),

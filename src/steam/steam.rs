@@ -1,8 +1,5 @@
 pub mod steam {
-    use bevy::prelude::Res;
-    use bevy_steamworks::Client;
-
-    pub fn steam_system(_steam_client: Res<Client>) {
-        // TODO do something with steam
-    }
+    // pub fn steam_system(_steam_client: Res<Client>) { // TODO once steam integration seems to work for 0.14 put back
+    //     // TODO do something with steam
+    // }
 }

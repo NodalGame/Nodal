@@ -10,7 +10,6 @@ pub mod backend;
 pub mod logic;
 use bevy::window::WindowMode;
 
-use bevy_steamworks::SteamworksPlugin;
 use logic::puzzle_manager::*;
 use logic::util::*;
 
@@ -24,7 +23,6 @@ use scenes::puzzle::scene::scene::puzzle_plugin;
 use scenes::splash::splash::*;
 
 pub mod ui;
-use steam::steam::steam::steam_system;
 use tracing::subscriber::set_global_default;
 use tracing::Level;
 use tracing_subscriber::FmtSubscriber;
@@ -71,7 +69,7 @@ fn main() {
         // Create a new api caller to interface with backend
         .insert_resource(api::NodalApi::new())
         // Adds the steamworks plugin (needs to be before Default for RenderPlugin)
-        .add_plugins(SteamworksPlugin::init_app(3063380).unwrap())
+        // .add_plugins(SteamworksPlugin::init_app(3063380).unwrap()) // TODO once steam integration seems to work for 0.14 put back
         .add_plugins(DefaultPlugins.set(
             WindowPlugin {
                 primary_window: Option::from(Window {
@@ -87,7 +85,8 @@ fn main() {
         .insert_resource(ClearColor(Color::WHITE))
         // Declare the game state, whose starting value is determined by the `Default` trait
         .init_state::<AppState>()
-        .add_systems(Startup, (setup, steam_system))
+        .add_systems(Startup, setup)
+        // .add_systems(Startup, steam_system) // TODO once steam integration seems to work for 0.14 put back
         .add_systems(Update, buttons::button_system)
         // Adds the plugins for each state
         .add_plugins((splash_plugin, menu_plugin, campaign_plugin, puzzle_plugin))

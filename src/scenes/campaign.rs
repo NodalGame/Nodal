@@ -1,28 +1,14 @@
 pub mod campaign {
     use bevy::{
-        app::{App, Update},
-        asset::AssetServer,
-        ecs::{
+        app::{App, Update}, asset::AssetServer, ecs::{
             component::Component,
             query::{Changed, With},
-            schedule::{
-                common_conditions::in_state, IntoSystemConfigs, NextState, OnEnter, OnExit,
-            },
             system::{Commands, Query, Res, ResMut, Resource},
-        },
-        hierarchy::BuildChildren,
-        input::{mouse::MouseButton, ButtonInput},
-        math::{Vec2, Vec3},
-        render::camera::Camera,
-        sprite::{Sprite, SpriteBundle},
-        transform::components::{GlobalTransform, Transform},
-        ui::{
+        }, hierarchy::BuildChildren, input::{mouse::MouseButton, ButtonInput}, math::{Vec2, Vec3}, prelude::IntoSystemConfigs, render::camera::Camera, sprite::{Sprite, SpriteBundle}, state::{condition::in_state, state::{NextState, OnEnter, OnExit}}, transform::components::{GlobalTransform, Transform}, ui::{
             node_bundles::{ButtonBundle, NodeBundle},
             widget::Button,
             AlignItems, Interaction, JustifyContent, Style, UiImage, Val,
-        },
-        utils::default,
-        window::{PrimaryWindow, Window},
+        }, utils::default, window::{PrimaryWindow, Window}
     };
     use serde::Deserialize;
     use uuid::Uuid;
@@ -69,11 +55,9 @@ pub mod campaign {
 
     #[derive(Deserialize, Debug)]
     pub struct CampaignPuzzle {
-        pub id: u16,
         pub puzzle_uuid: Uuid,
         pub pos_x: u8,
         pub pos_y: u8,
-        pub unlocks: Vec<u16>,
     }
 
     // Tag component used to tag entities added on the campaign scene
