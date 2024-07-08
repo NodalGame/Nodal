@@ -38,7 +38,7 @@ pub mod active_set_rule {
         fn set_satisfied(&mut self, value: bool) {
             self.satisfied = value;
         }
-        
+
         fn update_sprites(&mut self, sprites: Vec<&mut Sprite>) {
             for sprite in sprites {
                 sprite.color = if self.satisfied {

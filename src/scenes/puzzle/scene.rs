@@ -2,39 +2,77 @@ pub mod scene {
     use std::process::exit;
 
     use bevy::{
-        app::{App, Update}, asset::AssetServer, ecs::{
+        app::{App, Update},
+        asset::AssetServer,
+        ecs::{
             component::Component,
             entity::Entity,
             event::{Event, EventReader, EventWriter},
             query::{Changed, With},
             system::{Commands, Query, Res, ResMut, Resource},
-        }, hierarchy::BuildChildren, input::{mouse::MouseButton, ButtonInput}, math::{Vec2, Vec3}, prelude::IntoSystemConfigs, render::camera::Camera, sprite::{Sprite, SpriteBundle}, state::{condition::in_state, state::{NextState, OnEnter, OnExit}}, transform::components::{GlobalTransform, Transform}, ui::{
+        },
+        hierarchy::BuildChildren,
+        input::{mouse::MouseButton, ButtonInput},
+        math::{Vec2, Vec3},
+        prelude::IntoSystemConfigs,
+        render::camera::Camera,
+        sprite::{Sprite, SpriteBundle},
+        state::{
+            condition::in_state,
+            state::{NextState, OnEnter, OnExit},
+        },
+        transform::components::{GlobalTransform, Transform},
+        ui::{
             node_bundles::{ButtonBundle, NodeBundle},
             widget::Button,
             AlignItems, Interaction, JustifyContent, Style, UiImage, Val,
-        }, utils::HashMap, window::{PrimaryWindow, Window}
+        },
+        utils::HashMap,
+        window::{PrimaryWindow, Window},
     };
-    use tokio::runtime::Runtime;
-    use tracing::error;
 
     use crate::{
-        backend::api::api::NodalApi, buttons::icon_button_style, clicked_on_sprite, despawn_screen, get_all_satisfied_states, get_cursor_world_position, logic::puzzle::tile_placement::tile_placement::get_set_upper_left_node, node_to_position, puzzle_manager::PuzzleManager, scenes::puzzle::util::{get_color_for_set_tile, get_line_texture, get_set_tiles}, structs::{
+        buttons::icon_button_style,
+        clicked_on_sprite, despawn_screen, get_all_satisfied_states, get_cursor_world_position,
+        logic::{
+            puzzle::{
+                solution_check::solution_check::is_puzzle_solved,
+                tile_placement::tile_placement::get_set_upper_left_node,
+            },
+            save_data_manager::save_data_manager::{load_progress, save_progress, PuzzleSaveData},
+        },
+        node_to_position,
+        puzzle_manager::PuzzleManager,
+        scenes::puzzle::util::{
+            add_line, get_color_for_set_tile, get_line_texture, get_mut_start_end_nodes,
+            get_set_tiles, remove_line, unload_active_elements,
+        },
+        structs::{
             active::{
                 active_connected_node_condition::active_connected_node_condition::ActiveConnectedNodeCondition,
                 active_connected_set_rule::active_connected_set_rule::ActiveConnectedSetRule,
                 active_identifier::active_identifier::ActiveIdentifier,
-                active_line::active_line::ActiveLine, active_node::active_node::ActiveNode,
+                active_line::{self, active_line::ActiveLine},
+                active_node::active_node::ActiveNode,
                 active_node_condition::active_node_condition::ActiveNodeCondition,
-                active_set::active_set::ActiveSet, active_set_rule::active_set_rule::ActiveSetRule,
+                active_set::active_set::ActiveSet,
+                active_set_rule::active_set_rule::ActiveSetRule,
                 traits::traits::Satisfiable,
             },
             immutable::{
                 connected_node_condition::connected_node_condition::ConnectedNodeCondition,
                 connected_set_rule::connected_set_rule::ConnectedSetRule,
-                game_node::game_node::GameNodeId, node_condition::node_condition::NodeCondition,
+                game_line::game_line::GameLine,
+                game_node::game_node::GameNodeId,
+                node_condition::node_condition::NodeCondition,
                 set_rule::set_rule::SetRule,
+                solution::solution::{active_nodes_to_solution, Solution},
             },
-        }, texture::Texture, AppState, MainCamera, SelectedPuzzle, CDTN_RULE_SPRITE_SIZE, COLOR_NODE_UNSAT, INTERNAL_SPACING_X, INTERNAL_SPACING_Y, SPRITE_SPACING, STACK_CDTN_RULE_SPACING, TILE_NODE_SPRITE_SIZE, Z_LINE, Z_RULE_CDTN_NODE, Z_SET_RULE_BOX
+        },
+        texture::Texture,
+        AppState, MainCamera, SelectedPuzzle, CDTN_RULE_SPRITE_SIZE, COLOR_NODE_UNSAT,
+        INTERNAL_SPACING_X, INTERNAL_SPACING_Y, SPRITE_SPACING, STACK_CDTN_RULE_SPACING,
+        TILE_NODE_SPRITE_SIZE, Z_LINE, Z_RULE_CDTN_NODE, Z_SET_RULE_BOX,
     };
 
     // This plugin will contain a playable puzzle.
@@ -84,7 +122,7 @@ pub mod scene {
 
     // Tag component used to tag entities added on the puzzle scene
     #[derive(Component)]
-    struct OnPuzzleScene;
+    pub struct OnPuzzleScene;
 
     // Tag component used to tag entities added on the UI of the puzzle screen
     #[derive(Component)]
@@ -104,6 +142,8 @@ pub mod scene {
         puzzle_manager: Res<PuzzleManager>,
         mut active_nodes: ResMut<ActiveNodes>,
         mut active_sets: ResMut<ActiveSets>,
+        mut active_lines: ResMut<ActiveLines>,
+        mut event_writer: EventWriter<UpdateSatisfiedStates>,
         // Query to get camera transform
         mut q_camera: Query<&mut Transform, With<MainCamera>>,
     ) {
@@ -364,16 +404,21 @@ pub mod scene {
                 let transform_y = node_y + TILE_NODE_SPRITE_SIZE
                     - INTERNAL_SPACING_Y
                     - total_rule_idx as f32 * (CDTN_RULE_SPRITE_SIZE + STACK_CDTN_RULE_SPACING);
-                commands.spawn(SpriteBundle {
-                    texture: tex_rule_box.clone(),
-                    sprite: Sprite {
-                        custom_size: Some(Vec2::new(CDTN_RULE_SPRITE_SIZE, CDTN_RULE_SPRITE_SIZE)),
-                        color: get_color_for_set_tile(set.clone(), puzzle_sets.clone()), 
+                commands
+                    .spawn(SpriteBundle {
+                        texture: tex_rule_box.clone(),
+                        sprite: Sprite {
+                            custom_size: Some(Vec2::new(
+                                CDTN_RULE_SPRITE_SIZE,
+                                CDTN_RULE_SPRITE_SIZE,
+                            )),
+                            color: get_color_for_set_tile(set.clone(), puzzle_sets.clone()),
+                            ..Default::default()
+                        },
+                        transform: Transform::from_xyz(transform_x, transform_y, Z_SET_RULE_BOX),
                         ..Default::default()
-                    },
-                    transform: Transform::from_xyz(transform_x, transform_y, Z_SET_RULE_BOX),
-                    ..Default::default()
-                }).insert(OnPuzzleScene);
+                    })
+                    .insert(OnPuzzleScene);
                 let rule_sprite = SpriteBundle {
                     texture: rule_texture,
                     sprite: rule.sprite().clone(),
@@ -412,7 +457,7 @@ pub mod scene {
                     texture: tex_rule_box.clone(),
                     sprite: Sprite {
                         custom_size: Some(Vec2::new(CDTN_RULE_SPRITE_SIZE, CDTN_RULE_SPRITE_SIZE)),
-                        color: get_color_for_set_tile(set.clone(), puzzle_sets.clone()), 
+                        color: get_color_for_set_tile(set.clone(), puzzle_sets.clone()),
                         ..Default::default()
                     },
                     transform: Transform::from_xyz(transform_x, transform_y, Z_SET_RULE_BOX),
@@ -452,6 +497,37 @@ pub mod scene {
                 sprites: set_tiles,
                 sprite_entity_ids: set_sprite_entity_ids,
             });
+        }
+
+        // Load progress on puzzle if exists
+        let puzzle_save_data: Option<PuzzleSaveData> = load_progress(puzzle.uuid);
+        match puzzle_save_data {
+            Some(data) => {
+                for line in data.solution {
+                    for i in 0..active_nodes.active_nodes.len() {
+                        for j in 0..active_nodes.active_nodes.len() {
+                            if active_nodes.active_nodes[i].node.id == line.node_a_id
+                                && active_nodes.active_nodes[j].node.id == line.node_b_id
+                            {
+                                let (start_node, end_node) =
+                                    get_mut_start_end_nodes(&mut active_nodes.active_nodes, i, j);
+                                add_line(
+                                    &mut commands,
+                                    asset_server.clone(),
+                                    start_node,
+                                    end_node,
+                                    &mut active_lines.lines,
+                                )
+                            }
+                        }
+                    }
+                }
+                event_writer.send(UpdateSatisfiedStates(get_all_satisfied_states(
+                    &active_nodes.active_nodes,
+                    &active_sets.active_sets,
+                )));
+            }
+            None => {}
         }
     }
 
@@ -524,71 +600,20 @@ pub mod scene {
             let start_node = opt_start_node.unwrap();
             let end_node = opt_end_node.unwrap();
 
-            // If start node and end node both have each other as connection, remove the line. 
-            if start_node.connections.contains(&end_node.node.id) && end_node.connections.contains(&start_node.node.id) {
-                if let Some(pos) = start_node.connections.iter().position(|node_id| *node_id == end_node.node.id) {
-                    start_node.connections.remove(pos);
-                }
-                if let Some(pos) = end_node.connections.iter().position(|node_id| *node_id == start_node.node.id) {
-                    end_node.connections.remove(pos);
-                }
-                let first_node = if start_node.node.id < end_node.node.id { start_node.clone() } else { end_node.clone() };
-                let second_node = if start_node.node.id < end_node.node.id { end_node.clone() } else { start_node.clone() };
-                for idx in 0..active_lines.lines.len() {
-                    if active_lines.lines[idx].start_node.node.id == first_node.node.id &&
-                        active_lines.lines[idx].end_node.node.id == second_node.node.id {
-                            commands.entity(active_lines.lines[idx].sprite_entity_id).despawn();
-                            active_lines.lines.remove(idx);
-                            break;
-                        }
-                }
-                
+            // If start node and end node both have each other as connection, remove the line.
+            if start_node.connections.contains(&end_node.node.id)
+                && end_node.connections.contains(&start_node.node.id)
+            {
+                remove_line(&mut commands, start_node, end_node, &mut active_lines.lines);
             // Otherwise, add a new line
             } else {
-                let start_pos = start_node.sprite.transform.translation.truncate();
-                let end_pos = end_node.sprite.transform.translation.truncate();
-
-                // Get the appropriate line texture, if exists (otherwise invalid node pair)
-                let line_texture = get_line_texture(start_node, end_node).unwrap_or(&Texture::Missing);
-
-                if *line_texture == Texture::Missing {
-                    return;
-                }
-
-                let line_sprite = SpriteBundle {
-                    texture: asset_server.load(line_texture.path()),
-                    sprite: Sprite {
-                        custom_size: Some(Vec2::new(TILE_NODE_SPRITE_SIZE, TILE_NODE_SPRITE_SIZE)),
-                        ..Default::default()
-                    },
-                    transform: Transform::from_xyz(
-                        (end_pos.x + start_pos.x) / 2.0,
-                        (end_pos.y + start_pos.y) / 2.0,
-                        Z_LINE,
-                    ),
-                    ..Default::default()
-                };
-
-                // Update connections of both start and end node
-                start_node.connections.push(end_node.node.id);
-                end_node.connections.push(start_node.node.id);
-
-                // Add line to the screen
-                let line_entity_id = commands
-                    .spawn(line_sprite.clone())
-                    .insert(OnPuzzleScene)
-                    .id();
-
-                // Update list of lines, putting the smallest ID first.
-                let first_node = if start_node.node.id < end_node.node.id { start_node.clone() } else { end_node.clone() };
-                let second_node = if start_node.node.id < end_node.node.id { end_node.clone() } else { start_node.clone() };
-                active_lines.lines.push(ActiveLine {
-                    start_node: first_node.clone(),
-                    end_node: second_node.clone(),
-                    sprite: line_sprite.clone(),
-                    active_id: ActiveIdentifier::new(),
-                    sprite_entity_id: line_entity_id,
-                });
+                add_line(
+                    &mut commands,
+                    asset_server.clone(),
+                    start_node,
+                    end_node,
+                    &mut active_lines.lines,
+                );
             }
 
             // Regardless if we ended on a node or not, clear the current line
@@ -648,7 +673,8 @@ pub mod scene {
                                 if let Ok(mut sprite) =
                                     q_sprites.get_mut(active_connected_condition.sprite_entity_id)
                                 {
-                                    active_connected_condition.update_sprites(Vec::from([sprite.as_mut()]));
+                                    active_connected_condition
+                                        .update_sprites(Vec::from([sprite.as_mut()]));
                                 }
                             }
                         },
@@ -680,7 +706,8 @@ pub mod scene {
                             if let Ok(mut sprite) =
                                 q_sprites.get_mut(active_connected_set_rule.sprite_entity_id)
                             {
-                                active_connected_set_rule.update_sprites(Vec::from([sprite.as_mut()]));
+                                active_connected_set_rule
+                                    .update_sprites(Vec::from([sprite.as_mut()]));
                             }
                         }
                     },
@@ -689,36 +716,11 @@ pub mod scene {
         }
 
         // If we processed any updates, then check if puzzle was solved
-        // TODO move this to another function
         if processed_update {
-            let mut solved = true;
-            for active_node in active_nodes.active_nodes.iter() {
-                if !active_node.satisfied {
-                    solved = false;
-                }
-                for condition in &active_node.active_conditions {
-                    if !condition.satisfied {
-                        solved = false;
-                    }
-                }
-                for connected_condition in &active_node.active_connected_conditions {
-                    if !connected_condition.satisfied {
-                        solved = false;
-                    }
-                }
-            }
-            for active_set in active_sets.active_sets.iter() {
-                for active_set_rule in &active_set.active_set_rules {
-                    if !active_set_rule.satisfied {
-                        solved = false;
-                    }
-                }
-                for active_connected_set_rule in &active_set.active_connected_set_rules {
-                    if !active_connected_set_rule.satisfied {
-                        solved = false;
-                    }
-                }
-            }
+            let solved = is_puzzle_solved(
+                active_nodes.active_nodes.clone(),
+                active_sets.active_sets.clone(),
+            );
 
             println!("Solved: {}", solved);
         }
@@ -733,39 +735,35 @@ pub mod scene {
         mut active_nodes: ResMut<ActiveNodes>,
         active_sets: Res<ActiveSets>,
         mut active_lines: ResMut<ActiveLines>,
+        puzzle: Res<SelectedPuzzle>,
         _q_sprites: Query<&mut Sprite>,
         mut app_state: ResMut<NextState<AppState>>,
         mut event_writer: EventWriter<UpdateSatisfiedStates>,
-        api: Res<NodalApi>,
+        // api: Res<NodalApi>,
     ) {
         for (interaction, ui_button_action) in &interaction_query {
             if *interaction == Interaction::Pressed {
                 match ui_button_action {
+                    // Delete all lines on screen and connections in active nodes, and update satisfied states
                     PuzzleButtonAction::Reset => {
-                        active_nodes.active_nodes.iter_mut().for_each(|node| {
-                            node.connections.clear();
-                        });
-                        active_lines.lines.iter_mut().for_each(|active_line| {
-                            commands.entity(active_line.sprite_entity_id).despawn();
-                        });
-                        active_lines.lines.clear();
+                        unload_active_elements(&mut commands, &mut active_nodes.active_nodes, &mut active_lines.lines);
                         event_writer.send(UpdateSatisfiedStates(get_all_satisfied_states(
                             &active_nodes.active_nodes,
                             &active_sets.active_sets,
                         )));
 
-                        // TODO remove this once not needed as a reference 
-                        let rt = Runtime::new().unwrap();
-                        rt.block_on(async {
-                            match api.call_test_async().await {
-                                Ok(response) => {
-                                    println!("async test api got response: {}", response.response);
-                                }
-                                Err(err) => {
-                                    error!("Error calling async test api: {}", err);
-                                }
-                            }
-                        });
+                        // TODO remove this once not needed as a reference
+                        // let rt = Runtime::new().unwrap();
+                        // rt.block_on(async {
+                        //     match api.call_test_async().await {
+                        //         Ok(response) => {
+                        //             println!("async test api got response: {}", response.response);
+                        //         }
+                        //         Err(err) => {
+                        //             error!("Error calling async test api: {}", err);
+                        //         }
+                        //     }
+                        // });
 
                         // match api.call_test_blocking() {
                         //     Ok(response) => {
@@ -777,7 +775,16 @@ pub mod scene {
                         // }
                     }
                     PuzzleButtonAction::ReturnToPreviousPage => {
-                        // TODO track previous state before entering puzzle (campaign vs public level select)
+                        // TODO if puzzle was previously solved and is not currently solved, don't save progress
+                        save_progress(
+                            puzzle.uuid,
+                            active_nodes_to_solution(&active_nodes.active_nodes),
+                            is_puzzle_solved(
+                                active_nodes.active_nodes.clone(),
+                                active_sets.active_sets.clone(),
+                            ),
+                        );
+                        unload_active_elements(&mut commands, &mut active_nodes.active_nodes, &mut active_lines.lines);
                         app_state.set(AppState::Campaign);
                     }
                 }

@@ -1,14 +1,30 @@
 pub mod campaign {
     use bevy::{
-        app::{App, Update}, asset::AssetServer, ecs::{
+        app::{App, Update},
+        asset::AssetServer,
+        ecs::{
             component::Component,
             query::{Changed, With},
             system::{Commands, Query, Res, ResMut, Resource},
-        }, hierarchy::BuildChildren, input::{mouse::MouseButton, ButtonInput}, math::{Vec2, Vec3}, prelude::IntoSystemConfigs, render::camera::Camera, sprite::{Sprite, SpriteBundle}, state::{condition::in_state, state::{NextState, OnEnter, OnExit}}, transform::components::{GlobalTransform, Transform}, ui::{
+        },
+        hierarchy::BuildChildren,
+        input::{mouse::MouseButton, ButtonInput},
+        math::{Vec2, Vec3},
+        prelude::IntoSystemConfigs,
+        render::camera::Camera,
+        sprite::{Sprite, SpriteBundle},
+        state::{
+            condition::in_state,
+            state::{NextState, OnEnter, OnExit},
+        },
+        transform::components::{GlobalTransform, Transform},
+        ui::{
             node_bundles::{ButtonBundle, NodeBundle},
             widget::Button,
             AlignItems, Interaction, JustifyContent, Style, UiImage, Val,
-        }, utils::default, window::{PrimaryWindow, Window}
+        },
+        utils::default,
+        window::{PrimaryWindow, Window},
     };
     use serde::Deserialize;
     use uuid::Uuid;

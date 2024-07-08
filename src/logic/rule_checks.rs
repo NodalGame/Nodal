@@ -49,10 +49,8 @@ mod tests {
     use crate::{
         logic::rule_checks::rule_checks::{is_disconnected, is_leaf},
         structs::immutable::{
-            game_line::game_line::GameLine,
-            game_set::game_set::GameSet,
-            set_rule::set_rule::SetRule,
-            solution::{solution::Solution},
+            game_line::game_line::GameLine, game_set::game_set::GameSet,
+            set_rule::set_rule::SetRule, solution::solution::Solution,
         },
     };
 

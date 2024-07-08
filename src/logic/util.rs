@@ -1,13 +1,10 @@
-use std::{
-    collections::{HashMap},
-};
+use std::collections::HashMap;
 
-use bevy::{
-    prelude::*, sprite::SpriteBundle,
-};
+use bevy::{prelude::*, sprite::SpriteBundle};
 
 use crate::{
-    scenes::puzzle::scene::scene::SatisfiedStatesMap, structs::{
+    scenes::puzzle::scene::scene::SatisfiedStatesMap,
+    structs::{
         active::{
             active_identifier::active_identifier::ActiveIdentifier,
             active_node::active_node::ActiveNode, active_set::active_set::ActiveSet,
@@ -20,7 +17,8 @@ use crate::{
             puzzle::puzzle::Puzzle,
             solution::solution::active_nodes_to_solution,
         },
-    }, SPRITE_SPACING
+    },
+    SPRITE_SPACING,
 };
 
 pub fn is_left_edge(node: &u16, puzzle: &Puzzle) -> bool {
@@ -263,10 +261,7 @@ pub fn get_all_satisfied_states(
     satisfied_states
 }
 
-pub fn get_sets_containing_node(
-    sets: Vec<GameSet>,
-    node_id: GameNodeId,
-) -> Vec<GameSet> {
+pub fn get_sets_containing_node(sets: Vec<GameSet>, node_id: GameNodeId) -> Vec<GameSet> {
     let mut containing_sets: Vec<GameSet> = Vec::new();
     for set in sets.iter() {
         if set.nodes.contains(&node_id) {
@@ -277,11 +272,8 @@ pub fn get_sets_containing_node(
 }
 
 /// Given N sets with IDs and a given set, return its order
-/// relative to the other sets sorted by increasing ID. 
-pub fn get_set_order(
-    set: GameSet,
-    sets: Vec<GameSet>,
-) -> u8 {
+/// relative to the other sets sorted by increasing ID.
+pub fn get_set_order(set: GameSet, sets: Vec<GameSet>) -> u8 {
     let mut order = 0;
     for other_set in sets.iter() {
         if set.id > other_set.id {

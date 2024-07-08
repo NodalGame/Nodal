@@ -336,7 +336,7 @@ pub mod menu {
                     //     //     "https://itch.io/user/oauth?client_id={}&scope=profile:me&redirect_uri={}",
                     //     //     client_id, redirect_uri
                     //     // );
-                    //     // TODO this should also include state param with global ID if exists. 
+                    //     // TODO this should also include state param with global ID if exists.
                     //     let auth_url = "https://itch.io/user/oauth?client_id=46ee1bbfb2bc9058ece5ec164478596f&scope=profile%3Ame&response_type=token&redirect_uri=https%3A%2F%2F3yiibp986h.execute-api.us-west-2.amazonaws.com%2Fprod%2Fauth%2Fcallback";
                     //     if webbrowser::open(&auth_url).is_ok() {
                     //         println!("Opened {} in web browser", auth_url);

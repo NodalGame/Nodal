@@ -1,9 +1,12 @@
 pub mod game_line {
     use std::hash::{Hash, Hasher};
 
+    use serde::{Deserialize, Serialize};
+
     use crate::structs::active::active_node::active_node::ActiveNode;
 
-    #[derive(Clone, Copy, Debug)]
+    #[derive(Clone, Copy, Debug, Serialize, Deserialize)]
+    // TODO Make node ids private and override new() to enforce a < b.
     pub struct GameLine {
         pub node_a_id: u16,
         pub node_b_id: u16,

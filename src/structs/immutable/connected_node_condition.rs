@@ -1,13 +1,10 @@
 pub mod connected_node_condition {
-    use bevy::{math::Vec2, color::Color, sprite::Sprite};
+    use bevy::{color::Color, math::Vec2, sprite::Sprite};
     use serde::{Deserialize, Serialize};
 
     use crate::{
         logic::connected_condition_checks::connected_condition_checks::is_degree_equal,
-        structs::immutable::{
-            game_node::game_node::GameNode,
-            solution::solution::Solution,
-        },
+        structs::immutable::{game_node::game_node::GameNode, solution::solution::Solution},
         CDTN_RULE_SPRITE_SIZE, COLOR_CDTN_BLUE_UNSAT, COLOR_CDTN_GREEN_UNSAT,
         COLOR_CDTN_PURPLE_UNSAT,
     };

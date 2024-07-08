@@ -5,7 +5,7 @@ pub mod solution {
         active::active_node::active_node::ActiveNode,
         immutable::{
             game_line::game_line::{connections_to_lines, GameLine},
-            game_node::game_node::{GameNodeId},
+            game_node::game_node::GameNodeId,
             game_set::game_set::GameSet,
         },
     };

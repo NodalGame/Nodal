@@ -1,13 +1,10 @@
 pub mod connected_set_rule {
-    use bevy::{math::Vec2, color::Color, sprite::Sprite};
+    use bevy::{color::Color, math::Vec2, sprite::Sprite};
     use serde::{Deserialize, Serialize};
 
     use crate::{
         logic::connected_rule_checks::connected_rule_checks::are_homomorphic,
-        structs::immutable::{
-            game_set::game_set::GameSet,
-            solution::solution::Solution,
-        },
+        structs::immutable::{game_set::game_set::GameSet, solution::solution::Solution},
         CDTN_RULE_SPRITE_SIZE, COLOR_RULE_ORANGE_UNSAT, COLOR_RULE_RED_UNSAT,
         COLOR_RULE_YELLOW_UNSAT,
     };

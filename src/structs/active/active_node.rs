@@ -14,7 +14,10 @@ pub mod active_node {
                 active_node_condition::active_node_condition::ActiveNodeCondition,
                 traits::traits::Satisfiable,
             },
-            immutable::{game_node::game_node::{GameNode, GameNodeId}, solution::solution::Solution},
+            immutable::{
+                game_node::game_node::{GameNode, GameNodeId},
+                solution::solution::Solution,
+            },
         },
         COLOR_NODE_SAT, COLOR_NODE_UNSAT,
     };
@@ -46,7 +49,7 @@ pub mod active_node {
         fn identifier(&self) -> &ActiveIdentifier {
             &self.active_id
         }
-        
+
         fn update_sprites(&mut self, sprites: Vec<&mut Sprite>) {
             for sprite in sprites {
                 sprite.color = if self.satisfied {

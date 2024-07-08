@@ -11,8 +11,7 @@ pub mod active_node_condition {
                 active_node::active_node::ActiveNode, traits::traits::Satisfiable,
             },
             immutable::{
-                node_condition::node_condition::NodeCondition,
-                solution::{solution::Solution},
+                node_condition::node_condition::NodeCondition, solution::solution::Solution,
             },
         },
         COLOR_CDTN_SAT, COLOR_CDTN_UNSAT,
@@ -41,7 +40,7 @@ pub mod active_node_condition {
         fn set_satisfied(&mut self, value: bool) {
             self.satisfied = value;
         }
-        
+
         fn update_sprites(&mut self, sprites: Vec<&mut Sprite>) {
             for sprite in sprites {
                 sprite.color = if self.satisfied {

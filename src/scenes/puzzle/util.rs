@@ -1,9 +1,35 @@
 use std::f32::consts::PI;
 
-use bevy::{asset::{AssetServer, Handle}, math::Vec2, prelude::default, color::Color, render::texture::Image, sprite::{Sprite, SpriteBundle}, transform::components::Transform};
+use bevy::{
+    asset::{AssetServer, Handle},
+    color::Color,
+    math::Vec2,
+    prelude::{default, Commands, Res},
+    render::texture::Image,
+    sprite::{Sprite, SpriteBundle},
+    transform::components::Transform,
+};
 use tracing::error;
 
-use crate::{get_node_down, get_node_down_left, get_node_down_right, get_node_left, get_node_right, get_node_up, get_node_up_left, get_node_up_right, get_set_order, get_sets_containing_node, is_bottom_edge, is_left_edge, is_right_edge, is_top_edge, node_to_position, structs::{active::active_node::active_node::ActiveNode, immutable::{game_node::game_node::GameNodeId, game_set::game_set::GameSet, puzzle::puzzle::Puzzle}}, texture::Texture, BG_SET_SPRITE_SIZE, COLOR_SET_0, COLOR_SET_1, COLOR_SET_2, COLOR_SET_BORDER, SPRITE_SPACING, TILE_NODE_SPRITE_SIZE, Z_BACKGROUND, Z_SET_FILL};
+use crate::{
+    get_node_down, get_node_down_left, get_node_down_right, get_node_left, get_node_right,
+    get_node_up, get_node_up_left, get_node_up_right, get_set_order, get_sets_containing_node,
+    is_bottom_edge, is_left_edge, is_right_edge, is_top_edge, node_to_position,
+    structs::{
+        active::{
+            active_identifier::active_identifier::ActiveIdentifier,
+            active_line::active_line::ActiveLine, active_node::active_node::ActiveNode,
+        },
+        immutable::{
+            game_node::game_node::GameNodeId, game_set::game_set::GameSet, puzzle::puzzle::Puzzle,
+        },
+    },
+    texture::Texture,
+    BG_SET_SPRITE_SIZE, COLOR_SET_0, COLOR_SET_1, COLOR_SET_2, COLOR_SET_BORDER, SPRITE_SPACING,
+    TILE_NODE_SPRITE_SIZE, Z_BACKGROUND, Z_LINE, Z_SET_FILL,
+};
+
+use super::scene::scene::OnPuzzleScene;
 
 /// Returns a background tile as a sprite bundle.
 ///
@@ -19,7 +45,13 @@ use crate::{get_node_down, get_node_down_left, get_node_down_right, get_node_lef
 /// # Returns
 ///
 /// A sprite bundle representing the background tile at the given position.
-pub fn get_puzzle_background_tile(x: u8, y: u8, width: u8, height: u8, asset_server: AssetServer) -> SpriteBundle {
+pub fn get_puzzle_background_tile(
+    x: u8,
+    y: u8,
+    width: u8,
+    height: u8,
+    asset_server: AssetServer,
+) -> SpriteBundle {
     // Load background textures
     let bg_side_left: Handle<Image> = asset_server.load(Texture::BgTileSideLeft.path());
     let bg_side_right: Handle<Image> = asset_server.load(Texture::BgTileSideRight.path());
@@ -35,7 +67,11 @@ pub fn get_puzzle_background_tile(x: u8, y: u8, width: u8, height: u8, asset_ser
         asset_server.load(Texture::BgTileBetweenVertical.path());
     let bg_between_cross: Handle<Image> = asset_server.load(Texture::BgTileBetweenCross.path());
 
-    let transform = Transform::from_xyz(x as f32 * SPRITE_SPACING, y as f32 * SPRITE_SPACING, Z_BACKGROUND);
+    let transform = Transform::from_xyz(
+        x as f32 * SPRITE_SPACING,
+        y as f32 * SPRITE_SPACING,
+        Z_BACKGROUND,
+    );
     let sprite = Sprite {
         custom_size: Some(Vec2::new(TILE_NODE_SPRITE_SIZE, TILE_NODE_SPRITE_SIZE)),
         ..Default::default()
@@ -140,17 +176,17 @@ pub fn get_puzzle_background_tile(x: u8, y: u8, width: u8, height: u8, asset_ser
     }
 }
 
-/// Returns the texture for a line connecting two active nodes. 
+/// Returns the texture for a line connecting two active nodes.
 ///
 /// # Parameters
 ///
 /// - `start_node`: The active node at the start of the line.
 /// - `end_node`: The active node at the end of the line.
-/// 
+///
 /// # Returns
 ///
 /// A texture for the line connecting the two active nodes, or `None` if the line is invalid
-/// (non-adjacent nodes). 
+/// (non-adjacent nodes).
 pub fn get_line_texture(
     start_node: &ActiveNode,
     end_node: &ActiveNode,
@@ -179,7 +215,7 @@ pub fn get_line_texture(
     }
 }
 
-/// Returns the set border sprite (not the texture). 
+/// Returns the set border sprite (not the texture).
 fn set_border_sprite() -> Sprite {
     Sprite {
         custom_size: Some(Vec2::new(TILE_NODE_SPRITE_SIZE, TILE_NODE_SPRITE_SIZE)),
@@ -191,19 +227,19 @@ fn set_border_sprite() -> Sprite {
 /// Returns a vector of sprite bundles for vertical edge set tiles using one node
 /// as the focal point. It is responsible for generating appropriate set tiles to
 /// the immediate left, right, up left, and up right of the node.
-/// 
+///
 /// # Parameters
-/// 
-/// - `node`: The node around which set tiles are being added. 
-/// - `node_x`: The node's X coordinate in the scene. 
+///
+/// - `node`: The node around which set tiles are being added.
+/// - `node_x`: The node's X coordinate in the scene.
 /// - `node_y`: The node's Y coordinate in the scene.
-/// - `set`: The game set for which tiles are being added. 
+/// - `set`: The game set for which tiles are being added.
 /// - `puzzle`: The puzzle for which the tiles are being added.
 /// - `asset_server`: The asset server used to load textures.
-/// 
+///
 /// # Returns
-/// 
-/// A vector of Sprite Bundles. 
+///
+/// A vector of Sprite Bundles.
 fn get_set_tiles_vertical(
     node: &u16,
     node_x: f32,
@@ -285,19 +321,19 @@ fn get_set_tiles_vertical(
 /// Returns a vector of sprite bundles for horizontal edge set tiles using one node
 /// as the focal point. It is responsible for generating appropriate set tiles to
 /// the immediate top, bottom, down right, and up right of the node.
-/// 
+///
 /// # Parameters
-/// 
-/// - `node`: The node around which set tiles are being added. 
-/// - `node_x`: The node's X coordinate in the scene. 
+///
+/// - `node`: The node around which set tiles are being added.
+/// - `node_x`: The node's X coordinate in the scene.
 /// - `node_y`: The node's Y coordinate in the scene.
-/// - `set`: The game set for which tiles are being added. 
+/// - `set`: The game set for which tiles are being added.
 /// - `puzzle`: The puzzle for which the tiles are being added.
 /// - `asset_server`: The asset server used to load textures.
-/// 
+///
 /// # Returns
-/// 
-/// A vector of Sprite Bundles. 
+///
+/// A vector of Sprite Bundles.
 fn get_set_tiles_horizontal(
     node: &u16,
     node_x: f32,
@@ -381,19 +417,19 @@ fn get_set_tiles_horizontal(
 /// Returns a vector of sprite bundles for bottom right set tiles using one node
 /// as the focal point. It is responsible for generating appropriate set tiles to
 /// the immediate up left and down right of the node.
-/// 
+///
 /// # Parameters
-/// 
-/// - `node`: The node around which set tiles are being added. 
-/// - `node_x`: The node's X coordinate in the scene. 
+///
+/// - `node`: The node around which set tiles are being added.
+/// - `node_x`: The node's X coordinate in the scene.
 /// - `node_y`: The node's Y coordinate in the scene.
-/// - `set`: The game set for which tiles are being added. 
+/// - `set`: The game set for which tiles are being added.
 /// - `puzzle`: The puzzle for which the tiles are being added.
 /// - `asset_server`: The asset server used to load textures.
-/// 
+///
 /// # Returns
-/// 
-/// A vector of Sprite Bundles. 
+///
+/// A vector of Sprite Bundles.
 fn get_set_tiles_bottom_right(
     node: &u16,
     node_x: f32,
@@ -441,19 +477,19 @@ fn get_set_tiles_bottom_right(
 /// Returns a vector of sprite bundles for bottom left set tiles using one node
 /// as the focal point. It is responsible for generating appropriate set tiles to
 /// the immediate up right and down left of the node.
-/// 
+///
 /// # Parameters
-/// 
-/// - `node`: The node around which set tiles are being added. 
-/// - `node_x`: The node's X coordinate in the scene. 
+///
+/// - `node`: The node around which set tiles are being added.
+/// - `node_x`: The node's X coordinate in the scene.
 /// - `node_y`: The node's Y coordinate in the scene.
-/// - `set`: The game set for which tiles are being added. 
+/// - `set`: The game set for which tiles are being added.
 /// - `puzzle`: The puzzle for which the tiles are being added.
 /// - `asset_server`: The asset server used to load textures.
-/// 
+///
 /// # Returns
-/// 
-/// A vector of Sprite Bundles. 
+///
+/// A vector of Sprite Bundles.
 fn get_set_tiles_bottom_left(
     node: &u16,
     node_x: f32,
@@ -501,19 +537,19 @@ fn get_set_tiles_bottom_left(
 /// Returns a vector of sprite bundles for top right set tiles using one node
 /// as the focal point. It is responsible for generating appropriate set tiles to
 /// the immediate up right and down left of the node.
-/// 
+///
 /// # Parameters
-/// 
-/// - `node`: The node around which set tiles are being added. 
-/// - `node_x`: The node's X coordinate in the scene. 
+///
+/// - `node`: The node around which set tiles are being added.
+/// - `node_x`: The node's X coordinate in the scene.
 /// - `node_y`: The node's Y coordinate in the scene.
-/// - `set`: The game set for which tiles are being added. 
+/// - `set`: The game set for which tiles are being added.
 /// - `puzzle`: The puzzle for which the tiles are being added.
 /// - `asset_server`: The asset server used to load textures.
-/// 
+///
 /// # Returns
-/// 
-/// A vector of Sprite Bundles. 
+///
+/// A vector of Sprite Bundles.
 fn get_set_tiles_top_right(
     node: &u16,
     node_x: f32,
@@ -561,19 +597,19 @@ fn get_set_tiles_top_right(
 /// Returns a vector of sprite bundles for top left set tiles using one node
 /// as the focal point. It is responsible for generating appropriate set tiles to
 /// the immediate up left and down right of the node.
-/// 
+///
 /// # Parameters
-/// 
-/// - `node`: The node around which set tiles are being added. 
-/// - `node_x`: The node's X coordinate in the scene. 
+///
+/// - `node`: The node around which set tiles are being added.
+/// - `node_x`: The node's X coordinate in the scene.
 /// - `node_y`: The node's Y coordinate in the scene.
-/// - `set`: The game set for which tiles are being added. 
+/// - `set`: The game set for which tiles are being added.
 /// - `puzzle`: The puzzle for which the tiles are being added.
 /// - `asset_server`: The asset server used to load textures.
-/// 
+///
 /// # Returns
-/// 
-/// A vector of Sprite Bundles. 
+///
+/// A vector of Sprite Bundles.
 fn get_set_tiles_top_left(
     node: &u16,
     node_x: f32,
@@ -623,17 +659,17 @@ fn get_set_tiles_top_left(
 }
 
 /// Returns the appropriate texture for a set tile behind a given node. The reason for this is that overlapping
-/// sets need to be distinguished by interlaced colors with sprites that match that offset. 
-/// 
+/// sets need to be distinguished by interlaced colors with sprites that match that offset.
+///
 /// # Parameters
-/// 
-/// `set`: The game set to which the texture belongs. 
+///
+/// `set`: The game set to which the texture belongs.
 /// `node_id`: The id of the game node which the texture will live behind.
-/// `sets`: The other overlapping game sets at this node. 
-/// 
+/// `sets`: The other overlapping game sets at this node.
+///
 /// # Returns
-/// 
-/// A Texture for the set tile. 
+///
+/// A Texture for the set tile.
 fn get_texture_for_set_tile_at_node(
     set: GameSet,
     node_id: GameNodeId,
@@ -647,14 +683,14 @@ fn get_texture_for_set_tile_at_node(
         match set_order {
             0 => Texture::BgSetTwoA,
             1 => Texture::BgSetTwoB,
-            _ => Texture::Missing
+            _ => Texture::Missing,
         }
     } else if sets_containing_node.len() == 3 {
         match set_order {
             0 => Texture::BgSetThreeA,
             1 => Texture::BgSetThreeB,
             2 => Texture::BgSetThreeC,
-            _ => Texture::Missing
+            _ => Texture::Missing,
         }
     } else {
         error!("Error getting texture for set tile at node, need to support more set overlaps.");
@@ -662,25 +698,22 @@ fn get_texture_for_set_tile_at_node(
     }
 }
 
-/// Returns the appropriate color for a set tile. The color is determined in order by its ID. 
-/// 
+/// Returns the appropriate color for a set tile. The color is determined in order by its ID.
+///
 /// # Parameters
-/// 
-/// - `set`: The game set to which the returned color belongs. 
-/// - `sets`: All sets in the puzzle. 
-/// 
+///
+/// - `set`: The game set to which the returned color belongs.
+/// - `sets`: All sets in the puzzle.
+///
 /// # Returns
-/// 
-/// The Color for the set tiles. 
-pub fn get_color_for_set_tile(
-    set: GameSet,
-    sets: Vec<GameSet>
-) -> Color {
+///
+/// The Color for the set tiles.
+pub fn get_color_for_set_tile(set: GameSet, sets: Vec<GameSet>) -> Color {
     let set_order = get_set_order(set, sets);
     match set_order {
         0 => COLOR_SET_0,
         1 => COLOR_SET_1,
-        2 => COLOR_SET_2, 
+        2 => COLOR_SET_2,
         _ => {
             error!("Error getting color for set tile, need to add more colors.");
             Color::BLACK
@@ -688,17 +721,17 @@ pub fn get_color_for_set_tile(
     }
 }
 
-/// Returns the colored background tiles for a set. 
-/// 
+/// Returns the colored background tiles for a set.
+///
 /// # Parameters
-/// 
-/// - `set`: The game set for the tiles. 
-/// - `puzzle`: The puzzle in which the set lives. 
+///
+/// - `set`: The game set for the tiles.
+/// - `puzzle`: The puzzle in which the set lives.
 /// - `asset_server`: The asset server used to load textures.
-/// 
+///
 /// # Returns
-/// 
-/// A vector of SpriteBundles. 
+///
+/// A vector of SpriteBundles.
 fn get_set_bg_tiles(
     set: &GameSet,
     puzzle: &Puzzle,
@@ -724,18 +757,18 @@ fn get_set_bg_tiles(
     bg_tiles
 }
 
-/// Returns a vector of sprite bundles for all of the tiles for a set. 
-/// This includes both the backgrounds and the edges of each set. 
-/// 
+/// Returns a vector of sprite bundles for all of the tiles for a set.
+/// This includes both the backgrounds and the edges of each set.
+///
 /// # Parameters
-/// 
-/// - `set`: The game set for which tiles are being added. 
+///
+/// - `set`: The game set for which tiles are being added.
 /// - `puzzle`: The puzzle for which the tiles are being added.
 /// - `asset_server`: The asset server used to load textures.
-/// 
+///
 /// # Returns
-/// 
-/// A vector of Sprite Bundles. 
+///
+/// A vector of Sprite Bundles.
 pub fn get_set_tiles(
     set: &GameSet,
     puzzle: &Puzzle,
@@ -798,4 +831,148 @@ pub fn get_set_tiles(
     tiles.append(&mut get_set_bg_tiles(set, puzzle, asset_server));
 
     tiles
+}
+
+/// Removes a line connecting start_node and end_node from the current puzzle. Also updates
+/// the game state to visually remove the line.
+pub fn remove_line(
+    commands: &mut Commands,
+    start_node: &mut ActiveNode,
+    end_node: &mut ActiveNode,
+    active_lines: &mut Vec<ActiveLine>,
+) {
+    // Remove connection from start to end
+    if let Some(pos) = start_node
+        .connections
+        .iter()
+        .position(|node_id| *node_id == end_node.node.id)
+    {
+        start_node.connections.remove(pos);
+    }
+
+    // Remove connection from end to start
+    if let Some(pos) = end_node
+        .connections
+        .iter()
+        .position(|node_id| *node_id == start_node.node.id)
+    {
+        end_node.connections.remove(pos);
+    }
+
+    // Remove line from scene
+    let first_node = if start_node.node.id < end_node.node.id {
+        start_node.clone()
+    } else {
+        end_node.clone()
+    };
+    let second_node = if start_node.node.id < end_node.node.id {
+        end_node.clone()
+    } else {
+        start_node.clone()
+    };
+    for idx in 0..active_lines.len() {
+        if active_lines[idx].start_node.node.id == first_node.node.id
+            && active_lines[idx].end_node.node.id == second_node.node.id
+        {
+            commands
+                .entity(active_lines[idx].sprite_entity_id)
+                .despawn();
+            active_lines.remove(idx);
+            break;
+        }
+    }
+}
+
+pub fn get_mut_start_end_nodes(
+    active_nodes: &mut Vec<ActiveNode>,
+    i: usize,
+    j: usize,
+) -> (&mut ActiveNode, &mut ActiveNode) {
+    let (first, second) = if i < j {
+        let (left, right) = active_nodes.split_at_mut(j);
+        (&mut left[i], &mut right[0])
+    } else {
+        let (left, right) = active_nodes.split_at_mut(i);
+        (&mut right[0], &mut left[j])
+    };
+    (first, second)
+}
+
+/// Adds a line connecting start_node and end_node to the current puzzle. Also updates
+/// the game state to visually add the line.
+pub fn add_line(
+    commands: &mut Commands,
+    asset_server: AssetServer,
+    start_node: &mut ActiveNode,
+    end_node: &mut ActiveNode,
+    active_lines: &mut Vec<ActiveLine>,
+) {
+    let start_pos = start_node.sprite.transform.translation.truncate();
+    let end_pos = end_node.sprite.transform.translation.truncate();
+
+    // Get the appropriate line texture, if exists (otherwise invalid node pair)
+    let line_texture = get_line_texture(start_node, end_node).unwrap_or(&Texture::Missing);
+
+    if *line_texture == Texture::Missing {
+        return;
+    }
+
+    let line_sprite = SpriteBundle {
+        texture: asset_server.load(line_texture.path()),
+        sprite: Sprite {
+            custom_size: Some(Vec2::new(TILE_NODE_SPRITE_SIZE, TILE_NODE_SPRITE_SIZE)),
+            ..Default::default()
+        },
+        transform: Transform::from_xyz(
+            (end_pos.x + start_pos.x) / 2.0,
+            (end_pos.y + start_pos.y) / 2.0,
+            Z_LINE,
+        ),
+        ..Default::default()
+    };
+
+    // Update connections of both start and end node
+    start_node.connections.push(end_node.node.id);
+    end_node.connections.push(start_node.node.id);
+
+    // Add line to the screen
+    let line_entity_id = commands
+        .spawn(line_sprite.clone())
+        .insert(OnPuzzleScene)
+        .id();
+
+    // Update list of lines, putting the smallest ID first.
+    let first_node = if start_node.node.id < end_node.node.id {
+        start_node.clone()
+    } else {
+        end_node.clone()
+    };
+    let second_node = if start_node.node.id < end_node.node.id {
+        end_node.clone()
+    } else {
+        start_node.clone()
+    };
+    active_lines.push(ActiveLine {
+        start_node: first_node.clone(),
+        end_node: second_node.clone(),
+        sprite: line_sprite.clone(),
+        active_id: ActiveIdentifier::new(),
+        sprite_entity_id: line_entity_id,
+    });
+}
+
+/// Unload all active elements from a puzzle upon reseting or navigating out of puzzle.
+pub fn unload_active_elements(
+    commands: &mut Commands,
+    active_nodes: &mut Vec<ActiveNode>,
+    active_lines: &mut Vec<ActiveLine>,
+) {
+    active_nodes.iter_mut().for_each(|node| {
+        node.connections.clear();
+    });
+    active_lines.iter_mut().for_each(|active_line| {
+        println!("despawning line with id {:?} and sprite id {:?}", active_line.active_id, active_line.sprite_entity_id);
+        commands.entity(active_line.sprite_entity_id).despawn();
+    });
+    active_lines.clear();
 }

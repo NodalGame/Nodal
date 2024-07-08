@@ -2,16 +2,12 @@ pub mod connected_rule_checks {
     use crate::structs::immutable::{
         game_node::game_node::GameNodeId,
         game_set::game_set::GameSet,
-        solution::{
-            solution::{
-                filter_solution_to_set, solution_to_adjacency_matrix, AdjacencyMatrix, Solution,
-            },
+        solution::solution::{
+            filter_solution_to_set, solution_to_adjacency_matrix, AdjacencyMatrix, Solution,
         },
     };
     use itertools::Itertools;
-    use std::{
-        collections::{HashMap},
-    };
+    use std::collections::HashMap;
 
     /// Checks if all sets with the same rule and class are homomorphic.
     ///

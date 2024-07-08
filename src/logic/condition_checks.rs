@@ -63,6 +63,19 @@ pub mod condition_checks {
             .len()
             == 1
     }
+
+    pub fn is_internal(node: &GameNode, solution: &Solution) -> bool {
+        solution_to_adjacency_matrix(solution)
+            .get(&node.id)
+            .unwrap_or(&Vec::new())
+            .len()
+            > 1
+    }
+
+    pub fn is_cycle(node: &GameNode, solution: &Solution) -> bool {
+        // TODO implement
+        true
+    }
 }
 
 #[cfg(test)]
@@ -298,4 +311,8 @@ mod tests {
 
         assert!(!is_leaf(&node, &solution))
     }
+
+    // TODO test is_internal
+
+    // TODO test is_cycle
 }

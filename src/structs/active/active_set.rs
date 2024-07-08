@@ -7,8 +7,8 @@ pub mod active_set {
     use crate::structs::{
         active::{
             active_connected_set_rule::active_connected_set_rule::ActiveConnectedSetRule,
-            active_identifier::active_identifier::ActiveIdentifier, active_set_rule::active_set_rule::ActiveSetRule,
-            traits::traits::Satisfiable,
+            active_identifier::active_identifier::ActiveIdentifier,
+            active_set_rule::active_set_rule::ActiveSetRule, traits::traits::Satisfiable,
         },
         immutable::game_set::game_set::GameSet,
     };
@@ -32,9 +32,9 @@ pub mod active_set {
         fn identifier(&self) -> &ActiveIdentifier {
             &self.active_id
         }
-        
+
         fn update_sprites(&mut self, _: Vec<&mut Sprite>) {
-            // Currently the active set sprites are static. 
+            // Currently the active set sprites are static.
         }
     }
 }
