@@ -961,8 +961,8 @@ pub fn add_line(
     });
 }
 
-/// Unload all active elements from a puzzle upon reseting or navigating out of puzzle.
-pub fn unload_active_elements(
+/// Clear all lines from a puzzle. 
+pub fn clear_all_lines(
     commands: &mut Commands,
     active_nodes: &mut Vec<ActiveNode>,
     active_lines: &mut Vec<ActiveLine>,
@@ -971,7 +971,23 @@ pub fn unload_active_elements(
         node.connections.clear();
     });
     active_lines.iter_mut().for_each(|active_line| {
-        println!("despawning line with id {:?} and sprite id {:?}", active_line.active_id, active_line.sprite_entity_id);
+        commands.entity(active_line.sprite_entity_id).despawn();
+    });
+    active_lines.clear();
+}
+
+/// Unload all active elements from a puzzle.
+pub fn unload_active_elements(
+    commands: &mut Commands,
+    active_nodes: &mut Vec<ActiveNode>,
+    active_lines: &mut Vec<ActiveLine>,
+) {
+    active_nodes.iter_mut().for_each(|active_node| {
+        commands.entity(active_node.sprite_entity_id).despawn();
+    });
+    active_nodes.clear();
+
+    active_lines.iter_mut().for_each(|active_line| {
         commands.entity(active_line.sprite_entity_id).despawn();
     });
     active_lines.clear();

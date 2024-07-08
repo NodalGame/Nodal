@@ -44,8 +44,7 @@ pub mod scene {
         node_to_position,
         puzzle_manager::PuzzleManager,
         scenes::puzzle::util::{
-            add_line, get_color_for_set_tile, get_line_texture, get_mut_start_end_nodes,
-            get_set_tiles, remove_line, unload_active_elements,
+            add_line, clear_all_lines, get_color_for_set_tile, get_line_texture, get_mut_start_end_nodes, get_set_tiles, remove_line, unload_active_elements
         },
         structs::{
             active::{
@@ -746,7 +745,7 @@ pub mod scene {
                 match ui_button_action {
                     // Delete all lines on screen and connections in active nodes, and update satisfied states
                     PuzzleButtonAction::Reset => {
-                        unload_active_elements(&mut commands, &mut active_nodes.active_nodes, &mut active_lines.lines);
+                        clear_all_lines(&mut commands, &mut active_nodes.active_nodes, &mut active_lines.lines);
                         event_writer.send(UpdateSatisfiedStates(get_all_satisfied_states(
                             &active_nodes.active_nodes,
                             &active_sets.active_sets,
