@@ -99,7 +99,7 @@ pub mod campaign {
     ) {
         // Get the campaign by loading it directly
         let campaign =
-            serde_json::from_str::<Campaign>(include_str!("../../assets/campaign/campaign.json"))
+            serde_json::from_str::<Campaign>(include_str!("../../../assets/campaign/campaign.json"))
                 .unwrap();
 
         // Populate the puzzle manager with the campaign puzzles
@@ -134,7 +134,6 @@ pub mod campaign {
                 });
         }
 
-        // TODO move camera to center on the most main-path puzzle unlocked
         for mut transform in q_camera.iter_mut() {
             *transform = Transform {
                 translation: Vec3::new(0.0, 0.0, 0.0),

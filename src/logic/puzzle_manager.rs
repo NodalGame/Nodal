@@ -15,7 +15,7 @@ pub mod puzzle_manager {
 
     #[derive(Resource, Debug)]
     pub struct PuzzleManager {
-        puzzles: HashMap<Uuid, String>, // TODO campaign puzzles need relationship with "parent" puzzle needing solve prior to loading
+        puzzles: HashMap<Uuid, String>, 
     }
 
     impl PuzzleManager {
@@ -28,32 +28,6 @@ pub mod puzzle_manager {
         /// Populates locally stored puzzles (from ../assets/campaign/puzzles/)
         pub fn populate_campaign(&mut self) -> serde_json::Result<()> {
             for entry in WalkDir::new(&PathBuf::from("assets/campaign/puzzles/"))
-                .into_iter()
-                .filter_map(|e| e.ok())
-                .filter(|e| e.path().extension().map_or(false, |ext| ext == "json"))
-            {
-                let path = entry.path();
-
-                // Open the file
-                let mut file = File::open(path).expect("Failed to open the file");
-
-                // Read the file contents into a string
-                let mut contents = String::new();
-                file.read_to_string(&mut contents)
-                    .expect("Failed to read the file");
-
-                let puzzle: Puzzle = match serde_json::from_str(&contents) {
-                    Ok(data) => data,
-                    Err(e) => panic!("Failed to load puzzle: {:?}", e),
-                };
-                self.add_puzzle(puzzle.uuid, path.to_string_lossy().into_owned());
-            }
-            Ok(())
-        }
-
-        // TODO this will need to populate from some cloud database once publicly uploaded puzzles can exist
-        pub fn populate(&mut self, directory_path: &String) -> serde_json::Result<()> {
-            for entry in WalkDir::new(directory_path)
                 .into_iter()
                 .filter_map(|e| e.ok())
                 .filter(|e| e.path().extension().map_or(false, |ext| ext == "json"))

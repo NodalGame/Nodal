@@ -50,6 +50,21 @@ pub mod save_data_manager {
         }
     }
 
+    pub fn is_solved(puzzle_uuid: Uuid) -> bool {
+        let save_data_path = get_save_data_path(&puzzle_uuid.to_string());
+
+        let save_data_json = std::fs::read_to_string(save_data_path);
+        match save_data_json {
+            Ok(json) => {
+                let save_data: PuzzleSaveData = serde_json::from_str(&json).unwrap();
+                return save_data.solved;
+            }
+            Err(_error) => {
+                return false;
+            }
+        }
+    }
+
     fn get_save_data_path(puzzle_uuid: &str) -> PathBuf {
         // Get the base directory for game data
         let base_dir = data_dir().expect("Failed to get data directory");

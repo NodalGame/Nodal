@@ -34,7 +34,7 @@ pub mod menu {
                 despawn_screen::<OnSubMenuScreen>,
             )
             // Systems to handle the puzzle select screen
-            .add_systems(OnEnter(MenuState::PuzzleSelect), puzzle_select_setup)
+            // .add_systems(OnEnter(MenuState::PuzzleSelect), puzzle_select_setup)
             .add_systems(
                 OnExit(MenuState::PuzzleSelect),
                 despawn_screen::<OnPuzzleSelectScreen>,
@@ -244,69 +244,69 @@ pub mod menu {
             });
     }
 
-    // TODO repurpose this for the browse levels menu?
-    fn puzzle_select_setup(
-        mut commands: Commands,
-        mut puzzle_manager: ResMut<PuzzleManager>,
-        asset_server: Res<AssetServer>,
-    ) {
-        // TODO preload in other menu? if this starts to slow down...
-        let _ = puzzle_manager.populate(&"../assets/campaign/puzzles/".to_owned());
-        commands
-            .spawn((
-                NodeBundle {
-                    style: Style {
-                        width: Val::Percent(100.0),
-                        height: Val::Percent(100.0),
-                        align_items: AlignItems::Center,
-                        justify_content: JustifyContent::Center,
-                        ..default()
-                    },
-                    ..default()
-                },
-                OnPuzzleSelectScreen,
-            ))
-            .with_children(|parent| {
-                parent
-                    .spawn(NodeBundle {
-                        style: Style {
-                            flex_direction: FlexDirection::Column,
-                            align_items: AlignItems::Center,
-                            ..default()
-                        },
-                        background_color: Color::BLACK.into(),
-                        ..default()
-                    })
-                    .with_children(|parent| {
-                        // TODO remove -- just using for testing webapp loading puzzles
-                        let icon = asset_server.load("../assets/textures/sprites/NODE_YELLOW.png");
-                        parent.spawn(ImageBundle {
-                            style: button_icon_style(),
-                            image: UiImage::new(icon),
-                            ..default()
-                        });
-                        for puzzle_id in puzzle_manager.get_puzzle_uuids() {
-                            // Display the levels to select TODO scrollable and populate programmatically
-                            parent
-                                .spawn((
-                                    ButtonBundle {
-                                        style: text_button_style(),
-                                        background_color: NORMAL_BUTTON.into(),
-                                        ..default()
-                                    },
-                                    MenuButtonAction::PlayPuzzle,
-                                    ButtonPuzzleId { uuid: puzzle_id },
-                                ))
-                                .with_children(|parent| {
-                                    parent.spawn(TextBundle::from_section(
-                                        "Puzzle ".to_owned() + &puzzle_id.to_string(),
-                                        button_text_style(),
-                                    ));
-                                });
-                        }
-                    });
-            });
-    }
+    // // TODO repurpose this for the browse levels menu?
+    // fn puzzle_select_setup(
+    //     mut commands: Commands,
+    //     mut puzzle_manager: ResMut<PuzzleManager>,
+    //     asset_server: Res<AssetServer>,
+    // ) {
+    //     // TODO preload in other menu? if this starts to slow down...
+    //     let _ = puzzle_manager.populate(&"../assets/campaign/puzzles/".to_owned());
+    //     commands
+    //         .spawn((
+    //             NodeBundle {
+    //                 style: Style {
+    //                     width: Val::Percent(100.0),
+    //                     height: Val::Percent(100.0),
+    //                     align_items: AlignItems::Center,
+    //                     justify_content: JustifyContent::Center,
+    //                     ..default()
+    //                 },
+    //                 ..default()
+    //             },
+    //             OnPuzzleSelectScreen,
+    //         ))
+    //         .with_children(|parent| {
+    //             parent
+    //                 .spawn(NodeBundle {
+    //                     style: Style {
+    //                         flex_direction: FlexDirection::Column,
+    //                         align_items: AlignItems::Center,
+    //                         ..default()
+    //                     },
+    //                     background_color: Color::BLACK.into(),
+    //                     ..default()
+    //                 })
+    //                 .with_children(|parent| {
+    //                     // TODO remove -- just using for testing webapp loading puzzles
+    //                     let icon = asset_server.load("../assets/textures/sprites/NODE_YELLOW.png");
+    //                     parent.spawn(ImageBundle {
+    //                         style: button_icon_style(),
+    //                         image: UiImage::new(icon),
+    //                         ..default()
+    //                     });
+    //                     for puzzle_id in puzzle_manager.get_puzzle_uuids() {
+    //                         // Display the levels to select TODO scrollable and populate programmatically
+    //                         parent
+    //                             .spawn((
+    //                                 ButtonBundle {
+    //                                     style: text_button_style(),
+    //                                     background_color: NORMAL_BUTTON.into(),
+    //                                     ..default()
+    //                                 },
+    //                                 MenuButtonAction::PlayPuzzle,
+    //                                 ButtonPuzzleId { uuid: puzzle_id },
+    //                             ))
+    //                             .with_children(|parent| {
+    //                                 parent.spawn(TextBundle::from_section(
+    //                                     "Puzzle ".to_owned() + &puzzle_id.to_string(),
+    //                                     button_text_style(),
+    //                                 ));
+    //                             });
+    //                     }
+    //                 });
+    //         });
+    // }
 
     fn menu_action(
         interaction_query: Query<
