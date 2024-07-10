@@ -15,6 +15,10 @@ pub(crate) const Z_LINE: f32 = -1.0;
 pub(crate) const Z_SET_RULE_BOX: f32 = 0.0;
 pub(crate) const Z_RULE_CDTN_NODE: f32 = 1.0;
 
+pub(crate) const COLOR_CAMPAIGN_PUZZLE_LOCKED: Color = Color::BLACK;
+pub(crate) const COLOR_CAMPAIGN_PUZZLE_UNLOCKED: Color = Color::WHITE;
+pub(crate) const COLOR_CAMPAIGN_PUZZLE_SOLVED: Color = bevy::prelude::Color::Srgba(palettes::basic::GREEN);
+
 pub(crate) const COLOR_SET_BORDER: Color = Color::BLACK;
 
 pub(crate) const COLOR_NODE_SAT: Color = Color::BLACK;

@@ -30,9 +30,7 @@ pub mod campaign {
     use uuid::Uuid;
 
     use crate::{
-        buttons::icon_button_style, clicked_on_sprite, despawn_screen, get_cursor_world_position,
-        puzzle_manager::PuzzleManager, texture::Texture, AppState, MainCamera, SelectedPuzzle,
-        SPRITE_SPACING, TILE_NODE_SPRITE_SIZE,
+        buttons::icon_button_style, clicked_on_sprite, despawn_screen, get_cursor_world_position, logic::save_data_manager::save_data_manager::is_solved, puzzle_manager::PuzzleManager, texture::Texture, AppState, MainCamera, SelectedPuzzle, COLOR_CAMPAIGN_PUZZLE_LOCKED, COLOR_CAMPAIGN_PUZZLE_SOLVED, COLOR_CAMPAIGN_PUZZLE_UNLOCKED, SPRITE_SPACING, TILE_NODE_SPRITE_SIZE
     };
 
     // This plugin will contain a campaign (for now, just the main campaign).
@@ -51,10 +49,12 @@ pub mod campaign {
             .insert_resource(ClickableCampaignPuzzles::default());
     }
 
-    #[derive(Deserialize, Debug)]
+    #[derive(Deserialize, Debug, Clone)]
     pub struct Campaign {
         pub uuid: Uuid,
         pub name: String,
+        pub width: usize,
+        pub height: usize,
         pub puzzle_layout: Vec<CampaignPuzzle>,
     }
 
@@ -67,13 +67,14 @@ pub mod campaign {
     struct ClickableCampaignPuzzle {
         campaign_puzzle: CampaignPuzzle,
         sprite: SpriteBundle,
+        unlocked: bool,
     }
 
-    #[derive(Deserialize, Debug)]
+    #[derive(Deserialize, Debug, Clone, Copy)]
     pub struct CampaignPuzzle {
         pub puzzle_uuid: Uuid,
-        pub pos_x: u8,
-        pub pos_y: u8,
+        pub pos_x: usize,
+        pub pos_y: usize,
     }
 
     // Tag component used to tag entities added on the campaign scene
@@ -97,6 +98,7 @@ pub mod campaign {
         mut clickable_campaign_puzzles: ResMut<ClickableCampaignPuzzles>,
         mut q_camera: Query<&mut Transform, With<MainCamera>>,
     ) {
+        // TODO move all the setup to when game is loaded for performance increase 
         // Get the campaign by loading it directly
         let campaign =
             serde_json::from_str::<Campaign>(include_str!("../../../assets/campaign/campaign.json"))
@@ -109,12 +111,28 @@ pub mod campaign {
         // TODO use actual image
         let puzzle_tex = asset_server.load(Texture::Node.path());
 
-        for campaign_puzzle in campaign.puzzle_layout {
+        // Create grid of puzzle layout
+        let mut puzzle_grid: Vec<Vec<Uuid>> = (0..campaign.height)
+            .map(|_| vec![Uuid::nil(); campaign.width.into()])
+            .collect();
+        for campaign_puzzle in campaign.clone().puzzle_layout {
+            puzzle_grid[campaign_puzzle.pos_y as usize][campaign_puzzle.pos_x as usize] =
+                campaign_puzzle.puzzle_uuid;
+        }
+
+        for campaign_puzzle in campaign.clone().puzzle_layout {
+            // Check if puzzle is completed 
+            let solved = is_solved(campaign_puzzle.puzzle_uuid.clone());
+
+            // Check if puzzle is unlocked
+            let unlocked = is_unlocked(puzzle_grid.clone(), campaign_puzzle);
+
             // Add the puzzle as a sprite
             let sprite = SpriteBundle {
                 texture: puzzle_tex.clone(),
                 sprite: Sprite {
                     custom_size: Some(Vec2::new(TILE_NODE_SPRITE_SIZE, TILE_NODE_SPRITE_SIZE)),
+                    color: if solved { COLOR_CAMPAIGN_PUZZLE_SOLVED } else if unlocked { COLOR_CAMPAIGN_PUZZLE_UNLOCKED} else { COLOR_CAMPAIGN_PUZZLE_LOCKED},
                     ..default()
                 },
                 transform: Transform::from_xyz(
@@ -131,6 +149,7 @@ pub mod campaign {
                 .push(ClickableCampaignPuzzle {
                     campaign_puzzle,
                     sprite,
+                    unlocked: unlocked || solved,
                 });
         }
 
@@ -168,6 +187,33 @@ pub mod campaign {
             });
     }
 
+    /// Returns a list of the adjacent puzzles to this one in the campaign.
+    fn get_adjacent_puzzles(puzzle_grid: Vec<Vec<Uuid>>, campaign_puzzle: CampaignPuzzle) -> Vec<Uuid> {
+        let mut adjacent_puzzles: Vec<Uuid> = Vec::new();
+        if campaign_puzzle.pos_y != 0 {
+            adjacent_puzzles.push(puzzle_grid[campaign_puzzle.pos_y - 1][campaign_puzzle.pos_x]);
+        }
+        if campaign_puzzle.pos_y + 1 < puzzle_grid.len() {
+            adjacent_puzzles.push(puzzle_grid[campaign_puzzle.pos_y + 1][campaign_puzzle.pos_x]);
+        }
+        if campaign_puzzle.pos_x != 0 {
+            adjacent_puzzles.push(puzzle_grid[campaign_puzzle.pos_y][campaign_puzzle.pos_x - 1]);
+        }
+        if campaign_puzzle.pos_x + 1 < puzzle_grid[campaign_puzzle.pos_y].len() {
+            adjacent_puzzles.push(puzzle_grid[campaign_puzzle.pos_y][campaign_puzzle.pos_x + 1]);
+        }
+        adjacent_puzzles
+    }
+
+    /// Returns if a puzzle is unlocked by determining if one of the 4 adjacent puzzles is solved.
+    fn is_unlocked(puzzle_grid: Vec<Vec<Uuid>>, campaign_puzzle: CampaignPuzzle) -> bool {
+        if campaign_puzzle.pos_x == 0 && campaign_puzzle.pos_y == 0 {
+            return true;
+        }
+        let adjacent_puzzles = get_adjacent_puzzles(puzzle_grid, campaign_puzzle);
+        adjacent_puzzles.iter().any(|adjacent_puzzle| is_solved(*adjacent_puzzle))
+    }
+
     fn puzzle_select_system(
         clickable_campaign_puzzles: Res<ClickableCampaignPuzzles>,
         mut app_state: ResMut<NextState<AppState>>,
@@ -191,9 +237,10 @@ pub mod campaign {
                 clickable_campaign_puzzles.clickable_campaign_puzzles.iter()
             {
                 if clicked_on_sprite(&clickable_campaign_puzzle.sprite, world_position) {
-                    // TODO check if campaign puzzle is unlocked
-                    selected_puzzle.uuid = clickable_campaign_puzzle.campaign_puzzle.puzzle_uuid;
-                    app_state.set(AppState::Puzzle);
+                    if clickable_campaign_puzzle.unlocked {
+                        selected_puzzle.uuid = clickable_campaign_puzzle.campaign_puzzle.puzzle_uuid;
+                        app_state.set(AppState::Puzzle);
+                    }
                 }
             }
         }

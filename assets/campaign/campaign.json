@@ -1,6 +1,8 @@
 {
     "uuid": "620392de-9a5b-4cbe-a390-7f93ad2f2bab",
     "name": "Nodal Campaign",
+    "width": 5,
+    "height": 5,
     "puzzle_layout": [
         {
             "puzzle_uuid": "37911a8a-41f7-4b4e-b23d-fd4f55e85fef",
@@ -18,7 +20,7 @@
             "pos_y": 1
         },
         {
-            "puzzle_uuid": "ffffffffffffffffffffffffffffffff",
+            "puzzle_uuid": "fffffffffffffffffffffffffffffff0",
             "pos_x": 2,
             "pos_y": 0
         },
@@ -28,12 +30,12 @@
             "pos_y": 1
         },
         {
-            "puzzle_uuid": "ffffffffffffffffffffffffffffffff",
+            "puzzle_uuid": "fffffffffffffffffffffffffffffff1",
             "pos_x": 0,
             "pos_y": 2
         },
         {
-            "puzzle_uuid": "ffffffffffffffffffffffffffffffff",
+            "puzzle_uuid": "fffffffffffffffffffffffffffffff2",
             "pos_x": 3,
             "pos_y": 0
         },
@@ -48,12 +50,12 @@
             "pos_y": 2 
         },
         {
-            "puzzle_uuid": "ffffffffffffffffffffffffffffffff",
+            "puzzle_uuid": "fffffffffffffffffffffffffffffff3",
             "pos_x": 0,
             "pos_y": 3
         },
         {
-            "puzzle_uuid": "ffffffffffffffffffffffffffffffff",
+            "puzzle_uuid": "fffffffffffffffffffffffffffffff4",
             "pos_x": 4,
             "pos_y": 0
         },
@@ -71,6 +73,11 @@
             "puzzle_uuid": "746afa9b-3e89-49a3-993d-79a4f681fc5c",
             "pos_x": 1,
             "pos_y": 3
+        },
+        {
+            "puzzle_uuid": "fffffffffffffffffffffffffffffff5",
+            "pos_x": 0,
+            "pos_y": 4
         }
     ]
 }

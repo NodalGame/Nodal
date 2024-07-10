@@ -17,7 +17,7 @@ pub mod steam;
 pub mod structs;
 
 pub mod scenes;
-use scenes::campaign::campaign::*;
+use scenes::campaign::campaign::campaign::campaign_plugin;
 use scenes::menu::menu::*;
 use scenes::puzzle::scene::scene::puzzle_plugin;
 use scenes::splash::splash::*;
