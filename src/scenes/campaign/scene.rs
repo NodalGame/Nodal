@@ -3,15 +3,14 @@ pub mod campaign {
         app::{App, Update},
         asset::AssetServer,
         ecs::{
-            component::Component,
             query::{Changed, With},
-            system::{Commands, Query, Res, ResMut, Resource},
+            system::{Commands, Query, Res, ResMut},
         },
         hierarchy::BuildChildren,
         input::{mouse::MouseButton, ButtonInput},
-        math::{Vec2, Vec3},
-        prelude::IntoSystemConfigs,
-        render::camera::Camera,
+        math::Vec2,
+        prelude::{Component, IntoSystemConfigs, Resource},
+        render::camera::{Camera, OrthographicProjection},
         sprite::{Sprite, SpriteBundle},
         state::{
             condition::in_state,
@@ -30,7 +29,15 @@ pub mod campaign {
     use uuid::Uuid;
 
     use crate::{
-        buttons::icon_button_style, clicked_on_sprite, despawn_screen, get_cursor_world_position, logic::save_data_manager::save_data_manager::is_solved, puzzle_manager::PuzzleManager, texture::Texture, AppState, MainCamera, SelectedPuzzle, COLOR_CAMPAIGN_PUZZLE_LOCKED, COLOR_CAMPAIGN_PUZZLE_SOLVED, COLOR_CAMPAIGN_PUZZLE_UNLOCKED, SPRITE_SPACING, TILE_NODE_SPRITE_SIZE
+        buttons::icon_button_style,
+        clicked_on_sprite, despawn_screen, get_cursor_world_position,
+        logic::save_data_manager::save_data_manager::is_solved,
+        puzzle_manager::PuzzleManager,
+        scenes::campaign::util::{get_campaign_puzzle_position, is_unlocked, update_camera},
+        texture::Texture,
+        AppState, MainCamera, SelectedPuzzle, COLOR_CAMPAIGN_PUZZLE_LOCKED,
+        COLOR_CAMPAIGN_PUZZLE_SOLVED, COLOR_CAMPAIGN_PUZZLE_UNLOCKED, SPRITE_SPACING,
+        TILE_NODE_SPRITE_SIZE,
     };
 
     // This plugin will contain a campaign (for now, just the main campaign).
@@ -64,10 +71,10 @@ pub mod campaign {
     }
 
     #[derive(Component)]
-    struct ClickableCampaignPuzzle {
-        campaign_puzzle: CampaignPuzzle,
+    pub struct ClickableCampaignPuzzle {
+        pub campaign_puzzle: CampaignPuzzle,
         sprite: SpriteBundle,
-        unlocked: bool,
+        pub unlocked: bool,
     }
 
     #[derive(Deserialize, Debug, Clone, Copy)]
@@ -96,13 +103,15 @@ pub mod campaign {
         asset_server: Res<AssetServer>,
         mut puzzle_manager: ResMut<PuzzleManager>,
         mut clickable_campaign_puzzles: ResMut<ClickableCampaignPuzzles>,
-        mut q_camera: Query<&mut Transform, With<MainCamera>>,
+        q_window: Query<&Window, With<PrimaryWindow>>,
+        mut q_camera: Query<(&mut Transform, &mut OrthographicProjection), With<MainCamera>>,
     ) {
-        // TODO move all the setup to when game is loaded for performance increase 
+        // TODO move all the setup to when game is loaded for performance increase
         // Get the campaign by loading it directly
-        let campaign =
-            serde_json::from_str::<Campaign>(include_str!("../../../assets/campaign/campaign.json"))
-                .unwrap();
+        let campaign = serde_json::from_str::<Campaign>(include_str!(
+            "../../../assets/campaign/campaign.json"
+        ))
+        .unwrap();
 
         // Populate the puzzle manager with the campaign puzzles
         let _ = puzzle_manager.populate_campaign();
@@ -121,25 +130,28 @@ pub mod campaign {
         }
 
         for campaign_puzzle in campaign.clone().puzzle_layout {
-            // Check if puzzle is completed 
+            // Check if puzzle is completed
             let solved = is_solved(campaign_puzzle.puzzle_uuid.clone());
 
             // Check if puzzle is unlocked
             let unlocked = is_unlocked(puzzle_grid.clone(), campaign_puzzle);
 
             // Add the puzzle as a sprite
+            let pos = get_campaign_puzzle_position(campaign_puzzle);
             let sprite = SpriteBundle {
                 texture: puzzle_tex.clone(),
                 sprite: Sprite {
                     custom_size: Some(Vec2::new(TILE_NODE_SPRITE_SIZE, TILE_NODE_SPRITE_SIZE)),
-                    color: if solved { COLOR_CAMPAIGN_PUZZLE_SOLVED } else if unlocked { COLOR_CAMPAIGN_PUZZLE_UNLOCKED} else { COLOR_CAMPAIGN_PUZZLE_LOCKED},
+                    color: if solved {
+                        COLOR_CAMPAIGN_PUZZLE_SOLVED
+                    } else if unlocked {
+                        COLOR_CAMPAIGN_PUZZLE_UNLOCKED
+                    } else {
+                        COLOR_CAMPAIGN_PUZZLE_LOCKED
+                    },
                     ..default()
                 },
-                transform: Transform::from_xyz(
-                    campaign_puzzle.pos_x as f32 * (TILE_NODE_SPRITE_SIZE + SPRITE_SPACING) as f32,
-                    campaign_puzzle.pos_y as f32 * (TILE_NODE_SPRITE_SIZE + SPRITE_SPACING) as f32,
-                    0.,
-                ),
+                transform: Transform::from_xyz(pos.x as f32, pos.y as f32, 0.),
                 ..default()
             };
             commands.spawn((sprite.clone(), OnCampaignScene));
@@ -153,11 +165,13 @@ pub mod campaign {
                 });
         }
 
-        for mut transform in q_camera.iter_mut() {
-            *transform = Transform {
-                translation: Vec3::new(0.0, 0.0, 0.0),
-                ..default()
-            };
+        for (mut transform, mut projection) in q_camera.iter_mut() {
+            update_camera(
+                q_window.single(),
+                &mut transform,
+                &mut projection,
+                &clickable_campaign_puzzles.clickable_campaign_puzzles,
+            );
         }
 
         // Add a back button
@@ -187,33 +201,6 @@ pub mod campaign {
             });
     }
 
-    /// Returns a list of the adjacent puzzles to this one in the campaign.
-    fn get_adjacent_puzzles(puzzle_grid: Vec<Vec<Uuid>>, campaign_puzzle: CampaignPuzzle) -> Vec<Uuid> {
-        let mut adjacent_puzzles: Vec<Uuid> = Vec::new();
-        if campaign_puzzle.pos_y != 0 {
-            adjacent_puzzles.push(puzzle_grid[campaign_puzzle.pos_y - 1][campaign_puzzle.pos_x]);
-        }
-        if campaign_puzzle.pos_y + 1 < puzzle_grid.len() {
-            adjacent_puzzles.push(puzzle_grid[campaign_puzzle.pos_y + 1][campaign_puzzle.pos_x]);
-        }
-        if campaign_puzzle.pos_x != 0 {
-            adjacent_puzzles.push(puzzle_grid[campaign_puzzle.pos_y][campaign_puzzle.pos_x - 1]);
-        }
-        if campaign_puzzle.pos_x + 1 < puzzle_grid[campaign_puzzle.pos_y].len() {
-            adjacent_puzzles.push(puzzle_grid[campaign_puzzle.pos_y][campaign_puzzle.pos_x + 1]);
-        }
-        adjacent_puzzles
-    }
-
-    /// Returns if a puzzle is unlocked by determining if one of the 4 adjacent puzzles is solved.
-    fn is_unlocked(puzzle_grid: Vec<Vec<Uuid>>, campaign_puzzle: CampaignPuzzle) -> bool {
-        if campaign_puzzle.pos_x == 0 && campaign_puzzle.pos_y == 0 {
-            return true;
-        }
-        let adjacent_puzzles = get_adjacent_puzzles(puzzle_grid, campaign_puzzle);
-        adjacent_puzzles.iter().any(|adjacent_puzzle| is_solved(*adjacent_puzzle))
-    }
-
     fn puzzle_select_system(
         clickable_campaign_puzzles: Res<ClickableCampaignPuzzles>,
         mut app_state: ResMut<NextState<AppState>>,
@@ -238,7 +225,8 @@ pub mod campaign {
             {
                 if clicked_on_sprite(&clickable_campaign_puzzle.sprite, world_position) {
                     if clickable_campaign_puzzle.unlocked {
-                        selected_puzzle.uuid = clickable_campaign_puzzle.campaign_puzzle.puzzle_uuid;
+                        selected_puzzle.uuid =
+                            clickable_campaign_puzzle.campaign_puzzle.puzzle_uuid;
                         app_state.set(AppState::Puzzle);
                     }
                 }

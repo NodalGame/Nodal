@@ -15,7 +15,7 @@ pub mod puzzle_manager {
 
     #[derive(Resource, Debug)]
     pub struct PuzzleManager {
-        puzzles: HashMap<Uuid, String>, 
+        puzzles: HashMap<Uuid, String>,
     }
 
     impl PuzzleManager {

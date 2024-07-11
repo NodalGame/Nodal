@@ -15,7 +15,7 @@ pub mod scene {
         input::{mouse::MouseButton, ButtonInput},
         math::{Vec2, Vec3},
         prelude::IntoSystemConfigs,
-        render::camera::Camera,
+        render::camera::{Camera, OrthographicProjection},
         sprite::{Sprite, SpriteBundle},
         state::{
             condition::in_state,
@@ -44,7 +44,8 @@ pub mod scene {
         node_to_position,
         puzzle_manager::PuzzleManager,
         scenes::puzzle::util::{
-            add_line, clear_all_lines, get_color_for_set_tile, get_line_texture, get_mut_start_end_nodes, get_set_tiles, remove_line, unload_active_elements
+            add_line, clear_all_lines, get_color_for_set_tile, get_line_texture,
+            get_mut_start_end_nodes, get_set_tiles, remove_line, unload_active_elements,
         },
         structs::{
             active::{
@@ -144,7 +145,7 @@ pub mod scene {
         mut active_lines: ResMut<ActiveLines>,
         mut event_writer: EventWriter<UpdateSatisfiedStates>,
         // Query to get camera transform
-        mut q_camera: Query<&mut Transform, With<MainCamera>>,
+        mut q_camera: Query<(&mut Transform, &mut OrthographicProjection), With<MainCamera>>,
     ) {
         // Get the puzzle by loading it
         let puzzle = puzzle_manager
@@ -312,7 +313,7 @@ pub mod scene {
         }
 
         // Get camera transform
-        for mut transform in q_camera.iter_mut() {
+        for (mut transform, mut projection) in q_camera.iter_mut() {
             // Move it to center of puzzle
             *transform = Transform {
                 translation: Vec3::new(
@@ -322,6 +323,7 @@ pub mod scene {
                 ),
                 ..Default::default()
             };
+            projection.scale = 1.0;
         }
 
         // Add a back button, check answer button, and restart button
@@ -721,7 +723,7 @@ pub mod scene {
                 active_sets.active_sets.clone(),
             );
 
-            println!("Solved: {}", solved);
+            // TODO signal for some sounds + animation and navigate back if solved
         }
     }
 
@@ -745,7 +747,11 @@ pub mod scene {
                 match ui_button_action {
                     // Delete all lines on screen and connections in active nodes, and update satisfied states
                     PuzzleButtonAction::Reset => {
-                        clear_all_lines(&mut commands, &mut active_nodes.active_nodes, &mut active_lines.lines);
+                        clear_all_lines(
+                            &mut commands,
+                            &mut active_nodes.active_nodes,
+                            &mut active_lines.lines,
+                        );
                         event_writer.send(UpdateSatisfiedStates(get_all_satisfied_states(
                             &active_nodes.active_nodes,
                             &active_sets.active_sets,
@@ -783,7 +789,11 @@ pub mod scene {
                                 active_sets.active_sets.clone(),
                             ),
                         );
-                        unload_active_elements(&mut commands, &mut active_nodes.active_nodes, &mut active_lines.lines);
+                        unload_active_elements(
+                            &mut commands,
+                            &mut active_nodes.active_nodes,
+                            &mut active_lines.lines,
+                        );
                         app_state.set(AppState::Campaign);
                     }
                 }

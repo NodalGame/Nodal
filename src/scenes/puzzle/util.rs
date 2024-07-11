@@ -961,7 +961,7 @@ pub fn add_line(
     });
 }
 
-/// Clear all lines from a puzzle. 
+/// Clear all lines from a puzzle.
 pub fn clear_all_lines(
     commands: &mut Commands,
     active_nodes: &mut Vec<ActiveNode>,

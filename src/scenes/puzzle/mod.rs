@@ -1,2 +1,3 @@
 pub mod scene;
-pub mod util;
+
+mod util;
