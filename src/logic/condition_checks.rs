@@ -1,7 +1,5 @@
 pub mod condition_checks {
-    use std::collections::VecDeque;
-
-    use bevy::utils::hashbrown::HashSet;
+    use std::collections::{HashMap, HashSet, VecDeque};
 
     use crate::structs::immutable::{
         game_node::game_node::{GameNode, GameNodeId},
@@ -15,7 +13,11 @@ pub mod condition_checks {
         let adj_matrix = solution_to_adjacency_matrix(solution);
 
         // Check if the node has no neighbors
-        if adj_matrix.get(&node.id).unwrap_or(&Vec::new()).is_empty() {
+        if adj_matrix
+            .get(&node.id)
+            .unwrap_or(&HashSet::new())
+            .is_empty()
+        {
             return false;
         }
 
@@ -59,7 +61,7 @@ pub mod condition_checks {
     pub fn is_leaf(node: &GameNode, solution: &Solution) -> bool {
         solution_to_adjacency_matrix(solution)
             .get(&node.id)
-            .unwrap_or(&Vec::new())
+            .unwrap_or(&HashSet::new())
             .len()
             == 1
     }
@@ -67,21 +69,71 @@ pub mod condition_checks {
     pub fn is_internal(node: &GameNode, solution: &Solution) -> bool {
         solution_to_adjacency_matrix(solution)
             .get(&node.id)
-            .unwrap_or(&Vec::new())
+            .unwrap_or(&HashSet::new())
             .len()
             > 1
     }
 
     pub fn is_cycle(node: &GameNode, solution: &Solution) -> bool {
-        // TODO implement
-        true
+        let adj_matrix = solution_to_adjacency_matrix(solution);
+
+        let mut visited = HashSet::new();
+
+        for &start_node in adj_matrix.keys() {
+            if !visited.contains(&start_node) {
+                let mut stack = VecDeque::new();
+                let mut parent_map = HashMap::new();
+
+                stack.push_back((start_node, None));
+
+                while let Some((curr_node, parent)) = stack.pop_back() {
+                    if !visited.contains(&curr_node) {
+                        visited.insert(curr_node);
+                        parent_map.insert(curr_node, parent);
+
+                        if let Some(neighbors) = adj_matrix.get(&curr_node) {
+                            for &neighbor in neighbors {
+                                if Some(neighbor) != parent {
+                                    if visited.contains(&neighbor) {
+                                        // Found a cycle, backtrack to collect all nodes in the cycle
+                                        let mut cycle_node = curr_node;
+                                        let mut cycle = HashSet::new();
+                                        cycle.insert(cycle_node);
+
+                                        while let Some(&p) = parent_map.get(&cycle_node) {
+                                            cycle.insert(p.unwrap());
+                                            if p.unwrap() == neighbor {
+                                                break;
+                                            }
+                                            cycle_node = p.unwrap();
+                                        }
+
+                                        for cycle_node in cycle {
+                                            if cycle_node == node.id {
+                                                return true;
+                                            }
+                                        }
+                                    } else {
+                                        stack.push_back((neighbor, Some(curr_node)));
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        false
     }
 }
 
 #[cfg(test)]
 mod tests {
     use crate::{
-        logic::condition_checks::condition_checks::{is_branch_equal, is_leaf},
+        logic::condition_checks::condition_checks::{
+            is_branch_equal, is_cycle, is_internal, is_leaf,
+        },
         structs::immutable::{
             game_line::game_line::GameLine, game_node::game_node::GameNode,
             node_condition::node_condition::NodeCondition, solution::solution::Solution,
@@ -312,7 +364,159 @@ mod tests {
         assert!(!is_leaf(&node, &solution))
     }
 
-    // TODO test is_internal
+    #[test]
+    fn test_internal_node_no_neighbors_returns_false() {
+        let node = get_test_node([NodeCondition::Internal].to_vec());
 
-    // TODO test is_cycle
+        let solution = Solution::new();
+
+        assert!(!is_internal(&node, &solution))
+    }
+
+    #[test]
+    fn test_internal_one_neighbor_returns_false() {
+        let node = get_test_node([NodeCondition::Internal].to_vec());
+
+        let solution = Solution::from([GameLine {
+            node_a_id: 0,
+            node_b_id: 1,
+        }]);
+
+        assert!(!is_internal(&node, &solution))
+    }
+
+    #[test]
+    fn test_internal_two_neighbors_returns_true() {
+        let node = get_test_node([NodeCondition::Internal].to_vec());
+
+        let solution = Solution::from([
+            GameLine {
+                node_a_id: 0,
+                node_b_id: 1,
+            },
+            GameLine {
+                node_a_id: 0,
+                node_b_id: 2,
+            },
+        ]);
+
+        assert!(is_internal(&node, &solution))
+    }
+
+    #[test]
+    fn test_cycle_no_neighbors_returns_false() {
+        let node = get_test_node([NodeCondition::Cycle].to_vec());
+
+        let solution = Solution::new();
+
+        assert!(!is_cycle(&node, &solution))
+    }
+
+    #[test]
+    fn test_cycle_leaf_returns_false() {
+        let node = get_test_node([NodeCondition::Cycle].to_vec());
+
+        let solution = Solution::from([GameLine {
+            node_a_id: 0,
+            node_b_id: 1,
+        }]);
+
+        assert!(!is_cycle(&node, &solution))
+    }
+
+    #[test]
+    fn test_cycle_in_branch_no_cycle_returns_false() {
+        let node = get_test_node([NodeCondition::Cycle].to_vec());
+
+        let solution = Solution::from([
+            GameLine {
+                node_a_id: 0,
+                node_b_id: 1,
+            },
+            GameLine {
+                node_a_id: 0,
+                node_b_id: 2,
+            },
+        ]);
+
+        assert!(!is_cycle(&node, &solution))
+    }
+
+    #[test]
+    fn test_cycle_in_cycle_returns_true() {
+        let node = get_test_node([NodeCondition::Cycle].to_vec());
+
+        let solution = Solution::from([
+            GameLine {
+                node_a_id: 0,
+                node_b_id: 1,
+            },
+            GameLine {
+                node_a_id: 1,
+                node_b_id: 2,
+            },
+            GameLine {
+                node_a_id: 2,
+                node_b_id: 3,
+            },
+            GameLine {
+                node_a_id: 0,
+                node_b_id: 3,
+            },
+        ]);
+
+        assert!(is_cycle(&node, &solution))
+    }
+
+    #[test]
+    fn test_cycle_on_branch_connected_to_cycle_returns_false() {
+        let node = get_test_node([NodeCondition::Cycle].to_vec());
+
+        let solution = Solution::from([
+            GameLine {
+                node_a_id: 1,
+                node_b_id: 3,
+            },
+            GameLine {
+                node_a_id: 1,
+                node_b_id: 2,
+            },
+            GameLine {
+                node_a_id: 2,
+                node_b_id: 3,
+            },
+            GameLine {
+                node_a_id: 0,
+                node_b_id: 1,
+            },
+        ]);
+
+        assert!(!is_cycle(&node, &solution))
+    }
+
+    #[test]
+    fn test_cycle_in_cycle_connected_to_branch_returns_true() {
+        let node = get_test_node([NodeCondition::Cycle].to_vec());
+
+        let solution = Solution::from([
+            GameLine {
+                node_a_id: 0,
+                node_b_id: 1,
+            },
+            GameLine {
+                node_a_id: 1,
+                node_b_id: 2,
+            },
+            GameLine {
+                node_a_id: 2,
+                node_b_id: 0,
+            },
+            GameLine {
+                node_a_id: 1,
+                node_b_id: 3,
+            },
+        ]);
+
+        assert!(is_cycle(&node, &solution))
+    }
 }

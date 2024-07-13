@@ -1,5 +1,8 @@
 pub mod active_node {
-    use std::hash::{Hash, Hasher};
+    use std::{
+        collections::HashSet,
+        hash::{Hash, Hasher},
+    };
 
     use bevy::{
         ecs::entity::Entity,
@@ -27,7 +30,7 @@ pub mod active_node {
         // TODO this should not be pub
         pub active_id: ActiveIdentifier,
         pub node: GameNode,
-        pub connections: Vec<GameNodeId>,
+        pub connections: HashSet<GameNodeId>,
         pub sprite: SpriteBundle,
         pub sprite_entity_id: Entity,
         pub active_conditions: Vec<ActiveNodeCondition>,
@@ -73,7 +76,6 @@ pub mod active_node {
     impl Hash for ActiveNode {
         fn hash<H: Hasher>(&self, state: &mut H) {
             self.node.hash(state);
-            self.connections.hash(state);
             // Note: SpriteBundle is not hashed
         }
     }

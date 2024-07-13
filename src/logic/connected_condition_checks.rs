@@ -1,4 +1,6 @@
 pub mod connected_condition_checks {
+    use std::collections::HashSet;
+
     use crate::structs::immutable::{
         game_node::game_node::GameNode,
         solution::solution::{solution_to_adjacency_matrix, Solution},
@@ -21,7 +23,7 @@ pub mod connected_condition_checks {
         // This is safe since max degree is 8 in this game
         let mut degree: u8 = u8::MAX;
         for node in nodes.iter() {
-            let node_degree = adj_matrix.get(&node.id).unwrap_or(&Vec::new()).len() as u8;
+            let node_degree = adj_matrix.get(&node.id).unwrap_or(&HashSet::new()).len() as u8;
             if degree == u8::MAX {
                 degree = node_degree;
                 if degree == 0 {

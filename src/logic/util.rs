@@ -258,6 +258,8 @@ pub fn get_all_satisfied_states(
         }
     });
 
+    println!("finished updating satisfied states map");
+
     satisfied_states
 }
 

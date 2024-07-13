@@ -33,10 +33,7 @@ fn get_rightmost_unlocked_puzzle_position(
 }
 
 fn get_center_position(topmost_position: Vec2, rightmost_position: Vec2) -> Vec2 {
-    Vec2::new(
-        (topmost_position.x + rightmost_position.x) / 2.0,
-        (topmost_position.y + rightmost_position.y) / 2.0,
-    )
+    Vec2::new(rightmost_position.x / 2.0, topmost_position.y / 2.0)
 }
 
 pub(crate) fn get_campaign_puzzle_position(campaign_puzzle: CampaignPuzzle) -> Vec2 {
@@ -57,13 +54,8 @@ pub(crate) fn update_camera(
     let topmost_position = get_topmost_unlocked_puzzle_position(clickable_campaign_puzzles);
     let rightmost_position = get_rightmost_unlocked_puzzle_position(clickable_campaign_puzzles);
 
-    println!("got topmost position {:?}", topmost_position);
-    println!("got rightmost position {:?}", rightmost_position);
-
     // Get the center and move camera there
     let focus_point = get_center_position(topmost_position, rightmost_position);
-
-    println!("got focus point {:?}", focus_point);
 
     **camera_transform = Transform {
         translation: Vec3::new(focus_point.x as f32, focus_point.y as f32, 0.0),
@@ -76,8 +68,6 @@ pub(crate) fn update_camera(
 
     let scale = (distance_x / (window.width() / 2.0) as f64)
         .max(distance_y / (window.height() / 2.0) as f64) as f32;
-
-    println!("got scale {:?}", scale);
 
     camera_projection.scale = scale;
 }

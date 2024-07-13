@@ -1,5 +1,5 @@
 pub mod scene {
-    use std::process::exit;
+    use std::{collections::HashSet, process::exit};
 
     use bevy::{
         app::{App, Update},
@@ -301,7 +301,7 @@ pub mod scene {
 
                 active_nodes.active_nodes.push(ActiveNode {
                     node: node.clone(),
-                    connections: Vec::new(),
+                    connections: HashSet::new(),
                     sprite: node_sprite,
                     satisfied: false,
                     active_id: ActiveIdentifier::new(),

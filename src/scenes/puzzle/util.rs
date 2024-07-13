@@ -842,22 +842,10 @@ pub fn remove_line(
     active_lines: &mut Vec<ActiveLine>,
 ) {
     // Remove connection from start to end
-    if let Some(pos) = start_node
-        .connections
-        .iter()
-        .position(|node_id| *node_id == end_node.node.id)
-    {
-        start_node.connections.remove(pos);
-    }
+    start_node.connections.remove(&end_node.node.id);
 
     // Remove connection from end to start
-    if let Some(pos) = end_node
-        .connections
-        .iter()
-        .position(|node_id| *node_id == start_node.node.id)
-    {
-        end_node.connections.remove(pos);
-    }
+    end_node.connections.remove(&start_node.node.id);
 
     // Remove line from scene
     let first_node = if start_node.node.id < end_node.node.id {
@@ -932,8 +920,8 @@ pub fn add_line(
     };
 
     // Update connections of both start and end node
-    start_node.connections.push(end_node.node.id);
-    end_node.connections.push(start_node.node.id);
+    start_node.connections.insert(end_node.node.id);
+    end_node.connections.insert(start_node.node.id);
 
     // Add line to the screen
     let line_entity_id = commands

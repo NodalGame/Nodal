@@ -3,7 +3,6 @@ pub mod save_data_manager {
 
     use dirs::data_dir;
     use serde::{Deserialize, Serialize};
-    use tracing::info;
     use uuid::Uuid;
 
     use crate::structs::immutable::solution::solution::Solution;

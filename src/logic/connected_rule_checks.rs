@@ -43,10 +43,6 @@ pub mod connected_rule_checks {
             let mut homomorphism = false;
             for mapping in mappings {
                 if is_homomorphism(&mapping, &set_i_sol, &set_j_sol) {
-                    println!(
-                        "Homomorphism found {:?} with set_i {:?} and set_j {:?}",
-                        mapping, set_i_sol, set_j_sol
-                    );
                     homomorphism = true;
                     break;
                 }

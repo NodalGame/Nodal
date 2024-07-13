@@ -14,7 +14,7 @@ pub mod solution {
     pub type Solution = Vec<GameLine>;
 
     /// A hash of node ids to connecting nodes.
-    pub type AdjacencyMatrix = HashMap<GameNodeId, Vec<GameNodeId>>;
+    pub type AdjacencyMatrix = HashMap<GameNodeId, HashSet<GameNodeId>>;
 
     pub fn active_nodes_to_solution(active_nodes: &Vec<ActiveNode>) -> Solution {
         let mut lines_set = HashSet::new();
@@ -38,16 +38,16 @@ pub mod solution {
     ///
     /// TODO solution should be struct, impl Solution .to_adjacency_list fn
     pub fn solution_to_adjacency_matrix(solution: &Solution) -> AdjacencyMatrix {
-        let mut graph = HashMap::new();
+        let mut graph: HashMap<GameNodeId, HashSet<u16>> = HashMap::new();
         for line in solution {
             graph
                 .entry(line.node_a_id)
-                .or_insert(Vec::new())
-                .push(line.node_b_id);
+                .or_insert(HashSet::new())
+                .insert(line.node_b_id);
             graph
                 .entry(line.node_b_id)
-                .or_insert(Vec::new())
-                .push(line.node_a_id);
+                .or_insert(HashSet::new())
+                .insert(line.node_a_id);
         }
         graph
     }
