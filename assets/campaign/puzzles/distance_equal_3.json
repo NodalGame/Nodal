@@ -1,0 +1,29 @@
+{
+    "uuid": "2d65c602-df9f-4602-b942-7d639ef93848",
+    "name": "Distance Equal 3",
+    "width": 4,
+    "height": 1,
+    "nodes": [
+        {
+            "id": 0,
+            "conditions": [],
+            "connected_conditions": [{"DistanceEqual": "Blue"}]
+        },
+        {
+            "id": 1,
+            "conditions": [],
+            "connected_conditions": [{"DistanceEqual": "Blue"}]
+        },
+        {
+            "id": 2,
+            "conditions": [],
+            "connected_conditions": [{"DistanceEqual": "Green"}]
+        },
+        {
+            "id": 3,
+            "conditions": [],
+            "connected_conditions": [{"DistanceEqual": "Green"}]
+        }
+    ],
+    "sets": []
+}

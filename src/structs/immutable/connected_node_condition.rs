@@ -3,7 +3,7 @@ pub mod connected_node_condition {
     use serde::{Deserialize, Serialize};
 
     use crate::{
-        logic::connected_condition_checks::connected_condition_checks::is_degree_equal,
+        logic::connected_condition_checks::connected_condition_checks::{is_degree_equal, is_distance_equal},
         structs::immutable::{game_node::game_node::GameNode, solution::solution::Solution},
         CDTN_RULE_SPRITE_SIZE, COLOR_CDTN_BLUE_UNSAT, COLOR_CDTN_GREEN_UNSAT,
         COLOR_CDTN_PURPLE_UNSAT,
@@ -17,12 +17,15 @@ pub mod connected_node_condition {
         /// This node's degree (number of node connections) must be equal to every other
         /// node with this condition of the same ConditionClass.
         DegreeEqual(ConditionClass),
+        /// All nodes of this ConditionClass must have the same minimum distance to each other.
+        DistanceEqual(ConditionClass),
     }
 
     impl ConnectedNodeCondition {
         pub fn condition_class(&self) -> &ConditionClass {
             match self {
                 ConnectedNodeCondition::DegreeEqual(condition_class) => condition_class,
+                ConnectedNodeCondition::DistanceEqual(condition_class) => condition_class,
             }
         }
 
@@ -40,6 +43,9 @@ pub mod connected_node_condition {
             match self {
                 ConnectedNodeCondition::DegreeEqual(_condition_class) => {
                     is_degree_equal(nodes, solution)
+                }
+                ConnectedNodeCondition::DistanceEqual(_condition_class) => {
+                    is_distance_equal(nodes, solution)
                 }
             }
         }

@@ -1,0 +1,39 @@
+{
+    "uuid": "28a30ff2-1984-4869-9b0d-760b17f89536",
+    "name": "Leaf 2",
+    "width": 3,
+    "height": 2,
+    "nodes": [
+        {
+            "id": 0,
+            "conditions": ["Leaf"],
+            "connected_conditions": []
+        },
+        {
+            "id": 1,
+            "conditions": ["leaf"],
+            "connected_conditions": []
+        },
+        {
+            "id": 2,
+            "conditions": [],
+            "connected_conditions": []
+        },
+        {
+            "id": 3,
+            "conditions": ["Leaf"],
+            "connected_conditions": []
+        },
+        {
+            "id": 4,
+            "conditions": [],
+            "connected_conditions": []
+        },
+        {
+            "id": 5,
+            "conditions": ["Leaf"],
+            "connected_conditions": []
+        }
+    ],
+    "sets": []
+}

@@ -168,6 +168,7 @@ pub mod scene {
         let tex_cdtn_internal = asset_server.load(Texture::CdtnInternal.path());
         let tex_cdtn_cycle = asset_server.load(Texture::CdtnCycle.path());
         let tex_cdtn_degree_equal = asset_server.load(Texture::CdtnDegreeEqual.path());
+        let tex_cdtn_distance_equal = asset_server.load(Texture::CdtnDistanceEqual.path());
 
         // Load set rule textures
         let tex_rule_disconnected = asset_server.load(Texture::SetRuleDisconnected.path());
@@ -266,6 +267,9 @@ pub mod scene {
                     let con_cdtn_texture = match con_cdtn {
                         ConnectedNodeCondition::DegreeEqual(_con_cdtn) => {
                             tex_cdtn_degree_equal.clone()
+                        }
+                        ConnectedNodeCondition::DistanceEqual(_cond_cdtn) => {
+                            tex_cdtn_distance_equal.clone()
                         }
                     };
 

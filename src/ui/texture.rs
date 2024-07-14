@@ -10,6 +10,7 @@ pub mod texture {
         CdtnCycle,
 
         CdtnDegreeEqual,
+        CdtnDistanceEqual,
 
         SetRuleDisconnected,
         SetRuleLeaf,
@@ -84,6 +85,7 @@ pub mod texture {
                 Texture::CdtnCycle => "../assets/textures/sprites/CDTN_CYCLE.png",
 
                 Texture::CdtnDegreeEqual => "../assets/textures/sprites/CDTN_DEGREE_EQUAL.png",
+                Texture::CdtnDistanceEqual => "../assets/textures/sprites/CDTN_DISTANCE_EQUAL.png",
 
                 Texture::SetRuleDisconnected => {
                     "../assets/textures/sprites/SETRULE_DISCONNECTED.png"

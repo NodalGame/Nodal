@@ -1,17 +1,12 @@
 {
     "uuid": "620392de-9a5b-4cbe-a390-7f93ad2f2bab",
     "name": "Nodal Campaign",
-    "width": 5,
-    "height": 5,
+    "width": 6,
+    "height": 6,
     "puzzle_layout": [
         {
             "puzzle_uuid": "37911a8a-41f7-4b4e-b23d-fd4f55e85fef",
             "pos_x": 0,
-            "pos_y": 0
-        },
-        {
-            "puzzle_uuid": "45eade1d-b765-4e12-9c62-d2f7a19726fa",
-            "pos_x": 1,
             "pos_y": 0
         },
         {
@@ -20,8 +15,29 @@
             "pos_y": 1
         },
         {
-            "puzzle_uuid": "fffffffffffffffffffffffffffffff0",
-            "pos_x": 2,
+            "puzzle_uuid": "fffffffffffffffffffffffffffffff1",
+            "pos_x": 0,
+            "pos_y": 2
+        },
+        {
+            "puzzle_uuid": "fffffffffffffffffffffffffffffff3",
+            "pos_x": 0,
+            "pos_y": 3
+        },
+        {
+            "puzzle_uuid": "fffffffffffffffffffffffffffffff5",
+            "pos_x": 0,
+            "pos_y": 4
+        },
+        {
+            "puzzle_uuid": "ad10eca6-fab3-4c2a-bf88-56c112ace8c4",
+            "pos_x": 0,
+            "pos_y": 5
+        },
+
+        {
+            "puzzle_uuid": "45eade1d-b765-4e12-9c62-d2f7a19726fa",
+            "pos_x": 1,
             "pos_y": 0
         },
         {
@@ -30,13 +46,29 @@
             "pos_y": 1
         },
         {
-            "puzzle_uuid": "fffffffffffffffffffffffffffffff1",
-            "pos_x": 0,
-            "pos_y": 2
+            "puzzle_uuid": "ca3299e4-bf71-4cf6-8b9c-cb6a6d8e5792",
+            "pos_x": 1,
+            "pos_y": 2 
         },
         {
-            "puzzle_uuid": "fffffffffffffffffffffffffffffff2",
-            "pos_x": 3,
+            "puzzle_uuid": "746afa9b-3e89-49a3-993d-79a4f681fc5c",
+            "pos_x": 1,
+            "pos_y": 3
+        },
+        {
+            "puzzle_uuid": "fffffffffffffffffffffffffffffff8",
+            "pos_x": 1,
+            "pos_y": 4
+        },
+        {
+            "puzzle_uuid": "401b26c9-dd7d-4fd1-ab2a-ab07b747c60a",
+            "pos_x": 1,
+            "pos_y": 5
+        },
+
+        {
+            "puzzle_uuid": "fffffffffffffffffffffffffffffff0",
+            "pos_x": 2,
             "pos_y": 0
         },
         {
@@ -45,18 +77,29 @@
             "pos_y": 1
         },
         {
-            "puzzle_uuid": "ca3299e4-bf71-4cf6-8b9c-cb6a6d8e5792",
-            "pos_x": 1,
-            "pos_y": 2 
+            "puzzle_uuid": "7a06d4bf-1548-444a-b46b-042bc693512b",
+            "pos_x": 2,
+            "pos_y": 2
         },
         {
-            "puzzle_uuid": "fffffffffffffffffffffffffffffff3",
-            "pos_x": 0,
+            "puzzle_uuid": "d4647270-db27-45d0-ac0d-e0a855918cf2",
+            "pos_x": 2,
             "pos_y": 3
         },
         {
-            "puzzle_uuid": "fffffffffffffffffffffffffffffff4",
-            "pos_x": 4,
+            "puzzle_uuid": "fffffffffffffffffffffffffffffff9",
+            "pos_x": 2,
+            "pos_y": 4
+        },
+        {
+            "puzzle_uuid": "2d65c602-df9f-4602-b942-7d639ef93848",
+            "pos_x": 2,
+            "pos_y": 5
+        },
+
+        {
+            "puzzle_uuid": "fffffffffffffffffffffffffffffff2",
+            "pos_x": 3,
             "pos_y": 0
         },
         {
@@ -65,19 +108,42 @@
             "pos_y": 1
         },
         {
-            "puzzle_uuid": "7a06d4bf-1548-444a-b46b-042bc693512b",
-            "pos_x": 2,
+            "puzzle_uuid": "28a30ff2-1984-4869-9b0d-760b17f89536",
+            "pos_x": 3,
             "pos_y": 2
         },
         {
-            "puzzle_uuid": "746afa9b-3e89-49a3-993d-79a4f681fc5c",
-            "pos_x": 1,
+            "puzzle_uuid": "ffffffffffffffffffffffffffffff11",
+            "pos_x": 3,
             "pos_y": 3
         },
         {
-            "puzzle_uuid": "fffffffffffffffffffffffffffffff5",
-            "pos_x": 0,
+            "puzzle_uuid": "ffffffffffffffffffffffffffffff12",
+            "pos_x": 3,
             "pos_y": 4
+        },
+        {
+            "puzzle_uuid": "3b9b0758-8f26-441e-948d-44943b87c381",
+            "pos_x": 3,
+            "pos_y": 5
+        },
+
+        {
+            "puzzle_uuid": "fffffffffffffffffffffffffffffff4",
+            "pos_x": 4,
+            "pos_y": 0
+        },
+        {
+            "puzzle_uuid": "fffffffffffffffffffffffffffffff7",
+            "pos_x": 4,
+            "pos_y": 1
+        },
+
+        {
+            "puzzle_uuid": "fffffffffffffffffffffffffffffff6",
+            "pos_x": 5,
+            "pos_y": 0
         }
+
     ]
 }

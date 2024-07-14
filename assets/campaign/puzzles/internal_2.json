@@ -1,0 +1,39 @@
+{
+    "uuid": "d4647270-db27-45d0-ac0d-e0a855918cf2",
+    "name": "Internal 2",
+    "width": 3,
+    "height": 2,
+    "nodes": [
+        {
+            "id": 0,
+            "conditions": ["Internal"],
+            "connected_conditions": []
+        },
+        {
+            "id": 1,
+            "conditions": ["Internal"],
+            "connected_conditions": []
+        },
+        {
+            "id": 2,
+            "conditions": [],
+            "connected_conditions": []
+        },
+        {
+            "id": 3,
+            "conditions": [],
+            "connected_conditions": []
+        },
+        {
+            "id": 4,
+            "conditions": ["Internal"],
+            "connected_conditions": []
+        },
+        {
+            "id": 5,
+            "conditions": ["Internal"],
+            "connected_conditions": []
+        }
+    ],
+    "sets": []
+}
