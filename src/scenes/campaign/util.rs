@@ -5,9 +5,7 @@ use bevy::{
 use uuid::Uuid;
 
 use crate::{
-    logic::save_data_manager::save_data_manager::is_solved,
-    scenes::campaign::scene::campaign::{CampaignPuzzle, ClickableCampaignPuzzle},
-    SPRITE_SPACING, TILE_NODE_SPRITE_SIZE,
+    logic::save_data_manager::save_data_manager::is_solved, scenes::campaign::scene::campaign::{CampaignPuzzle, ClickableCampaignPuzzle}, CAMPAIGN_NODE_SPACING, SPRITE_SPACING, TILE_NODE_SPRITE_SIZE
 };
 
 fn get_topmost_unlocked_puzzle_position(
@@ -38,8 +36,8 @@ fn get_center_position(topmost_position: Vec2, rightmost_position: Vec2) -> Vec2
 
 pub(crate) fn get_campaign_puzzle_position(campaign_puzzle: CampaignPuzzle) -> Vec2 {
     Vec2::new(
-        campaign_puzzle.pos_x as f64 * (TILE_NODE_SPRITE_SIZE + SPRITE_SPACING) as f64,
-        campaign_puzzle.pos_y as f64 * (TILE_NODE_SPRITE_SIZE + SPRITE_SPACING) as f64,
+        campaign_puzzle.pos_x as f64 * (TILE_NODE_SPRITE_SIZE + CAMPAIGN_NODE_SPACING) as f64,
+        campaign_puzzle.pos_y as f64 * (TILE_NODE_SPRITE_SIZE + CAMPAIGN_NODE_SPACING) as f64,
     )
 }
 

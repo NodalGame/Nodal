@@ -1,7 +1,7 @@
 {
-    "uuid": "28a30ff2-1984-4869-9b0d-760b17f89536",
-    "name": "Leaf 2",
-    "width": 3,
+    "uuid": "9356cba0-62bc-4b2a-82bb-26320552cf04",
+    "name": "Condition Bridge 2",
+    "width": 2,
     "height": 2,
     "nodes": [
         {
@@ -11,7 +11,7 @@
         },
         {
             "id": 1,
-            "conditions": ["Leaf"],
+            "conditions": [],
             "connected_conditions": []
         },
         {
@@ -21,17 +21,7 @@
         },
         {
             "id": 3,
-            "conditions": ["Leaf"],
-            "connected_conditions": []
-        },
-        {
-            "id": 4,
-            "conditions": [],
-            "connected_conditions": []
-        },
-        {
-            "id": 5,
-            "conditions": ["Leaf"],
+            "conditions": ["Cycle", "Internal"],
             "connected_conditions": []
         }
     ],

@@ -15,6 +15,8 @@ pub(crate) const Z_LINE: f32 = -1.0;
 pub(crate) const Z_SET_RULE_BOX: f32 = 0.0;
 pub(crate) const Z_RULE_CDTN_NODE: f32 = 1.0;
 
+pub(crate) const CAMPAIGN_NODE_SPACING: f32 = 50.0;
+
 pub(crate) const COLOR_CAMPAIGN_PUZZLE_LOCKED: Color = Color::BLACK;
 pub(crate) const COLOR_CAMPAIGN_PUZZLE_UNLOCKED: Color = Color::WHITE;
 pub(crate) const COLOR_CAMPAIGN_PUZZLE_SOLVED: Color =

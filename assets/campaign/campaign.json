@@ -20,12 +20,12 @@
             "pos_y": 2
         },
         {
-            "puzzle_uuid": "fffffffffffffffffffffffffffffff3",
+            "puzzle_uuid": "5707fedc-3a5b-48c9-a765-4e6c4e95a706",
             "pos_x": 0,
             "pos_y": 3
         },
         {
-            "puzzle_uuid": "fffffffffffffffffffffffffffffff5",
+            "puzzle_uuid": "e4b7a697-9a02-40d5-bc89-514c647f3b68",
             "pos_x": 0,
             "pos_y": 4
         },
@@ -98,7 +98,7 @@
         },
 
         {
-            "puzzle_uuid": "fffffffffffffffffffffffffffffff2",
+            "puzzle_uuid": "6190c8f5-0501-4619-a087-679d3c997122",
             "pos_x": 3,
             "pos_y": 0
         },
@@ -129,20 +129,65 @@
         },
 
         {
-            "puzzle_uuid": "fffffffffffffffffffffffffffffff4",
+            "puzzle_uuid": "9356cba0-62bc-4b2a-82bb-26320552cf04",
             "pos_x": 4,
             "pos_y": 0
         },
         {
-            "puzzle_uuid": "fffffffffffffffffffffffffffffff7",
+            "puzzle_uuid": "ffffffffffffffffffffffffffffff13",
             "pos_x": 4,
             "pos_y": 1
+        },
+        {
+            "puzzle_uuid": "ffffffffffffffffffffffffffffff14",
+            "pos_x": 4,
+            "pos_y": 2
+        },
+        {
+            "puzzle_uuid": "ffffffffffffffffffffffffffffff15",
+            "pos_x": 4,
+            "pos_y": 3
+        },
+        {
+            "puzzle_uuid": "ffffffffffffffffffffffffffffff16",
+            "pos_x": 4,
+            "pos_y": 4
+        },
+        {
+            "puzzle_uuid": "ffffffffffffffffffffffffffffff17",
+            "pos_x": 4,
+            "pos_y": 5
         },
 
         {
             "puzzle_uuid": "fffffffffffffffffffffffffffffff6",
             "pos_x": 5,
             "pos_y": 0
+        },
+        {
+            "puzzle_uuid": "ffffffffffffffffffffffffffffff18",
+            "pos_x": 5,
+            "pos_y": 1
+        },
+        {
+            "puzzle_uuid": "ffffffffffffffffffffffffffffff19",
+            "pos_x": 5,
+            "pos_y": 2
+        },
+        {
+            "puzzle_uuid": "ffffffffffffffffffffffffffffff20",
+            "pos_x": 5,
+            "pos_y": 3
+        },
+        {
+            "puzzle_uuid": "ffffffffffffffffffffffffffffff21",
+            "pos_x": 5,
+            "pos_y": 4
+        },
+        {
+            "puzzle_uuid": "ffffffffffffffffffffffffffffff22",
+            "pos_x": 5,
+            "pos_y": 5
         }
 
     ]
