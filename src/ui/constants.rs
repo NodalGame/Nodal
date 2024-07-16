@@ -1,5 +1,6 @@
 use bevy::color::palettes;
 use bevy::color::Color;
+use bevy::math::Vec3;
 
 pub(crate) const TILE_NODE_SPRITE_SIZE: f32 = 100.0;
 pub(crate) const CDTN_RULE_SPRITE_SIZE: f32 = 45.0;
@@ -14,6 +15,9 @@ pub(crate) const Z_SET_FILL: f32 = -2.0;
 pub(crate) const Z_LINE: f32 = -1.0;
 pub(crate) const Z_SET_RULE_BOX: f32 = 0.0;
 pub(crate) const Z_RULE_CDTN_NODE: f32 = 1.0;
+
+pub(crate) const SCALE_NODE_DEFAULT: Vec3 = Vec3::new(1.0, 1.0, 1.0);
+pub(crate) const SCALE_NODE_HOVERED: Vec3 = Vec3::new(1.1, 1.1, 1.1);
 
 pub(crate) const CAMPAIGN_NODE_SPACING: f32 = 50.0;
 

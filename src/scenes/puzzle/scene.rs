@@ -12,7 +12,10 @@ pub mod scene {
             system::{Commands, Query, Res, ResMut, Resource},
         },
         hierarchy::BuildChildren,
-        input::{mouse::MouseButton, ButtonInput},
+        input::{
+            mouse::{self, MouseButton},
+            ButtonInput,
+        },
         math::{Vec2, Vec3},
         prelude::IntoSystemConfigs,
         render::camera::{Camera, OrthographicProjection},
@@ -33,7 +36,7 @@ pub mod scene {
 
     use crate::{
         buttons::icon_button_style,
-        clicked_on_sprite, despawn_screen, get_all_satisfied_states, get_cursor_world_position,
+        despawn_screen, get_all_satisfied_states, is_mouse_over_sprite,
         logic::{
             puzzle::{
                 solution_check::solution_check::is_puzzle_solved,
@@ -70,9 +73,9 @@ pub mod scene {
             },
         },
         texture::Texture,
-        AppState, MainCamera, SelectedPuzzle, CDTN_RULE_SPRITE_SIZE, COLOR_NODE_UNSAT,
-        INTERNAL_SPACING_X, INTERNAL_SPACING_Y, SPRITE_SPACING, STACK_CDTN_RULE_SPACING,
-        TILE_NODE_SPRITE_SIZE, Z_LINE, Z_RULE_CDTN_NODE, Z_SET_RULE_BOX,
+        AppState, Hoverable, MainCamera, MousePosition, SelectedPuzzle, CDTN_RULE_SPRITE_SIZE,
+        COLOR_NODE_UNSAT, INTERNAL_SPACING_X, INTERNAL_SPACING_Y, SPRITE_SPACING,
+        STACK_CDTN_RULE_SPACING, TILE_NODE_SPRITE_SIZE, Z_LINE, Z_RULE_CDTN_NODE, Z_SET_RULE_BOX,
     };
 
     // This plugin will contain a playable puzzle.
@@ -216,6 +219,7 @@ pub mod scene {
                 let node_sprite_id = commands
                     .spawn(node_sprite.clone())
                     .insert(OnPuzzleScene)
+                    .insert(Hoverable)
                     .id();
 
                 let mut active_node_conditions: Vec<ActiveNodeCondition> = vec![];
@@ -555,24 +559,18 @@ pub mod scene {
         mut current_line: ResMut<CurrentLine>,
         mut active_lines: ResMut<ActiveLines>,
         mouse_button_input: Res<ButtonInput<MouseButton>>,
-        q_window: Query<&Window, With<PrimaryWindow>>,
-        q_camera: Query<(&Camera, &GlobalTransform), With<MainCamera>>,
+        mouse_position: Res<MousePosition>,
         mut event_writer: EventWriter<UpdateSatisfiedStates>,
         asset_server: Res<AssetServer>,
     ) {
-        // Get camera info and transform, assuming exacly 1 camera entity
-        let (camera, camera_transform) = q_camera.single();
-
-        // Only one primary window, so get it from query
-        let window = q_window.single();
-
-        // Check if cursor inside window and get its position, convert to world coords, discard Z
-        let world_position = get_cursor_world_position(window, camera, camera_transform);
-
         // On left click, start new line on a clicked node, if exists
         if mouse_button_input.just_pressed(MouseButton::Left) {
             for active_node in active_nodes.active_nodes.iter() {
-                if clicked_on_sprite(&active_node.sprite, world_position) {
+                if is_mouse_over_sprite(
+                    &active_node.sprite.sprite,
+                    active_node.sprite.transform,
+                    mouse_position.position,
+                ) {
                     current_line.start_node_id = Some(active_node.clone().node.id);
                 }
             }
@@ -593,7 +591,11 @@ pub mod scene {
                 .for_each(|active_node| {
                     if active_node.node.id == current_line.start_node_id.unwrap() {
                         opt_start_node = Some(active_node);
-                    } else if clicked_on_sprite(&active_node.sprite, world_position) {
+                    } else if is_mouse_over_sprite(
+                        &active_node.sprite.sprite,
+                        active_node.sprite.transform,
+                        mouse_position.position,
+                    ) {
                         opt_end_node = Some(active_node);
                     }
                 });

@@ -5,7 +5,9 @@ use bevy::{
 use uuid::Uuid;
 
 use crate::{
-    logic::save_data_manager::save_data_manager::is_solved, scenes::campaign::scene::campaign::{CampaignPuzzle, ClickableCampaignPuzzle}, CAMPAIGN_NODE_SPACING, SPRITE_SPACING, TILE_NODE_SPRITE_SIZE
+    logic::save_data_manager::save_data_manager::is_solved,
+    scenes::campaign::scene::campaign::{CampaignPuzzle, ClickableCampaignPuzzle},
+    CAMPAIGN_NODE_SPACING, SPRITE_SPACING, TILE_NODE_SPRITE_SIZE,
 };
 
 fn get_topmost_unlocked_puzzle_position(

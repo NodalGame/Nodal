@@ -30,14 +30,13 @@ pub mod campaign {
 
     use crate::{
         buttons::icon_button_style,
-        clicked_on_sprite, despawn_screen, get_cursor_world_position,
+        despawn_screen, is_mouse_over_sprite,
         logic::save_data_manager::save_data_manager::is_solved,
         puzzle_manager::PuzzleManager,
         scenes::campaign::util::{get_campaign_puzzle_position, is_unlocked, update_camera},
         texture::Texture,
-        AppState, MainCamera, SelectedPuzzle, COLOR_CAMPAIGN_PUZZLE_LOCKED,
-        COLOR_CAMPAIGN_PUZZLE_SOLVED, COLOR_CAMPAIGN_PUZZLE_UNLOCKED, SPRITE_SPACING,
-        TILE_NODE_SPRITE_SIZE,
+        AppState, MainCamera, MousePosition, SelectedPuzzle, COLOR_CAMPAIGN_PUZZLE_LOCKED,
+        COLOR_CAMPAIGN_PUZZLE_SOLVED, COLOR_CAMPAIGN_PUZZLE_UNLOCKED, TILE_NODE_SPRITE_SIZE,
     };
 
     // This plugin will contain a campaign (for now, just the main campaign).
@@ -202,28 +201,22 @@ pub mod campaign {
     }
 
     fn puzzle_select_system(
+        mouse_position: Res<MousePosition>,
         clickable_campaign_puzzles: Res<ClickableCampaignPuzzles>,
         mut app_state: ResMut<NextState<AppState>>,
         mut selected_puzzle: ResMut<SelectedPuzzle>,
         mouse_button_input: Res<ButtonInput<MouseButton>>,
-        q_window: Query<&Window, With<PrimaryWindow>>,
-        q_camera: Query<(&Camera, &GlobalTransform), With<MainCamera>>,
     ) {
-        // Get camera info and transform, assuming exacly 1 camera entity
-        let (camera, camera_transform) = q_camera.single();
-
-        // Only one primary window, so get it from query
-        let window = q_window.single();
-
-        // Check if cursor inside window and get its position, convert to world coords, discard Z
-        let world_position = get_cursor_world_position(window, camera, camera_transform);
-
         // On left click, either enter the puzzle if available, or reject if locked
         if mouse_button_input.just_pressed(MouseButton::Left) {
             for clickable_campaign_puzzle in
                 clickable_campaign_puzzles.clickable_campaign_puzzles.iter()
             {
-                if clicked_on_sprite(&clickable_campaign_puzzle.sprite, world_position) {
+                if is_mouse_over_sprite(
+                    &clickable_campaign_puzzle.sprite.sprite,
+                    clickable_campaign_puzzle.sprite.transform,
+                    mouse_position.position,
+                ) {
                     if clickable_campaign_puzzle.unlocked {
                         selected_puzzle.uuid =
                             clickable_campaign_puzzle.campaign_puzzle.puzzle_uuid;

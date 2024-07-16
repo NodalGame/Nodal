@@ -41,7 +41,7 @@ pub mod connected_condition_checks {
 
     /// Checks if all nodes with the same condition and class have the same
     /// shortest distance between each of them.
-    /// 
+    ///
     /// # Parameters
     ///
     /// - `nodes`: Nodes of the same condition and class in the puzzle.
@@ -49,7 +49,7 @@ pub mod connected_condition_checks {
     ///
     /// # Returns
     ///
-    /// Returns true if all nodes have equal distance, otherwise false. 
+    /// Returns true if all nodes have equal distance, otherwise false.
     pub fn is_distance_equal(nodes: Vec<&GameNode>, solution: &Solution) -> bool {
         let adj_matrix = solution_to_adjacency_matrix(solution);
 
@@ -64,12 +64,12 @@ pub mod connected_condition_checks {
         for (i, &node) in start_nodes.iter().enumerate() {
             index_map.insert(node, i);
         }
-    
+
         let mut dist = vec![vec![usize::MAX; num_nodes]; num_nodes];
         for i in 0..num_nodes {
             dist[i][i] = 0;
         }
-        
+
         for (u, neighbors) in adj_matrix {
             let u_idx = index_map[&u];
             for v in neighbors {
@@ -78,7 +78,7 @@ pub mod connected_condition_checks {
                 dist[v_idx][u_idx] = 1; // because the graph is undirected
             }
         }
-    
+
         // Floyd-Warshall algorithm
         for k in 0..num_nodes {
             for i in 0..num_nodes {
@@ -89,7 +89,7 @@ pub mod connected_condition_checks {
                 }
             }
         }
-    
+
         // Extract distances for the subset
         let mut distances = vec![];
         for i in 0..nodes.len() {
@@ -99,7 +99,7 @@ pub mod connected_condition_checks {
                 distances.push(dist[u_idx][v_idx]);
             }
         }
-    
+
         // Check if all distances are the same
         distances[0] != usize::MAX && distances.iter().all(|&d| d == distances[0])
     }
@@ -108,7 +108,9 @@ pub mod connected_condition_checks {
 #[cfg(test)]
 mod tests {
     use crate::{
-        logic::connected_condition_checks::connected_condition_checks::{is_degree_equal, is_distance_equal},
+        logic::connected_condition_checks::connected_condition_checks::{
+            is_degree_equal, is_distance_equal,
+        },
         structs::immutable::{
             connected_node_condition::connected_node_condition::{
                 ConditionClass, ConnectedNodeCondition,
@@ -272,7 +274,6 @@ mod tests {
         assert!(is_distance_equal(Vec::from([&node]), &solution))
     }
 
-
     #[test]
     fn test_distance_equal_two_nodes_connected_returns_true() {
         let node_a = get_test_node(
@@ -284,12 +285,10 @@ mod tests {
             [ConnectedNodeCondition::DistanceEqual(ConditionClass::Blue)].to_vec(),
         );
 
-        let solution = Solution::from([
-            GameLine {
-                node_a_id: 0,
-                node_b_id: 1,
-            },
-        ]);
+        let solution = Solution::from([GameLine {
+            node_a_id: 0,
+            node_b_id: 1,
+        }]);
 
         assert!(is_distance_equal(Vec::from([&node_a, &node_b]), &solution))
     }
@@ -311,7 +310,7 @@ mod tests {
                 node_b_id: 2,
             },
             GameLine {
-                node_a_id: 1, 
+                node_a_id: 1,
                 node_b_id: 3,
             },
         ]);
@@ -349,7 +348,10 @@ mod tests {
             },
         ]);
 
-        assert!(is_distance_equal(Vec::from([&node_a, &node_b, &node_c]), &solution))
+        assert!(is_distance_equal(
+            Vec::from([&node_a, &node_b, &node_c]),
+            &solution
+        ))
     }
 
     #[test]
@@ -386,7 +388,10 @@ mod tests {
             },
         ]);
 
-        assert!(!is_distance_equal(Vec::from([&node_a, &node_b, &node_c]), &solution))
+        assert!(!is_distance_equal(
+            Vec::from([&node_a, &node_b, &node_c]),
+            &solution
+        ))
     }
 
     #[test]
@@ -427,6 +432,9 @@ mod tests {
             },
         ]);
 
-        assert!(is_distance_equal(Vec::from([&node_a, &node_b, &node_c]), &solution))
+        assert!(is_distance_equal(
+            Vec::from([&node_a, &node_b, &node_c]),
+            &solution
+        ))
     }
 }

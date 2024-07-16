@@ -10,6 +10,7 @@ pub mod backend;
 pub mod logic;
 use bevy::window::WindowMode;
 
+use buttons::button_system;
 use logic::puzzle_manager::*;
 use logic::util::*;
 
@@ -28,6 +29,8 @@ use tracing::Level;
 use tracing_subscriber::FmtSubscriber;
 use ui::buttons::*;
 use ui::constants::*;
+use ui::inputs::inputs::hover_system;
+use ui::inputs::inputs::mouse_position_system;
 use ui::texture::*;
 
 use uuid::Uuid;
@@ -41,6 +44,16 @@ enum AppState {
     Campaign,
     Puzzle,
 }
+
+// Tracks the position of the mouse in the window
+#[derive(Default, Resource)]
+struct MousePosition {
+    position: Vec2,
+}
+
+// Tag component used to tag entties which are hoverable (modifies their size when hovered).
+#[derive(Component)]
+pub struct Hoverable;
 
 // Tag component used to mark which puzzle is currently selected, shared resource in the app
 #[derive(Default, Resource, Debug, Component, PartialEq, Eq, Clone, Copy)]
@@ -60,6 +73,8 @@ fn main() {
     set_global_default(subscriber).expect("Setting default subscriber failed.");
 
     App::new()
+        // Share the MousePosition resource for campaign and puzzle plugins
+        .init_resource::<MousePosition>()
         // Share the SelectedPuzzle resource between menu and puzzle plugin
         .init_resource::<SelectedPuzzle>()
         // Share the CameraControl resource
@@ -85,7 +100,7 @@ fn main() {
         .init_state::<AppState>()
         .add_systems(Startup, setup)
         // .add_systems(Startup, steam_system) // TODO once steam integration seems to work for 0.14 put back
-        .add_systems(Update, buttons::button_system)
+        .add_systems(Update, (button_system, mouse_position_system, hover_system))
         // Adds the plugins for each state
         .add_plugins((splash_plugin, menu_plugin, campaign_plugin, puzzle_plugin))
         .run();

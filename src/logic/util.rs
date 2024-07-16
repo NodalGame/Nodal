@@ -146,26 +146,14 @@ pub fn node_to_position(node: &u16, puzzle: &Puzzle) -> (f32, f32) {
     (x, y)
 }
 
-pub fn clicked_on_sprite(sprite: &SpriteBundle, cursor: Vec2) -> bool {
-    let node_pos = sprite.transform.translation.truncate();
+pub fn is_mouse_over_sprite(sprite: &Sprite, sprite_transform: Transform, cursor: Vec2) -> bool {
+    let node_pos = sprite_transform.translation.truncate();
     let distance = cursor.distance(node_pos);
     // Assuming the sprite size is a good proxy for click detection radius
-    if distance < sprite.sprite.custom_size.unwrap_or(Vec2::MIN).x / 2.0 {
+    if distance < sprite.custom_size.unwrap_or(Vec2::MIN).x / 2.0 {
         return true;
     }
     false
-}
-
-pub fn get_cursor_world_position(
-    window: &Window,
-    camera: &Camera,
-    camera_transform: &GlobalTransform,
-) -> Vec2 {
-    return window
-        .cursor_position()
-        .and_then(|cursor| camera.viewport_to_world(camera_transform, cursor))
-        .map(|ray| ray.origin.truncate())
-        .unwrap_or(Vec2::MIN);
 }
 
 /// Returns SatisfiedStatesMap containing all nodes, conditions, and set rules.
