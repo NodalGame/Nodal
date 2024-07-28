@@ -96,8 +96,6 @@ pub mod connected_condition_checks {
             }
         }
 
-        println!("got distance map {:?}", distances_map);
-
         // Verify that all distances of the relevant nodes are the same
         let mut common_distance: usize = 0;
         for node_u in &nodes {

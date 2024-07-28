@@ -1,0 +1,104 @@
+{
+    "uuid": "02387e9b-4b7d-4407-b6b7-9371a6b5fd91",
+    "name": "Challenge 1",
+    "width": 4,
+    "height": 4,
+    "nodes": [
+        {
+            "id": 0,
+            "conditions": [],
+            "connected_conditions": []
+        },
+        {
+            "id": 1,
+            "conditions": [],
+            "connected_conditions": []
+        },
+        {
+            "id": 2,
+            "conditions": [],
+            "connected_conditions": []
+        },
+        {
+            "id": 3,
+            "conditions": [],
+            "connected_conditions": [{"DistanceEqual": "Blue"}]
+        },
+        {
+            "id": 4,
+            "conditions": [],
+            "connected_conditions": [{"DistanceEqual": "Blue"}]
+        },
+        {
+            "id": 5,
+            "conditions": [],
+            "connected_conditions": []
+        },
+        {
+            "id": 6,
+            "conditions": [],
+            "connected_conditions": []
+        },
+        {
+            "id": 7,
+            "conditions": [],
+            "connected_conditions": [{"DistanceEqual": "Blue"}]
+        },
+        {
+            "id": 8,
+            "conditions": [],
+            "connected_conditions": []
+        },
+        {
+            "id": 9,
+            "conditions": [],
+            "connected_conditions": []
+        },
+        {
+            "id": 10,
+            "conditions": ["BranchEqual"],
+            "connected_conditions": []
+        },
+        {
+            "id": 11,
+            "conditions": [],
+            "connected_conditions": []
+        },
+        {
+            "id": 12,
+            "conditions": [],
+            "connected_conditions": []
+        },
+        {
+            "id": 13,
+            "conditions": ["Leaf"],
+            "connected_conditions": []
+        },
+        {
+            "id": 14,
+            "conditions": [],
+            "connected_conditions": []
+        },
+        {
+            "id": 15,
+            "conditions": [],
+            "connected_conditions": []
+        }
+    ],
+    "sets": [
+        {
+            "id": 0,
+            "nodes": [0, 1, 4, 5],
+            "rules": [],
+            "connected_rules": [{"Homomorphic": "Yellow"}],
+            "bounded": false
+        },
+        {
+            "id": 1,
+            "nodes": [10, 11, 14, 15],
+            "rules": [],
+            "connected_rules": [{"Homomorphic": "Yellow"}],
+            "bounded": true
+        }
+    ]
+}

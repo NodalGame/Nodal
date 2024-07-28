@@ -1,13 +1,12 @@
 use std::collections::HashMap;
 
-use bevy::{prelude::*, sprite::SpriteBundle};
+use bevy::{audio::Source, prelude::*, sprite::SpriteBundle};
 
 use crate::{
     scenes::puzzle::scene::scene::SatisfiedStatesMap,
     structs::{
         active::{
-            active_identifier::active_identifier::ActiveIdentifier,
-            active_node::active_node::ActiveNode, active_set::active_set::ActiveSet,
+            active_identifier::active_identifier::ActiveIdentifier, active_node::active_node::ActiveNode, active_node_condition::active_node_condition::ActiveNodeCondition, active_set::active_set::ActiveSet
         },
         immutable::{
             connected_node_condition::connected_node_condition::ConnectedNodeCondition,
@@ -15,7 +14,7 @@ use crate::{
             game_node::game_node::{GameNode, GameNodeId},
             game_set::game_set::GameSet,
             puzzle::puzzle::Puzzle,
-            solution::solution::active_nodes_to_solution,
+            solution::solution::{active_nodes_to_solution, Solution},
         },
     },
     SPRITE_SPACING,
@@ -156,6 +155,33 @@ pub fn is_mouse_over_sprite(sprite: &Sprite, sprite_transform: Transform, cursor
     false
 }
 
+/// Returns the bounded solution(s) for a given node if within a bounded set. If not in any bounded sets, it will
+/// return only the main solution. 
+fn get_bounded_solutions(node_id: &GameNodeId, active_sets: &Vec<ActiveSet>, solution: &Solution) -> Vec<Solution> {
+    let mut bounded_solutions: Vec<Solution> = vec![];
+
+    active_sets.iter().for_each(|set| {
+        if set.set.bounded && set.set.nodes.contains(node_id) {
+            // Construct a new bounded solution consisting of only game lines which contain nodes both within the bounded set.
+            let mut bounded_solution: Solution = vec![];
+
+            solution.iter().for_each(|game_line| {
+                if set.set.nodes.contains(&game_line.node_a_id) && set.set.nodes.contains(&game_line.node_b_id) {
+                    bounded_solution.push(*game_line);
+                }
+            });
+
+            bounded_solutions.push(bounded_solution);
+        }
+    });
+
+    if bounded_solutions.is_empty() {
+        [solution.clone()].to_vec()
+    } else {
+        bounded_solutions
+    }
+}
+
 /// Returns SatisfiedStatesMap containing all nodes, conditions, and set rules.
 pub fn get_all_satisfied_states(
     active_nodes: &Vec<ActiveNode>,
@@ -167,10 +193,23 @@ pub fn get_all_satisfied_states(
     // Check all nodes and their conditions
     for node in active_nodes.iter() {
         satisfied_states.insert(node.active_id, node.check_satisfied(&solution));
+
+        // Get the bounded solution for the condition if bounded, otherwise the original solution
+        let bounded_solutions = get_bounded_solutions(&node.node.id, &active_sets, &solution);
+
+        // Get the satisfied states of each condition. 
         for condition in node.active_conditions.iter() {
+            let mut all_bounds_satisfied = true;
+
+            bounded_solutions.iter().for_each(|bounded_solution| {
+                if !condition.check_satisfied(&node, &bounded_solution) {
+                    all_bounds_satisfied = false;
+                }
+            });
+        
             satisfied_states.insert(
                 condition.active_id,
-                condition.check_satisfied(&node, &solution),
+                all_bounds_satisfied,
             );
         }
     }
