@@ -1,0 +1,39 @@
+{
+    "uuid": "76a62d2a-5f0d-4d29-bd30-5c8f93a288ae",
+    "name": "Degree Equal 3",
+    "width": 3,
+    "height": 2,
+    "nodes": [
+        {
+            "id": 0,
+            "conditions": [],
+            "connected_conditions": [{"DegreeEqual": "Blue"}]
+        },
+        {
+            "id": 1,
+            "conditions": [],
+            "connected_conditions": [{"DegreeEqual": "Blue"}]
+        },
+        {
+            "id": 2,
+            "conditions": [],
+            "connected_conditions": [{"DegreeEqual": "Green"}]
+        },
+        {
+            "id": 3,
+            "conditions": [],
+            "connected_conditions": [{"DegreeEqual": "Green"}]
+        },
+        {
+            "id": 4,
+            "conditions": [],
+            "connected_conditions": [{"DegreeEqual": "Blue"}]
+        },
+        {
+            "id": 5,
+            "conditions": [],
+            "connected_conditions": [{"DegreeEqual": "Blue"}]
+        }
+    ],
+    "sets": []
+}

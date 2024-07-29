@@ -1,0 +1,32 @@
+{
+    "uuid": "7b56833d-f2d3-4073-a969-5e046c1e48cf",
+    "name": "Bounded & Leaf",
+    "width": 3,
+    "height": 1,
+    "nodes": [
+        {
+            "id": 0,
+            "conditions": [],
+            "connected_conditions": []
+        },
+        {
+            "id": 1,
+            "conditions": ["Leaf"],
+            "connected_conditions": []
+        },
+        {
+            "id": 2,
+            "conditions": [],
+            "connected_conditions": []
+        }
+    ],
+    "sets": [
+        {
+            "id": 0,
+            "nodes": [1, 2],
+            "rules": [],
+            "connected_rules": [],
+            "bounded": true
+        }
+    ]
+}

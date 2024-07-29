@@ -1,0 +1,24 @@
+{
+    "uuid": "b972fd20-5d36-499a-b019-9dc08b1182d9",
+    "name": "Degree Equal 1",
+    "width": 3,
+    "height": 1,
+    "nodes": [
+        {
+            "id": 0,
+            "conditions": [],
+            "connected_conditions": [{"DegreeEqual": "Blue"}]
+        },
+        {
+            "id": 1,
+            "conditions": [],
+            "connected_conditions": []
+        },
+        {
+            "id": 2,
+            "conditions": [],
+            "connected_conditions": [{"DegreeEqual": "Blue"}]
+        }
+    ],
+    "sets": []
+}
