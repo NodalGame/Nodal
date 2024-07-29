@@ -1,8 +1,8 @@
 {
     "uuid": "620392de-9a5b-4cbe-a390-7f93ad2f2bab",
     "name": "Nodal Campaign",
-    "width": 6,
-    "height": 6,
+    "width": 7,
+    "height": 7,
     "puzzle_layout": [
         {
             "puzzle_uuid": "37911a8a-41f7-4b4e-b23d-fd4f55e85fef",
@@ -33,6 +33,11 @@
             "puzzle_uuid": "ad10eca6-fab3-4c2a-bf88-56c112ace8c4",
             "pos_x": 0,
             "pos_y": 5
+        },
+        {
+            "puzzle_uuid": "2d65c602-df9f-4602-b942-7d639ef93848",
+            "pos_x": 0,
+            "pos_y": 6
         },
 
         {
@@ -65,6 +70,11 @@
             "pos_x": 1,
             "pos_y": 5
         },
+        {
+            "puzzle_uuid": "3b9b0758-8f26-441e-948d-44943b87c381",
+            "pos_x": 1,
+            "pos_y": 6
+        },
 
         {
             "puzzle_uuid": "02387e9b-4b7d-4407-b6b7-9371a6b5fd91",
@@ -92,9 +102,14 @@
             "pos_y": 4
         },
         {
-            "puzzle_uuid": "2d65c602-df9f-4602-b942-7d639ef93848",
+            "puzzle_uuid": "fffffffffffffffffffffffffffffabc",
             "pos_x": 2,
             "pos_y": 5
+        },
+        {
+            "puzzle_uuid": "e92ca70e-3827-4028-a46a-d17597ce4c14",
+            "pos_x": 2,
+            "pos_y": 6
         },
 
         {
@@ -123,9 +138,14 @@
             "pos_y": 4
         },
         {
-            "puzzle_uuid": "3b9b0758-8f26-441e-948d-44943b87c381",
+            "puzzle_uuid": "fffffffffffffffffffffffffffffadb",
             "pos_x": 3,
             "pos_y": 5
+        },
+        {
+            "puzzle_uuid": "7b56833d-f2d3-4073-a969-5e046c1e48cf",
+            "pos_x": 3,
+            "pos_y": 6
         },
 
         {
@@ -154,9 +174,14 @@
             "pos_y": 4
         },
         {
-            "puzzle_uuid": "e92ca70e-3827-4028-a46a-d17597ce4c14",
+            "puzzle_uuid": "fffffffffffffffffffffffffffffab3",
             "pos_x": 4,
             "pos_y": 5
+        },
+        {
+            "puzzle_uuid": "32c47e95-1bf1-4aa9-b6ec-5149aaf4b2db",
+            "pos_x": 4,
+            "pos_y": 6
         },
 
         {
@@ -170,25 +195,64 @@
             "pos_y": 1
         },
         {
-            "puzzle_uuid": "76a62d2a-5f0d-4d29-bd30-5c8f93a288ae",
+            "puzzle_uuid": "fffffffffffffffffffffffffffffbae",
             "pos_x": 5,
             "pos_y": 2
         },
         {
-            "puzzle_uuid": "d544675c-7a1c-4779-8692-07aa70f524d4",
+            "puzzle_uuid": "fffffffffffffffffffffffffffffabf",
             "pos_x": 5,
             "pos_y": 3
         },
         {
-            "puzzle_uuid": "49981bc4-23f9-4c8b-9f2c-702c5a2a2a03",
+            "puzzle_uuid": "ffffffffffffffffffffffffffffaaaf",
             "pos_x": 5,
             "pos_y": 4
         },
         {
-            "puzzle_uuid": "7b56833d-f2d3-4073-a969-5e046c1e48cf",
+            "puzzle_uuid": "fffffffffffffffffffffffffffffdbc",
             "pos_x": 5,
             "pos_y": 5
-        }
+        },
+        {
+            "puzzle_uuid": "fffffffffffffffffffffffffffffaaf",
+            "pos_x": 5,
+            "pos_y": 6
+        },
 
+        {
+            "puzzle_uuid": "76a62d2a-5f0d-4d29-bd30-5c8f93a288ae",
+            "pos_x": 6,
+            "pos_y": 0
+        },        {
+            "puzzle_uuid": "d544675c-7a1c-4779-8692-07aa70f524d4",
+            "pos_x": 6,
+            "pos_y": 1
+        },
+        {
+            "puzzle_uuid": "49981bc4-23f9-4c8b-9f2c-702c5a2a2a03",
+            "pos_x": 6,
+            "pos_y": 2
+        },
+        {
+            "puzzle_uuid": "7c565955-0d7e-48ee-9f75-4c245f4b93b5",
+            "pos_x": 6,
+            "pos_y": 3
+        },
+        {
+            "puzzle_uuid": "e1e63f3f-a7f6-41c1-9dcd-857c1a2ee561",
+            "pos_x": 6,
+            "pos_y": 4
+        },
+        {
+            "puzzle_uuid": "fffffffffffffffffffffffffffffabf",
+            "pos_x": 6,
+            "pos_y": 5
+        },
+        {
+            "puzzle_uuid": "fffffffffffffffffffffffffffffaca",
+            "pos_x": 6,
+            "pos_y": 6
+        }
     ]
 }

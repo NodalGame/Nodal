@@ -1,21 +1,26 @@
 {
-    "uuid": "7b56833d-f2d3-4073-a969-5e046c1e48cf",
-    "name": "Bounded & Leaf",
-    "width": 3,
-    "height": 1,
+    "uuid": "7c565955-0d7e-48ee-9f75-4c245f4b93b5",
+    "name": "Bounded & Internal 1",
+    "width": 2,
+    "height": 2,
     "nodes": [
         {
             "id": 0,
-            "conditions": [],
+            "conditions": ["Internal"],
             "connected_conditions": []
         },
         {
             "id": 1,
-            "conditions": ["Leaf"],
+            "conditions": [],
             "connected_conditions": []
         },
         {
             "id": 2,
+            "conditions": [],
+            "connected_conditions": []
+        }, 
+        {
+            "id": 3,
             "conditions": [],
             "connected_conditions": []
         }
@@ -23,7 +28,7 @@
     "sets": [
         {
             "id": 0,
-            "nodes": [1, 2],
+            "nodes": [0, 1, 3],
             "rules": [],
             "connected_rules": [],
             "bounded": true

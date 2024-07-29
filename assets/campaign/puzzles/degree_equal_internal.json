@@ -12,22 +12,22 @@
         {
             "id": 1,
             "conditions": ["Internal"],
-            "connected_conditions": [{"DistanceEqual": "Blue"}]
+            "connected_conditions": [{"DegreeEqual": "Blue"}]
         },
         {
             "id": 2,
             "conditions": [],
-            "connected_conditions": [{"DistanceEqual": "Blue"}]
+            "connected_conditions": [{"DegreeEqual": "Blue"}]
         },
         {
             "id": 3,
             "conditions": ["Internal"],
-            "connected_conditions": [{"DistanceEqual": "Green"}]
+            "connected_conditions": [{"DegreeEqual": "Green"}]
         },
         {
             "id": 4,
             "conditions": [],
-            "connected_conditions": [{"DistanceEqual": "Green"}]
+            "connected_conditions": [{"DegreeEqual": "Green"}]
         },
         {
             "id": 5,

@@ -50,6 +50,6 @@ pub(crate) const COLOR_RULE_ORANGE_UNSAT: Color = bevy::prelude::Color::Srgba(pa
 pub(crate) const COLOR_RULE_RED_SAT: Color = bevy::prelude::Color::Srgba(palettes::basic::RED);
 pub(crate) const COLOR_RULE_RED_UNSAT: Color = bevy::prelude::Color::Srgba(palettes::css::CRIMSON);
 
-pub(crate) const COLOR_SET_0: Color = Color::srgba(1.0, 0.0, 0.0, 0.5);
-pub(crate) const COLOR_SET_1: Color = Color::srgba(0.0, 1.0, 0.0, 0.5);
-pub(crate) const COLOR_SET_2: Color = Color::srgba(0.0, 0.0, 1.0, 0.5);
+pub(crate) const COLOR_SET_0: Color = Color::srgba(1.0, 0.0, 0.0, 0.3);
+pub(crate) const COLOR_SET_1: Color = Color::srgba(1.0, 1.0, 0.0, 0.3);
+pub(crate) const COLOR_SET_2: Color = Color::srgba(1.0, 0.5, 0.0, 0.3);

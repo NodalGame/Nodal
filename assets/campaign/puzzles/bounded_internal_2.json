@@ -1,0 +1,32 @@
+{
+    "uuid": "e1e63f3f-a7f6-41c1-9dcd-857c1a2ee561",
+    "name": "Bounded & Internal 2",
+    "width": 3,
+    "height": 1,
+    "nodes": [
+        {
+            "id": 0,
+            "conditions": [],
+            "connected_conditions": []
+        },
+        {
+            "id": 1,
+            "conditions": ["Internal"],
+            "connected_conditions": []
+        },
+        {
+            "id": 2,
+            "conditions": [],
+            "connected_conditions": []
+        }
+    ],
+    "sets": [
+        {
+            "id": 0,
+            "nodes": [0],
+            "rules": [],
+            "connected_rules": [],
+            "bounded": true
+        }
+    ]
+}
