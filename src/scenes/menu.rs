@@ -8,7 +8,6 @@ pub mod menu {
             button_icon_style, button_text_style, text_button_style, NORMAL_BUTTON, TEXT_COLOR,
         },
         despawn_screen,
-        puzzle_manager::PuzzleManager,
         texture::Texture,
         AppState, SelectedPuzzle,
     };

@@ -2,7 +2,8 @@ pub mod game_set {
     use serde::{Deserialize, Serialize};
 
     use crate::structs::immutable::{
-        connected_set_rule::connected_set_rule::ConnectedSetRule, game_node::game_node::GameNodeId, set_rule::set_rule::SetRule
+        connected_set_rule::connected_set_rule::ConnectedSetRule, game_node::game_node::GameNodeId,
+        set_rule::set_rule::SetRule,
     };
 
     /// Set contains nodes over which it applies SetRules.

@@ -10,13 +10,13 @@ pub mod campaign {
         input::{mouse::MouseButton, ButtonInput},
         math::Vec2,
         prelude::{Component, IntoSystemConfigs, Resource},
-        render::camera::{Camera, OrthographicProjection},
+        render::camera::OrthographicProjection,
         sprite::{Sprite, SpriteBundle},
         state::{
             condition::in_state,
             state::{NextState, OnEnter, OnExit},
         },
-        transform::components::{GlobalTransform, Transform},
+        transform::components::Transform,
         ui::{
             node_bundles::{ButtonBundle, NodeBundle},
             widget::Button,

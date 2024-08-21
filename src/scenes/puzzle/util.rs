@@ -4,7 +4,7 @@ use bevy::{
     asset::{AssetServer, Handle},
     color::Color,
     math::Vec2,
-    prelude::{default, Commands, Res},
+    prelude::{default, Commands},
     render::texture::Image,
     sprite::{Sprite, SpriteBundle},
     transform::components::Transform,
@@ -18,7 +18,8 @@ use crate::{
     structs::{
         active::{
             active_identifier::active_identifier::ActiveIdentifier,
-            active_line::active_line::ActiveLine, active_node::active_node::ActiveNode, active_set::active_set::ActiveSet,
+            active_line::active_line::ActiveLine, active_node::active_node::ActiveNode,
+            active_set::active_set::ActiveSet,
         },
         immutable::{
             game_node::game_node::GameNodeId, game_set::game_set::GameSet, puzzle::puzzle::Puzzle,

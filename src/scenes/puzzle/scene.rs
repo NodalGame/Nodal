@@ -12,26 +12,22 @@ pub mod scene {
             system::{Commands, Query, Res, ResMut, Resource},
         },
         hierarchy::BuildChildren,
-        input::{
-            mouse::{self, MouseButton},
-            ButtonInput,
-        },
+        input::{mouse::MouseButton, ButtonInput},
         math::{Vec2, Vec3},
         prelude::IntoSystemConfigs,
-        render::camera::{Camera, OrthographicProjection},
+        render::camera::OrthographicProjection,
         sprite::{Sprite, SpriteBundle},
         state::{
             condition::in_state,
             state::{NextState, OnEnter, OnExit},
         },
-        transform::components::{GlobalTransform, Transform},
+        transform::components::Transform,
         ui::{
             node_bundles::{ButtonBundle, NodeBundle},
             widget::Button,
             AlignItems, Interaction, JustifyContent, Style, UiImage, Val,
         },
         utils::HashMap,
-        window::{PrimaryWindow, Window},
     };
 
     use crate::{
@@ -47,35 +43,30 @@ pub mod scene {
         node_to_position,
         puzzle_manager::PuzzleManager,
         scenes::puzzle::util::{
-            add_line, clear_all_lines, get_color_for_set_tile, get_line_texture,
-            get_mut_start_end_nodes, get_set_tiles, remove_line, unload_active_elements,
+            add_line, clear_all_lines, get_color_for_set_tile, get_mut_start_end_nodes,
+            get_set_tiles, remove_line, unload_active_elements,
         },
         structs::{
             active::{
                 active_connected_node_condition::active_connected_node_condition::ActiveConnectedNodeCondition,
                 active_connected_set_rule::active_connected_set_rule::ActiveConnectedSetRule,
                 active_identifier::active_identifier::ActiveIdentifier,
-                active_line::{self, active_line::ActiveLine},
-                active_node::active_node::ActiveNode,
+                active_line::active_line::ActiveLine, active_node::active_node::ActiveNode,
                 active_node_condition::active_node_condition::ActiveNodeCondition,
-                active_set::active_set::ActiveSet,
-                active_set_rule::active_set_rule::ActiveSetRule,
+                active_set::active_set::ActiveSet, active_set_rule::active_set_rule::ActiveSetRule,
                 traits::traits::Satisfiable,
             },
             immutable::{
                 connected_node_condition::connected_node_condition::ConnectedNodeCondition,
                 connected_set_rule::connected_set_rule::ConnectedSetRule,
-                game_line::game_line::GameLine,
-                game_node::game_node::GameNodeId,
-                node_condition::node_condition::NodeCondition,
-                set_rule::set_rule::SetRule,
-                solution::solution::{active_nodes_to_solution, Solution},
+                game_node::game_node::GameNodeId, node_condition::node_condition::NodeCondition,
+                set_rule::set_rule::SetRule, solution::solution::active_nodes_to_solution,
             },
         },
         texture::Texture,
         AppState, Hoverable, MainCamera, MousePosition, SelectedPuzzle, CDTN_RULE_SPRITE_SIZE,
         COLOR_NODE_UNSAT, INTERNAL_SPACING_X, INTERNAL_SPACING_Y, SPRITE_SPACING,
-        STACK_CDTN_RULE_SPACING, TILE_NODE_SPRITE_SIZE, Z_LINE, Z_RULE_CDTN_NODE, Z_SET_RULE_BOX,
+        STACK_CDTN_RULE_SPACING, TILE_NODE_SPRITE_SIZE, Z_RULE_CDTN_NODE, Z_SET_RULE_BOX,
     };
 
     // This plugin will contain a playable puzzle.

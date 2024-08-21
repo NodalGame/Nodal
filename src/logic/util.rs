@@ -1,12 +1,13 @@
 use std::collections::HashMap;
 
-use bevy::{audio::Source, prelude::*, sprite::SpriteBundle};
+use bevy::prelude::*;
 
 use crate::{
     scenes::puzzle::scene::scene::SatisfiedStatesMap,
     structs::{
         active::{
-            active_identifier::active_identifier::ActiveIdentifier, active_node::active_node::ActiveNode, active_node_condition::active_node_condition::ActiveNodeCondition, active_set::active_set::ActiveSet
+            active_identifier::active_identifier::ActiveIdentifier,
+            active_node::active_node::ActiveNode, active_set::active_set::ActiveSet,
         },
         immutable::{
             connected_node_condition::connected_node_condition::ConnectedNodeCondition,
@@ -156,8 +157,12 @@ pub fn is_mouse_over_sprite(sprite: &Sprite, sprite_transform: Transform, cursor
 }
 
 /// Returns the bounded solution(s) for a given node if within a bounded set. If not in any bounded sets, it will
-/// return only the main solution. 
-fn get_bounded_solutions(node_id: &GameNodeId, active_sets: &Vec<ActiveSet>, solution: &Solution) -> Vec<Solution> {
+/// return only the main solution.
+fn get_bounded_solutions(
+    node_id: &GameNodeId,
+    active_sets: &Vec<ActiveSet>,
+    solution: &Solution,
+) -> Vec<Solution> {
     let mut bounded_solutions: Vec<Solution> = vec![];
 
     active_sets.iter().for_each(|set| {
@@ -166,7 +171,9 @@ fn get_bounded_solutions(node_id: &GameNodeId, active_sets: &Vec<ActiveSet>, sol
             let mut bounded_solution: Solution = vec![];
 
             solution.iter().for_each(|game_line| {
-                if set.set.nodes.contains(&game_line.node_a_id) && set.set.nodes.contains(&game_line.node_b_id) {
+                if set.set.nodes.contains(&game_line.node_a_id)
+                    && set.set.nodes.contains(&game_line.node_b_id)
+                {
                     bounded_solution.push(*game_line);
                 }
             });
@@ -190,7 +197,13 @@ pub fn get_all_satisfied_states(
     let mut satisfied_states: SatisfiedStatesMap = SatisfiedStatesMap::new();
     let solution = active_nodes_to_solution(&active_nodes);
 
-    println!("active sets: {:?}", active_sets.iter().map(|set| set.set.id).collect::<Vec<u8>>());
+    println!(
+        "active sets: {:?}",
+        active_sets
+            .iter()
+            .map(|set| set.set.id)
+            .collect::<Vec<u8>>()
+    );
 
     // Check all nodes and their conditions
     for node in active_nodes.iter() {
@@ -201,7 +214,7 @@ pub fn get_all_satisfied_states(
 
         println!("got bounded solutions {:?}", bounded_solutions);
 
-        // Get the satisfied states of each condition. 
+        // Get the satisfied states of each condition.
         for condition in node.active_conditions.iter() {
             let mut all_bounds_satisfied = true;
 
@@ -210,11 +223,8 @@ pub fn get_all_satisfied_states(
                     all_bounds_satisfied = false;
                 }
             });
-        
-            satisfied_states.insert(
-                condition.active_id,
-                all_bounds_satisfied,
-            );
+
+            satisfied_states.insert(condition.active_id, all_bounds_satisfied);
         }
     }
 

@@ -35,12 +35,12 @@ pub(crate) const COLOR_RULE_UNSAT: Color = Color::BLACK;
 pub(crate) const COLOR_CDTN_SAT: Color = Color::BLACK;
 pub(crate) const COLOR_CDTN_UNSAT: Color = Color::WHITE;
 pub(crate) const COLOR_CDTN_BLUE_SAT: Color = bevy::prelude::Color::Srgba(palettes::css::DARK_BLUE);
-pub(crate) const COLOR_CDTN_BLUE_UNSAT: Color = bevy::prelude::Color::Srgba(palettes::css::SKY_BLUE);
+pub(crate) const COLOR_CDTN_BLUE_UNSAT: Color =
+    bevy::prelude::Color::Srgba(palettes::css::SKY_BLUE);
 pub(crate) const COLOR_CDTN_PURPLE_SAT: Color = Color::srgb(0.9, 0.0, 0.9);
 pub(crate) const COLOR_CDTN_PURPLE_UNSAT: Color = Color::srgb(0.3, 0.0, 0.3);
 pub(crate) const COLOR_CDTN_GREEN_SAT: Color = bevy::prelude::Color::Srgba(palettes::basic::GREEN);
-pub(crate) const COLOR_CDTN_GREEN_UNSAT: Color =
-    bevy::prelude::Color::Srgba(palettes::basic::LIME);
+pub(crate) const COLOR_CDTN_GREEN_UNSAT: Color = bevy::prelude::Color::Srgba(palettes::basic::LIME);
 pub(crate) const COLOR_RULE_YELLOW_SAT: Color =
     bevy::prelude::Color::Srgba(palettes::basic::YELLOW);
 pub(crate) const COLOR_RULE_YELLOW_UNSAT: Color =

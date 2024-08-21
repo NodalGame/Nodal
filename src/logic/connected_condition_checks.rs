@@ -1,5 +1,8 @@
 pub mod connected_condition_checks {
-    use std::{collections::{HashMap, HashSet}, usize};
+    use std::{
+        collections::{HashMap, HashSet},
+        usize,
+    };
 
     use crate::structs::immutable::{
         game_node::game_node::{GameNode, GameNodeId},
@@ -59,38 +62,57 @@ pub mod connected_condition_checks {
         }
 
         let mut distances_map: HashMap<GameNodeId, HashMap<GameNodeId, usize>> = HashMap::new();
-    
+
         // Distance to itself is 0
         for node in &nodes {
             distances_map.insert(node.id, HashMap::from([(node.id, 0)]));
         }
-    
+
         // Weight of every edge between nodes is 1
         for (node_u, neighbors_u) in adj_matrix {
             for node_v in neighbors_u {
-                let mut distances_u: HashMap<GameNodeId, usize> = distances_map.get(&node_u).unwrap_or(&HashMap::new()).clone();
+                let mut distances_u: HashMap<GameNodeId, usize> = distances_map
+                    .get(&node_u)
+                    .unwrap_or(&HashMap::new())
+                    .clone();
                 distances_u.insert(node_v, 1);
                 distances_map.insert(node_u, distances_u.clone());
             }
         }
-    
+
         // Floyd-Warshall algorithm
         let distances: Vec<GameNodeId> = distances_map.keys().cloned().collect();
         for &k in &distances {
             for &i in &distances {
                 for &j in &distances {
                     let new_dist = {
-                        let dist_i = distances_map.get(&i).and_then(|m| m.get(&k)).copied().unwrap_or(usize::MAX);
-                        let dist_j = distances_map.get(&k).and_then(|m| m.get(&j)).copied().unwrap_or(usize::MAX);
+                        let dist_i = distances_map
+                            .get(&i)
+                            .and_then(|m| m.get(&k))
+                            .copied()
+                            .unwrap_or(usize::MAX);
+                        let dist_j = distances_map
+                            .get(&k)
+                            .and_then(|m| m.get(&j))
+                            .copied()
+                            .unwrap_or(usize::MAX);
                         if dist_i == usize::MAX || dist_j == usize::MAX {
                             usize::MAX
                         } else {
                             dist_i.saturating_add(dist_j)
                         }
                     };
-    
-                    if new_dist < *distances_map.get(&i).and_then(|m| m.get(&j)).unwrap_or(&usize::MAX) {
-                        distances_map.entry(i).or_insert_with(HashMap::new).insert(j, new_dist);
+
+                    if new_dist
+                        < *distances_map
+                            .get(&i)
+                            .and_then(|m| m.get(&j))
+                            .unwrap_or(&usize::MAX)
+                    {
+                        distances_map
+                            .entry(i)
+                            .or_insert_with(HashMap::new)
+                            .insert(j, new_dist);
                     }
                 }
             }
@@ -101,7 +123,11 @@ pub mod connected_condition_checks {
         for node_u in &nodes {
             for node_v in &nodes {
                 if node_u.id != node_v.id {
-                    let distance_v = distances_map.get(&node_u.id).and_then(|m| m.get(&node_v.id)).copied().unwrap_or(usize::MAX);
+                    let distance_v = distances_map
+                        .get(&node_u.id)
+                        .and_then(|m| m.get(&node_v.id))
+                        .copied()
+                        .unwrap_or(usize::MAX);
                     if common_distance == 0 {
                         common_distance = distance_v;
                     } else if distance_v != common_distance {
@@ -111,7 +137,7 @@ pub mod connected_condition_checks {
             }
         }
 
-        // Final check to verify they aren't all disconnected 
+        // Final check to verify they aren't all disconnected
         common_distance != usize::MAX
     }
 }
@@ -251,8 +277,8 @@ mod tests {
     #[test]
     fn test_distance_equal_multiple_nodes_with_some_distance_equal_returns_false() {
         let node_a = get_test_node(
-            1, 
-        [ConnectedNodeCondition::DistanceEqual(ConditionClass::Blue)].to_vec(),
+            1,
+            [ConnectedNodeCondition::DistanceEqual(ConditionClass::Blue)].to_vec(),
         );
         let node_b = get_test_node(
             3,
@@ -267,14 +293,15 @@ mod tests {
             [ConnectedNodeCondition::DistanceEqual(ConditionClass::Blue)].to_vec(),
         );
 
-        let solution = Solution::from([
-            GameLine {
-                node_a_id: 1,
-                node_b_id: 3,
-            },
-        ]);
+        let solution = Solution::from([GameLine {
+            node_a_id: 1,
+            node_b_id: 3,
+        }]);
 
-        assert!(!is_distance_equal(Vec::from([&node_d, &node_a, &node_b, &node_c]), &solution))
+        assert!(!is_distance_equal(
+            Vec::from([&node_d, &node_a, &node_b, &node_c]),
+            &solution
+        ))
     }
 
     #[test]

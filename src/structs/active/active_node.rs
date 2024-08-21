@@ -6,12 +6,10 @@ pub mod active_node {
 
     use bevy::{
         ecs::entity::Entity,
-        math::Vec2,
         sprite::{Sprite, SpriteBundle},
     };
 
     use crate::{
-        is_mouse_over_sprite,
         structs::{
             active::{
                 active_connected_node_condition::active_connected_node_condition::ActiveConnectedNodeCondition,
@@ -24,7 +22,7 @@ pub mod active_node {
                 solution::solution::Solution,
             },
         },
-        COLOR_NODE_SAT, COLOR_NODE_UNSAT, SCALE_NODE_DEFAULT, SCALE_NODE_HOVERED,
+        COLOR_NODE_SAT, COLOR_NODE_UNSAT,
     };
 
     #[derive(Clone)]
