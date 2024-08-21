@@ -740,7 +740,7 @@ pub mod scene {
             (Changed<Interaction>, With<Button>),
         >,
         mut active_nodes: ResMut<ActiveNodes>,
-        active_sets: Res<ActiveSets>,
+        mut active_sets: ResMut<ActiveSets>,
         mut active_lines: ResMut<ActiveLines>,
         puzzle: Res<SelectedPuzzle>,
         _q_sprites: Query<&mut Sprite>,
@@ -798,6 +798,7 @@ pub mod scene {
                         unload_active_elements(
                             &mut commands,
                             &mut active_nodes.active_nodes,
+                            &mut active_sets.active_sets,
                             &mut active_lines.lines,
                         );
                         app_state.set(AppState::Campaign);

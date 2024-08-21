@@ -18,7 +18,7 @@ use crate::{
     structs::{
         active::{
             active_identifier::active_identifier::ActiveIdentifier,
-            active_line::active_line::ActiveLine, active_node::active_node::ActiveNode,
+            active_line::active_line::ActiveLine, active_node::active_node::ActiveNode, active_set::active_set::ActiveSet,
         },
         immutable::{
             game_node::game_node::GameNodeId, game_set::game_set::GameSet, puzzle::puzzle::Puzzle,
@@ -968,6 +968,7 @@ pub fn clear_all_lines(
 pub fn unload_active_elements(
     commands: &mut Commands,
     active_nodes: &mut Vec<ActiveNode>,
+    active_sets: &mut Vec<ActiveSet>,
     active_lines: &mut Vec<ActiveLine>,
 ) {
     active_nodes.iter_mut().for_each(|active_node| {
@@ -979,4 +980,11 @@ pub fn unload_active_elements(
         commands.entity(active_line.sprite_entity_id).despawn();
     });
     active_lines.clear();
+
+    active_sets.iter_mut().for_each(|active_set| {
+        active_set.sprite_entity_ids.iter().for_each(|sprite| {
+            commands.entity(*sprite).despawn();
+        });
+    });
+    active_sets.clear();
 }
