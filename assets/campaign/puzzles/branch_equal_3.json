@@ -1,0 +1,29 @@
+{
+    "uuid": "95c6fd9e-96ab-4ac8-b84e-10727fa46ef8",
+    "name": "Branch Equal 2",
+    "width": 2,
+    "height": 2,
+    "nodes": [
+        {
+            "id": 0,
+            "conditions": [],
+            "connected_conditions": []
+        },
+        {
+            "id": 1,
+            "conditions": ["BranchEqual"],
+            "connected_conditions": []
+        },
+        {
+            "id": 2,
+            "conditions": [],
+            "connected_conditions": []
+        },
+        {
+            "id": 3,
+            "conditions": ["BranchEqual"],
+            "connected_conditions": []
+        }
+    ],
+    "sets": []
+}

@@ -1,0 +1,29 @@
+{
+    "uuid": "4c5177d8-dd71-496e-8128-b7dd52fc2f76",
+    "name": "Branch Equal & Internal",
+    "width": 2,
+    "height": 2,
+    "nodes": [
+        {
+            "id": 0,
+            "conditions": [],
+            "connected_conditions": []
+        },
+        {
+            "id": 1,
+            "conditions": ["Internal"],
+            "connected_conditions": []
+        },
+        {
+            "id": 2,
+            "conditions": ["Internal"],
+            "connected_conditions": []
+        },
+        {
+            "id": 3,
+            "conditions": ["BranchEqual"],
+            "connected_conditions": []
+        }
+    ],
+    "sets": []
+}

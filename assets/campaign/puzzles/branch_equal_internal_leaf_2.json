@@ -1,0 +1,39 @@
+{
+    "uuid": "34e5849c-a548-47db-9317-57fb6c70e94d",
+    "name": "Degree Equal & Internal & Leaf 2",
+    "width": 3,
+    "height": 2,
+    "nodes": [
+        {
+            "id": 0,
+            "conditions": ["Internal"],
+            "connected_conditions": []
+        },
+        {
+            "id": 1,
+            "conditions": [],
+            "connected_conditions": []
+        },
+        {
+            "id": 2,
+            "conditions": [],
+            "connected_conditions": []
+        },
+        {
+            "id": 3,
+            "conditions": ["BranchEqual", "Leaf"],
+            "connected_conditions": []
+        },
+        {
+            "id": 4,
+            "conditions": [],
+            "connected_conditions": []
+        },
+        {
+            "id": 5,
+            "conditions": ["Internal"],
+            "connected_conditions": []
+        }
+    ],
+    "sets": []
+}

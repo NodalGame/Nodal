@@ -1,0 +1,29 @@
+{
+    "uuid": "fe6ede68-1ba6-43a8-9592-a6a591a4e3a1",
+    "name": "Branch Equal & Leaf",
+    "width": 2,
+    "height": 2,
+    "nodes": [
+        {
+            "id": 0,
+            "conditions": [],
+            "connected_conditions": []
+        },
+        {
+            "id": 1,
+            "conditions": ["Leaf"],
+            "connected_conditions": []
+        },
+        {
+            "id": 2,
+            "conditions": ["Leaf"],
+            "connected_conditions": []
+        },
+        {
+            "id": 3,
+            "conditions": ["BranchEqual"],
+            "connected_conditions": []
+        }
+    ],
+    "sets": []
+}

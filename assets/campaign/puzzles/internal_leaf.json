@@ -1,0 +1,29 @@
+{
+    "uuid": "d9fe6ce7-a213-4c45-80f6-a918007b3042",
+    "name": "Internal & Leaf",
+    "width": 2,
+    "height": 2,
+    "nodes": [
+        {
+            "id": 0,
+            "conditions": ["Internal"],
+            "connected_conditions": []
+        },
+        {
+            "id": 1,
+            "conditions": ["Leaf"],
+            "connected_conditions": []
+        },
+        {
+            "id": 2,
+            "conditions": ["Internal"],
+            "connected_conditions": []
+        }, 
+        {
+            "id": 3,
+            "conditions": ["Leaf"],
+            "connected_conditions": []
+        }
+    ],
+    "sets": []
+}
