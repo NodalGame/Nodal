@@ -462,7 +462,7 @@ pub mod scene {
                     },
                     transform: Transform::from_xyz(transform_x, transform_y, Z_SET_RULE_BOX),
                     ..Default::default()
-                });
+                }).insert(OnPuzzleScene);
                 let crule_sprite = SpriteBundle {
                     texture: crule_texture,
                     sprite: crule.sprite().clone(),
@@ -753,28 +753,6 @@ pub mod scene {
                             &active_nodes.active_nodes,
                             &active_sets.active_sets,
                         )));
-
-                        // TODO remove this once not needed as a reference
-                        // let rt = Runtime::new().unwrap();
-                        // rt.block_on(async {
-                        //     match api.call_test_async().await {
-                        //         Ok(response) => {
-                        //             println!("async test api got response: {}", response.response);
-                        //         }
-                        //         Err(err) => {
-                        //             error!("Error calling async test api: {}", err);
-                        //         }
-                        //     }
-                        // });
-
-                        // match api.call_test_blocking() {
-                        //     Ok(response) => {
-                        //         println!("blocking test api got response: {}", response.response);
-                        //     }
-                        //     Err(err) => {
-                        //         error!("Error calling blocking test api: {}", err);
-                        //     }
-                        // }
                     }
                     PuzzleButtonAction::ReturnToPreviousPage => {
                         // TODO if puzzle was previously solved and is not currently solved, don't save progress

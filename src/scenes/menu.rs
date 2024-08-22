@@ -69,7 +69,6 @@ pub mod menu {
     enum MenuButtonAction {
         Campaign,
         SubMenu,
-        // LogIn,
         PlayPuzzle,
         Quit,
     }
@@ -152,27 +151,6 @@ pub mod menu {
                                     button_text_style(),
                                 ));
                             });
-                        // parent
-                        //     .spawn((
-                        //         ButtonBundle {
-                        //             style: text_button_style(),
-                        //             background_color: NORMAL_BUTTON.into(),
-                        //             ..default()
-                        //         },
-                        //         MenuButtonAction::LogIn,
-                        //     ))
-                        //     .with_children(|parent| {
-                        //         let icon = asset_server.load(Texture::BtnClearLines.path());
-                        //         parent.spawn(ImageBundle {
-                        //             style: button_icon_style(),
-                        //             image: UiImage::new(icon),
-                        //             ..default()
-                        //         });
-                        //         parent.spawn(TextBundle::from_section(
-                        //             "Sign In with Itch",
-                        //             button_text_style(),
-                        //         ));
-                        //     });
                         parent
                             .spawn((
                                 ButtonBundle {
@@ -243,70 +221,6 @@ pub mod menu {
             });
     }
 
-    // // TODO repurpose this for the browse levels menu?
-    // fn puzzle_select_setup(
-    //     mut commands: Commands,
-    //     mut puzzle_manager: ResMut<PuzzleManager>,
-    //     asset_server: Res<AssetServer>,
-    // ) {
-    //     // TODO preload in other menu? if this starts to slow down...
-    //     let _ = puzzle_manager.populate(&"../assets/campaign/puzzles/".to_owned());
-    //     commands
-    //         .spawn((
-    //             NodeBundle {
-    //                 style: Style {
-    //                     width: Val::Percent(100.0),
-    //                     height: Val::Percent(100.0),
-    //                     align_items: AlignItems::Center,
-    //                     justify_content: JustifyContent::Center,
-    //                     ..default()
-    //                 },
-    //                 ..default()
-    //             },
-    //             OnPuzzleSelectScreen,
-    //         ))
-    //         .with_children(|parent| {
-    //             parent
-    //                 .spawn(NodeBundle {
-    //                     style: Style {
-    //                         flex_direction: FlexDirection::Column,
-    //                         align_items: AlignItems::Center,
-    //                         ..default()
-    //                     },
-    //                     background_color: Color::BLACK.into(),
-    //                     ..default()
-    //                 })
-    //                 .with_children(|parent| {
-    //                     // TODO remove -- just using for testing webapp loading puzzles
-    //                     let icon = asset_server.load("../assets/textures/sprites/NODE_YELLOW.png");
-    //                     parent.spawn(ImageBundle {
-    //                         style: button_icon_style(),
-    //                         image: UiImage::new(icon),
-    //                         ..default()
-    //                     });
-    //                     for puzzle_id in puzzle_manager.get_puzzle_uuids() {
-    //                         // Display the levels to select TODO scrollable and populate programmatically
-    //                         parent
-    //                             .spawn((
-    //                                 ButtonBundle {
-    //                                     style: text_button_style(),
-    //                                     background_color: NORMAL_BUTTON.into(),
-    //                                     ..default()
-    //                                 },
-    //                                 MenuButtonAction::PlayPuzzle,
-    //                                 ButtonPuzzleId { uuid: puzzle_id },
-    //                             ))
-    //                             .with_children(|parent| {
-    //                                 parent.spawn(TextBundle::from_section(
-    //                                     "Puzzle ".to_owned() + &puzzle_id.to_string(),
-    //                                     button_text_style(),
-    //                                 ));
-    //                             });
-    //                     }
-    //                 });
-    //         });
-    // }
-
     fn menu_action(
         interaction_query: Query<
             (&Interaction, &MenuButtonAction, Option<&ButtonPuzzleId>),
@@ -321,26 +235,12 @@ pub mod menu {
         for (interaction, menu_button_action, button_puzzle_id) in &interaction_query {
             if *interaction == Interaction::Pressed {
                 match menu_button_action {
-                    // TODO remove this if it is going to be webapp
                     MenuButtonAction::Quit => {
                         app_exit_events.send(AppExit::Success);
                     }
                     MenuButtonAction::SubMenu => {
                         menu_state.set(MenuState::SubMenu);
                     }
-                    // MenuButtonAction::LogIn => {
-                    //     // let client_id = "46ee1bbfb2bc9058ece5ec164478596f"; // TODO obfuscate this and branch by dev, beta, prod
-                    //     // let redirect_uri = api.redirect_uri();
-                    //     // let auth_url = format!(
-                    //     //     "https://itch.io/user/oauth?client_id={}&scope=profile:me&redirect_uri={}",
-                    //     //     client_id, redirect_uri
-                    //     // );
-                    //     // TODO this should also include state param with global ID if exists.
-                    //     let auth_url = "https://itch.io/user/oauth?client_id=46ee1bbfb2bc9058ece5ec164478596f&scope=profile%3Ame&response_type=token&redirect_uri=https%3A%2F%2F3yiibp986h.execute-api.us-west-2.amazonaws.com%2Fprod%2Fauth%2Fcallback";
-                    //     if webbrowser::open(&auth_url).is_ok() {
-                    //         println!("Opened {} in web browser", auth_url);
-                    //     }
-                    // }
                     MenuButtonAction::Campaign => {
                         app_state.set(AppState::Campaign);
                         menu_state.set(MenuState::Disabled);

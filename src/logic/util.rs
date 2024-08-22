@@ -197,22 +197,12 @@ pub fn get_all_satisfied_states(
     let mut satisfied_states: SatisfiedStatesMap = SatisfiedStatesMap::new();
     let solution = active_nodes_to_solution(&active_nodes);
 
-    println!(
-        "active sets: {:?}",
-        active_sets
-            .iter()
-            .map(|set| set.set.id)
-            .collect::<Vec<u8>>()
-    );
-
     // Check all nodes and their conditions
     for node in active_nodes.iter() {
         satisfied_states.insert(node.active_id, node.check_satisfied(&solution));
 
         // Get the bounded solution for the condition if bounded, otherwise the original solution
         let bounded_solutions = get_bounded_solutions(&node.node.id, &active_sets, &solution);
-
-        println!("got bounded solutions {:?}", bounded_solutions);
 
         // Get the satisfied states of each condition.
         for condition in node.active_conditions.iter() {
