@@ -116,8 +116,7 @@ pub mod campaign {
         let _ = puzzle_manager.populate_campaign();
 
         // Get the texture that will be used for the puzzle images
-        // TODO use actual image
-        let puzzle_tex = asset_server.load(Texture::Node.path());
+        let puzzle_tex = asset_server.load(Texture::NodeCampaign.path());
 
         // Create grid of puzzle layout
         let mut puzzle_grid: Vec<Vec<Uuid>> = (0..campaign.height)

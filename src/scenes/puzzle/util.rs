@@ -4,17 +4,20 @@ use bevy::{
     asset::{AssetServer, Handle},
     color::Color,
     math::Vec2,
-    prelude::{default, Commands},
+    prelude::{default, Commands, NextState},
     render::texture::Image,
     sprite::{Sprite, SpriteBundle},
     transform::components::Transform,
 };
 use tracing::error;
+use uuid::Uuid;
 
 use crate::{
     get_node_down, get_node_down_left, get_node_down_right, get_node_left, get_node_right,
     get_node_up, get_node_up_left, get_node_up_right, get_set_order, get_sets_containing_node,
-    is_bottom_edge, is_left_edge, is_right_edge, is_top_edge, node_to_position,
+    is_bottom_edge, is_left_edge, is_right_edge, is_top_edge,
+    logic::save_data_manager::save_data_manager::save_progress,
+    node_to_position,
     structs::{
         active::{
             active_identifier::active_identifier::ActiveIdentifier,
@@ -23,11 +26,12 @@ use crate::{
         },
         immutable::{
             game_node::game_node::GameNodeId, game_set::game_set::GameSet, puzzle::puzzle::Puzzle,
+            solution::solution::active_nodes_to_solution,
         },
     },
     texture::Texture,
-    BG_SET_SPRITE_SIZE, COLOR_SET_0, COLOR_SET_1, COLOR_SET_2, COLOR_SET_BORDER, SPRITE_SPACING,
-    TILE_NODE_SPRITE_SIZE, Z_BACKGROUND, Z_LINE, Z_SET_FILL,
+    AppState, BG_SET_SPRITE_SIZE, COLOR_SET_0, COLOR_SET_1, COLOR_SET_2, COLOR_SET_BORDER,
+    SPRITE_SPACING, TILE_NODE_SPRITE_SIZE, Z_BACKGROUND, Z_LINE, Z_SET_FILL,
 };
 
 use super::scene::scene::OnPuzzleScene;
@@ -988,4 +992,18 @@ pub fn unload_active_elements(
         });
     });
     active_sets.clear();
+}
+
+pub(crate) fn exit_puzzle(
+    puzzle: Uuid,
+    solved: bool,
+    commands: &mut Commands,
+    active_nodes: &mut Vec<ActiveNode>,
+    active_sets: &mut Vec<ActiveSet>,
+    active_lines: &mut Vec<ActiveLine>,
+    app_state: &mut NextState<AppState>,
+) {
+    save_progress(puzzle, active_nodes_to_solution(&active_nodes), solved);
+    unload_active_elements(commands, active_nodes, active_sets, active_lines);
+    app_state.set(AppState::Campaign);
 }

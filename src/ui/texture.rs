@@ -2,7 +2,8 @@ pub mod texture {
 
     #[derive(Eq, PartialEq, Clone, Copy)]
     pub enum Texture {
-        Node,
+        NodePuzzle,
+        NodeCampaign,
 
         CdtnBranchEqual,
         CdtnLeaf,
@@ -77,7 +78,8 @@ pub mod texture {
     impl Texture {
         pub fn path(&self) -> &str {
             match self {
-                Texture::Node => "../assets/textures/sprites/NODE_EMPTY.png",
+                Texture::NodePuzzle => "../assets/textures/sprites/NODE_EMPTY.png",
+                Texture::NodeCampaign => "../assets/textures/sprites/NODE_CAMPAIGN.png",
 
                 Texture::CdtnBranchEqual => "../assets/textures/sprites/CDTN_BRANCH_EQUAL.png",
                 Texture::CdtnLeaf => "../assets/textures/sprites/CDTN_LEAF.png",

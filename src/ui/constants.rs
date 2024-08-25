@@ -28,7 +28,7 @@ pub(crate) const COLOR_CAMPAIGN_PUZZLE_SOLVED: Color =
 
 pub(crate) const COLOR_SET_BORDER: Color = Color::BLACK;
 
-pub(crate) const COLOR_NODE_SAT: Color = Color::BLACK;
+pub(crate) const COLOR_NODE_SAT: Color = bevy::prelude::Color::Srgba(palettes::basic::LIME);
 pub(crate) const COLOR_NODE_UNSAT: Color = Color::WHITE;
 pub(crate) const COLOR_RULE_SAT: Color = Color::WHITE;
 pub(crate) const COLOR_RULE_UNSAT: Color = Color::BLACK;

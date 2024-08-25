@@ -140,7 +140,7 @@ pub mod menu {
                                 MenuButtonAction::SubMenu,
                             ))
                             .with_children(|parent| {
-                                let icon = asset_server.load(Texture::Node.path());
+                                let icon = asset_server.load(Texture::NodePuzzle.path());
                                 parent.spawn(ImageBundle {
                                     style: button_icon_style(),
                                     image: UiImage::new(icon),

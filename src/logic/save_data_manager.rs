@@ -15,6 +15,7 @@ pub mod save_data_manager {
     }
 
     pub fn save_progress(puzzle_uuid: Uuid, solution: Solution, solved: bool) {
+        // TODO if puzzle was previously solved and is not currently solved, don't save solution
         let save_data = PuzzleSaveData {
             puzzle_uuid,
             solution,

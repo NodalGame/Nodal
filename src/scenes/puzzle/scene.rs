@@ -29,6 +29,7 @@ pub mod scene {
         },
         utils::HashMap,
     };
+    use itertools::Itertools;
 
     use crate::{
         buttons::icon_button_style,
@@ -43,8 +44,8 @@ pub mod scene {
         node_to_position,
         puzzle_manager::PuzzleManager,
         scenes::puzzle::util::{
-            add_line, clear_all_lines, get_color_for_set_tile, get_mut_start_end_nodes,
-            get_set_tiles, remove_line, unload_active_elements,
+            add_line, clear_all_lines, exit_puzzle, get_color_for_set_tile,
+            get_mut_start_end_nodes, get_set_tiles, remove_line, unload_active_elements,
         },
         structs::{
             active::{
@@ -77,11 +78,14 @@ pub mod scene {
             .add_systems(Update, line_system.run_if(in_state(AppState::Puzzle)))
             .add_systems(Update, ui_action.run_if(in_state(AppState::Puzzle)))
             .add_event::<UpdateSatisfiedStates>()
+            .add_event::<PuzzleSolved>()
             .add_systems(Update, update_satisfied_states_ui)
+            .add_systems(Update, trigger_puzzle_solved)
             .insert_resource(ActiveNodes::default())
             .insert_resource(ActiveSets::default())
             .insert_resource(ActiveLines::default())
-            .insert_resource(CurrentLine::default());
+            .insert_resource(CurrentLine::default())
+            .insert_resource(PreviouslySolved::default());
     }
 
     /// A map of satisfiable entities with an active identifier to their updated satisfied state.
@@ -89,6 +93,15 @@ pub mod scene {
 
     #[derive(Event, Debug, Clone, Default)]
     struct UpdateSatisfiedStates(SatisfiedStatesMap);
+
+    #[derive(Event, Debug, Clone, Default)]
+    struct PuzzleSolved;
+
+    // Tracks if the puzzle was solved previously, changing how saving and exit conditions work
+    #[derive(Default, Resource, Clone)]
+    struct PreviouslySolved {
+        solved: bool,
+    }
 
     // Tracks all nodes in the puzzle
     #[derive(Default, Resource, Component, Clone)]
@@ -138,6 +151,7 @@ pub mod scene {
         mut active_sets: ResMut<ActiveSets>,
         mut active_lines: ResMut<ActiveLines>,
         mut event_writer: EventWriter<UpdateSatisfiedStates>,
+        mut previously_solved: ResMut<PreviouslySolved>,
         // Query to get camera transform
         mut q_camera: Query<(&mut Transform, &mut OrthographicProjection), With<MainCamera>>,
     ) {
@@ -154,7 +168,7 @@ pub mod scene {
 
         // TODO load only when needed, then cache in map to re-access in the screen spawning loop
         // Load node textures
-        let tex_node = asset_server.load(Texture::Node.path());
+        let tex_node = asset_server.load(Texture::NodePuzzle.path());
 
         // Load condition textures
         let tex_cdtn_branch_equal = asset_server.load(Texture::CdtnBranchEqual.path());
@@ -453,16 +467,21 @@ pub mod scene {
                 let transform_y = node_y + TILE_NODE_SPRITE_SIZE
                     - INTERNAL_SPACING_Y
                     - total_rule_idx as f32 * (CDTN_RULE_SPRITE_SIZE + STACK_CDTN_RULE_SPACING);
-                commands.spawn(SpriteBundle {
-                    texture: tex_rule_box.clone(),
-                    sprite: Sprite {
-                        custom_size: Some(Vec2::new(CDTN_RULE_SPRITE_SIZE, CDTN_RULE_SPRITE_SIZE)),
-                        color: get_color_for_set_tile(set.clone(), puzzle_sets.clone()),
+                commands
+                    .spawn(SpriteBundle {
+                        texture: tex_rule_box.clone(),
+                        sprite: Sprite {
+                            custom_size: Some(Vec2::new(
+                                CDTN_RULE_SPRITE_SIZE,
+                                CDTN_RULE_SPRITE_SIZE,
+                            )),
+                            color: get_color_for_set_tile(set.clone(), puzzle_sets.clone()),
+                            ..Default::default()
+                        },
+                        transform: Transform::from_xyz(transform_x, transform_y, Z_SET_RULE_BOX),
                         ..Default::default()
-                    },
-                    transform: Transform::from_xyz(transform_x, transform_y, Z_SET_RULE_BOX),
-                    ..Default::default()
-                }).insert(OnPuzzleScene);
+                    })
+                    .insert(OnPuzzleScene);
                 let crule_sprite = SpriteBundle {
                     texture: crule_texture,
                     sprite: crule.sprite().clone(),
@@ -503,6 +522,9 @@ pub mod scene {
         let puzzle_save_data: Option<PuzzleSaveData> = load_progress(puzzle.uuid);
         match puzzle_save_data {
             Some(data) => {
+                // Mark it as previously solved or not
+                previously_solved.solved = data.solved;
+
                 for line in data.solution {
                     for i in 0..active_nodes.active_nodes.len() {
                         for j in 0..active_nodes.active_nodes.len() {
@@ -629,6 +651,7 @@ pub mod scene {
     /// A system for updating all (relevant) satisfiable sprites on screen when an UpdateSatisfiedStates event is sent.
     fn update_satisfied_states_ui(
         mut event_reader: EventReader<UpdateSatisfiedStates>,
+        mut event_writer: EventWriter<PuzzleSolved>,
         mut active_nodes: ResMut<ActiveNodes>,
         mut active_sets: ResMut<ActiveSets>,
         mut q_sprites: Query<&mut Sprite>,
@@ -719,8 +742,39 @@ pub mod scene {
                 active_nodes.active_nodes.clone(),
                 active_sets.active_sets.clone(),
             );
+            if solved {
+                event_writer.send(PuzzleSolved);
+            }
+        }
+    }
 
-            // TODO signal for some sounds + animation and navigate back if solved
+    fn trigger_puzzle_solved(
+        mut event_reader: EventReader<PuzzleSolved>,
+        mut commands: Commands,
+        mut active_nodes: ResMut<ActiveNodes>,
+        mut active_sets: ResMut<ActiveSets>,
+        mut active_lines: ResMut<ActiveLines>,
+        puzzle: Res<SelectedPuzzle>,
+        previously_solved: Res<PreviouslySolved>,
+        mut app_state: ResMut<NextState<AppState>>,
+    ) {
+        for PuzzleSolved in event_reader.read() {
+            // If previously solved, do nothing
+            if previously_solved.solved {
+                return;
+            }
+
+            // TODO some animation before navigate back
+            
+            exit_puzzle(
+                puzzle.uuid,
+                true,
+                &mut commands,
+                &mut active_nodes.active_nodes,
+                &mut active_sets.active_sets,
+                &mut active_lines.lines,
+                &mut app_state,
+            );
         }
     }
 
@@ -755,22 +809,19 @@ pub mod scene {
                         )));
                     }
                     PuzzleButtonAction::ReturnToPreviousPage => {
-                        // TODO if puzzle was previously solved and is not currently solved, don't save progress
-                        save_progress(
-                            puzzle.uuid,
-                            active_nodes_to_solution(&active_nodes.active_nodes),
-                            is_puzzle_solved(
-                                active_nodes.active_nodes.clone(),
-                                active_sets.active_sets.clone(),
-                            ),
+                        let solved = is_puzzle_solved(
+                            active_nodes.active_nodes.clone(),
+                            active_sets.active_sets.clone(),
                         );
-                        unload_active_elements(
+                        exit_puzzle(
+                            puzzle.uuid,
+                            solved,
                             &mut commands,
                             &mut active_nodes.active_nodes,
                             &mut active_sets.active_sets,
                             &mut active_lines.lines,
+                            &mut app_state,
                         );
-                        app_state.set(AppState::Campaign);
                     }
                 }
             }
