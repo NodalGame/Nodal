@@ -3,22 +3,17 @@ use std::f32::consts::PI;
 use bevy::{
     asset::{AssetServer, Handle},
     color::Color,
-    math::Vec2,
-    prelude::{default, Commands, NextState},
-    render::texture::Image,
+    math::{Vec2, Vec3},
+    prelude::{default, Commands, Mut, NextState, OrthographicProjection},
+    render::{texture::Image, view::window},
     sprite::{Sprite, SpriteBundle},
-    transform::components::Transform,
+    transform::components::Transform, window::Window,
 };
 use tracing::error;
 use uuid::Uuid;
 
 use crate::{
-    get_node_down, get_node_down_left, get_node_down_right, get_node_left, get_node_right,
-    get_node_up, get_node_up_left, get_node_up_right, get_set_order, get_sets_containing_node,
-    is_bottom_edge, is_left_edge, is_right_edge, is_top_edge,
-    logic::save_data_manager::save_data_manager::save_progress,
-    node_to_position,
-    structs::{
+    get_node_down, get_node_down_left, get_node_down_right, get_node_left, get_node_right, get_node_up, get_node_up_left, get_node_up_right, get_set_order, get_sets_containing_node, is_bottom_edge, is_left_edge, is_right_edge, is_top_edge, logic::save_data_manager::save_data_manager::save_progress, node_to_position, structs::{
         active::{
             active_identifier::active_identifier::ActiveIdentifier,
             active_line::active_line::ActiveLine, active_node::active_node::ActiveNode,
@@ -28,10 +23,7 @@ use crate::{
             game_node::game_node::GameNodeId, game_set::game_set::GameSet, puzzle::puzzle::Puzzle,
             solution::solution::active_nodes_to_solution,
         },
-    },
-    texture::Texture,
-    AppState, BG_SET_SPRITE_SIZE, COLOR_SET_0, COLOR_SET_1, COLOR_SET_2, COLOR_SET_BORDER,
-    SPRITE_SPACING, TILE_NODE_SPRITE_SIZE, Z_BACKGROUND, Z_LINE, Z_SET_FILL,
+    }, texture::Texture, AppState, BG_SET_SPRITE_SIZE, COLOR_SET_0, COLOR_SET_1, COLOR_SET_2, COLOR_SET_BORDER, SPRITE_SPACING, TILE_NODE_SPRITE_SIZE, WINDOW_PADDING, Z_BACKGROUND, Z_LINE, Z_SET_FILL
 };
 
 use super::scene::scene::OnPuzzleScene;
@@ -1006,4 +998,33 @@ pub(crate) fn exit_puzzle(
     save_progress(puzzle, active_nodes_to_solution(&active_nodes), solved);
     unload_active_elements(commands, active_nodes, active_sets, active_lines);
     app_state.set(AppState::Campaign);
+}
+
+/// Sets the camera to focus on the center of the puzzle and scale according to its width and height
+pub(crate) fn update_camera(
+    window: &Window,
+    camera_transform: &mut Mut<Transform>,
+    camera_projection: &mut Mut<OrthographicProjection>,
+    puzzle: &Puzzle,
+) {
+    // Get the center and move camera there
+    let focus_point = Vec2::new(puzzle.width as f32 * SPRITE_SPACING, puzzle.height as f32 * SPRITE_SPACING);
+
+    **camera_transform = Transform {
+        translation: Vec3::new(focus_point.x as f32, focus_point.y as f32, 0.0),
+        ..Default::default()
+    };
+
+    // Get the topmost and rightmost positions of nodes to include in the window
+    let rightmost_position = node_to_position(&((puzzle.width - 1) as GameNodeId), puzzle);
+    let topmost_position = node_to_position(&((puzzle.height - 1) as GameNodeId), puzzle);
+
+    // Get the required scale and fit to include all unlocked puzzles in the window
+    let distance_x = rightmost_position.0 - focus_point.x + TILE_NODE_SPRITE_SIZE + WINDOW_PADDING;
+    let distance_y = topmost_position.1 - focus_point.y + TILE_NODE_SPRITE_SIZE + WINDOW_PADDING;
+
+    let scale = (distance_x / (window.width() / 2.0))
+        .max(distance_y / (window.height() / 2.0));
+
+    camera_projection.scale = scale;
 }

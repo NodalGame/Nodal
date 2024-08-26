@@ -27,7 +27,7 @@ pub mod scene {
             widget::Button,
             AlignItems, Interaction, JustifyContent, Style, UiImage, Val,
         },
-        utils::HashMap,
+        utils::HashMap, window::{PrimaryWindow, Window},
     };
     use itertools::Itertools;
 
@@ -45,7 +45,7 @@ pub mod scene {
         puzzle_manager::PuzzleManager,
         scenes::puzzle::util::{
             add_line, clear_all_lines, exit_puzzle, get_color_for_set_tile,
-            get_mut_start_end_nodes, get_set_tiles, remove_line, unload_active_elements,
+            get_mut_start_end_nodes, get_set_tiles, remove_line, unload_active_elements, update_camera,
         },
         structs::{
             active::{
@@ -154,6 +154,8 @@ pub mod scene {
         mut previously_solved: ResMut<PreviouslySolved>,
         // Query to get camera transform
         mut q_camera: Query<(&mut Transform, &mut OrthographicProjection), With<MainCamera>>,
+        // Query to get executable window
+        q_window: Query<&Window, With<PrimaryWindow>>,
     ) {
         // Get the puzzle by loading it
         let puzzle = puzzle_manager
@@ -327,16 +329,12 @@ pub mod scene {
 
         // Get camera transform
         for (mut transform, mut projection) in q_camera.iter_mut() {
-            // Move it to center of puzzle
-            *transform = Transform {
-                translation: Vec3::new(
-                    puzzle.width as f32 * SPRITE_SPACING,
-                    puzzle.height as f32 * SPRITE_SPACING,
-                    0.0,
-                ),
-                ..Default::default()
-            };
-            projection.scale = 1.0;
+            update_camera(
+                q_window.single(),
+                &mut transform,
+                &mut projection, 
+                &puzzle
+            );
         }
 
         // Add a back button, check answer button, and restart button

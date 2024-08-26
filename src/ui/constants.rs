@@ -9,6 +9,7 @@ pub(crate) const INTERNAL_SPACING_Y: f32 = 25.0;
 pub(crate) const STACK_CDTN_RULE_SPACING: f32 = 5.0;
 pub(crate) const SPRITE_SPACING: f32 = 100.0;
 pub(crate) const BG_SET_SPRITE_SIZE: f32 = 200.0;
+pub(crate) const WINDOW_PADDING: f32 = 100.0;
 
 pub(crate) const Z_BACKGROUND: f32 = -3.0;
 pub(crate) const Z_SET_FILL: f32 = -2.0;
@@ -21,7 +22,7 @@ pub(crate) const SCALE_NODE_HOVERED: Vec3 = Vec3::new(1.1, 1.1, 1.1);
 
 pub(crate) const CAMPAIGN_NODE_SPACING: f32 = 50.0;
 
-pub(crate) const COLOR_CAMPAIGN_PUZZLE_LOCKED: Color = Color::BLACK;
+pub(crate) const COLOR_CAMPAIGN_PUZZLE_LOCKED: Color = Color::srgba(0.0, 0.0, 0.0, 0.0);
 pub(crate) const COLOR_CAMPAIGN_PUZZLE_UNLOCKED: Color = Color::WHITE;
 pub(crate) const COLOR_CAMPAIGN_PUZZLE_SOLVED: Color =
     bevy::prelude::Color::Srgba(palettes::basic::GREEN);

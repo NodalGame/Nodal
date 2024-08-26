@@ -7,7 +7,7 @@ use uuid::Uuid;
 use crate::{
     logic::save_data_manager::save_data_manager::is_solved,
     scenes::campaign::scene::campaign::{CampaignPuzzle, ClickableCampaignPuzzle},
-    CAMPAIGN_NODE_SPACING, TILE_NODE_SPRITE_SIZE,
+    CAMPAIGN_NODE_SPACING, TILE_NODE_SPRITE_SIZE, WINDOW_PADDING,
 };
 
 fn get_topmost_unlocked_puzzle_position(
@@ -63,8 +63,8 @@ pub(crate) fn update_camera(
     };
 
     // Get the required scale and fit to include all unlocked puzzles in the window
-    let distance_x = rightmost_position.x - focus_point.x + TILE_NODE_SPRITE_SIZE as f64;
-    let distance_y = topmost_position.y - focus_point.y + TILE_NODE_SPRITE_SIZE as f64;
+    let distance_x = rightmost_position.x - focus_point.x + TILE_NODE_SPRITE_SIZE as f64 + WINDOW_PADDING as f64;
+    let distance_y = topmost_position.y - focus_point.y + TILE_NODE_SPRITE_SIZE as f64 + WINDOW_PADDING as f64;
 
     let scale = (distance_x / (window.width() / 2.0) as f64)
         .max(distance_y / (window.height() / 2.0) as f64) as f32;
