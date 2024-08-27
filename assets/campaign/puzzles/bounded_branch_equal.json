@@ -1,0 +1,47 @@
+{
+    "uuid": "bca41faf-faf6-4195-90e5-9a5fe9dfbed9",
+    "name": "Bounded & Branch Equal",
+    "width": 3,
+    "height": 2,
+    "nodes": [
+        {
+            "id": 0,
+            "conditions": [],
+            "connected_conditions": []
+        },
+        {
+            "id": 1,
+            "conditions": [],
+            "connected_conditions": []
+        },
+        {
+            "id": 2,
+            "conditions": ["BranchEqual"],
+            "connected_conditions": []
+        },
+        {
+            "id": 3,
+            "conditions": ["BranchEqual"],
+            "connected_conditions": []
+        },
+        {
+            "id": 4,
+            "conditions": [],
+            "connected_conditions": []
+        },
+        {
+            "id": 5,
+            "conditions": [],
+            "connected_conditions": []
+        }
+    ],
+    "sets": [
+        {
+            "id": 0,
+            "nodes": [0, 2, 4],
+            "rules": [],
+            "connected_rules": [],
+            "bounded": true
+        }
+    ]
+}

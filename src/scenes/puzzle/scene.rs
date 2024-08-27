@@ -156,13 +156,15 @@ pub mod scene {
         mut q_camera: Query<(&mut Transform, &mut OrthographicProjection), With<MainCamera>>,
         // Query to get executable window
         q_window: Query<&Window, With<PrimaryWindow>>,
+        mut app_state: ResMut<NextState<AppState>>,
     ) {
         // Get the puzzle by loading it
-        let puzzle = puzzle_manager
-            .load_puzzle(&puzzle_id.uuid)
-            .unwrap_or_else(|| {
-                exit(1); // TODO cause game to not crash, and do this check in menu BEFORE switching scenes
-            });
+        let opt_puzzle = puzzle_manager.load_puzzle(&puzzle_id.uuid);
+        if opt_puzzle.is_none() {
+            app_state.set(AppState::Campaign);
+            return;
+        }
+        let puzzle = opt_puzzle.unwrap();
 
         // Sort nodes by id (bottom to top, left to right)
         let mut ordered_nodes = puzzle.nodes.clone();
